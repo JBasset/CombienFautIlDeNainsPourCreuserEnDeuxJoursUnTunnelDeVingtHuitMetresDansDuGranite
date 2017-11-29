@@ -25,11 +25,11 @@ public class CameraBehaviour : MonoBehaviour {
             if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
             {
                 lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
-                lockedObject.transform.GetChild(0).gameObject.SetActive(true);
+                lockedObject.transform.FindChild("Sphere").gameObject.SetActive(true);
             }
             else if (lockedObject)
             {
-                lockedObject.transform.GetChild(0).gameObject.SetActive(false);
+                lockedObject.transform.FindChild("Sphere").gameObject.SetActive(false);
                 lockedObject = null; // if the click is not on an agent, the camera unlocks
             }
         }
