@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -9,8 +10,11 @@ namespace Assets.Scripts
     {
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
+
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge, GoToSleep }
         public enum GaugesLabel { Specialisation, Tiredness, Thirst, Workdesire, Pickaxe}
+
+        public List<GameObject> NoticeableObjects;
 
         // new dwarves start with those activities :
         public WeightedList startingActivity = new WeightedList(
