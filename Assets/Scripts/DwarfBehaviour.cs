@@ -15,20 +15,20 @@ public class DwarfBehaviour : MonoBehaviour {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         normalSpeed = agent.speed;
-        roadSpeed = normalSpeed * 2;
-	}
+    }
 	
 	void Update ()
     {
         agent.SetDestination(Target.position);
-        animator.SetFloat("Walk",1);
-	}
+        animator.SetFloat("Walk", 1);
+    }
 
     void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.CompareTag("Road"))
+        if (other.CompareTag("Road"))
         {
-            agent.speed = roadSpeed;
+            animator.SetFloat("Walk", 0);
+            animator.SetFloat("Run", 1);
         }
     }
 
@@ -36,7 +36,8 @@ public class DwarfBehaviour : MonoBehaviour {
     {
         if(other.gameObject.CompareTag("Road"))
         {
-            agent.speed = normalSpeed;
+            animator.SetFloat("Walk", 1);
+            animator.SetFloat("Run", 0);
         }
     }
 }
