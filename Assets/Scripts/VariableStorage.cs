@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -11,5 +12,6 @@ namespace Assets.Scripts
         public int minValueGauge = 0;
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner }
         public enum GaugesLabel { Specialisation, Tiredness, Thirst, Workdesire }
+        public List<GameObject> NoticeableObjects;
     }
 }
