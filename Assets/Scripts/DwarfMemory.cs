@@ -40,14 +40,14 @@ namespace Assets.Scripts
     class Gauges {
         private VariableStorage variables;
 
-        private int[] _gauges = new int[4];
+        private int[] _gauges = new int[5];
 
-        #region get/set (specialisation, tiredness, thirst, workdesire)
+        #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
         public int Specialisation {
             get { return _gauges[0]; }
             set { _gauges[0] = stockGauge(value); }
         }
-        public int Tirednesss {
+        public int Tiredness {
             get { return _gauges[1]; }
             set { _gauges[1] = stockGauge(value); }
         }
@@ -59,13 +59,18 @@ namespace Assets.Scripts
             get { return _gauges[3]; }
             set { _gauges[3] = stockGauge(value); }
         }
+        public int Pickaxe{
+            get { return _gauges[4]; }
+            set { _gauges[4] = stockGauge(value); }
+        }
         #endregion
 
-        public Gauges(int specialisation, int tiredness, int thirst, int workDesire) {
+        public Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe) {
             _gauges[0] = stockGauge(specialisation);
             _gauges[1] = stockGauge(tiredness);
             _gauges[2] = stockGauge(thirst);
             _gauges[3] = stockGauge(workDesire);
+            _gauges[4] = stockGauge(pickaxe);
         }
 
         private int stockGauge(int value) {
@@ -78,7 +83,7 @@ namespace Assets.Scripts
     class DwarfMemory
     {
         private VariableStorage variables;
-
+        
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
 
@@ -90,9 +95,10 @@ namespace Assets.Scripts
 
         private Gauges Gauges;
         public int Specialisation { get { return Gauges.Specialisation; } }
-        public int Tirednesss { get { return Gauges.Specialisation; } }
-        public int Thirst { get { return Gauges.Specialisation; } }
-        public int WorkDesire { get { return Gauges.Specialisation; } }
+        public int Tirednesss { get { return Gauges.Tiredness; } }
+        public int Thirst { get { return Gauges.Thirst; } }
+        public int WorkDesire { get { return Gauges.WorkDesire; } }
+        public int Pickaxe { get { return Gauges.Pickaxe; } }
 
         int? targetDwarf; // identité de la cible si c'est un vigile
 
@@ -106,15 +112,11 @@ namespace Assets.Scripts
 
         public DwarfMemory() { // création d'une mémoire
 
-            // tous les nains sont initialement des mineurs (?)
-            /* ou alors on fait
-            List<Activities> startingActivity = new List<Activities> { Activities.Explorer, Activities.Miner };
-            et un random dessus
-            */
-            _currentActivity = ActivitiesLabel.Explorer;
+            // variables.startingActivity
+            _currentActivity = (ActivitiesLabel)variables.startingActivity.selectRandomItem();
             
             int max = variables.maxValueGauge;
-            Gauges = new Gauges(max, max, max, max);
+            this.Gauges = new Gauges(max, max, max, max, max);
         }
 
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
@@ -123,9 +125,10 @@ namespace Assets.Scripts
             if (byValue > 0)
             {
                 if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation += byValue;
-                else if (theGauge == GaugesLabel.Tiredness) Gauges.Specialisation += byValue;
-                else if (theGauge == GaugesLabel.Thirst) Gauges.Specialisation += byValue;
-                else if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation += byValue;
+                else if (theGauge == GaugesLabel.Tiredness) Gauges.Tiredness += byValue;
+                else if (theGauge == GaugesLabel.Thirst) Gauges.Thirst += byValue;
+                else if (theGauge == GaugesLabel.Workdesire) Gauges.WorkDesire += byValue;
+                else if (theGauge == GaugesLabel.Pickaxe) Gauges.Pickaxe += byValue;
             }
         }
 
@@ -135,16 +138,30 @@ namespace Assets.Scripts
             if (byValue > 0)
             {
                 if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation -= byValue;
-                else if (theGauge == GaugesLabel.Tiredness) Gauges.Specialisation -= byValue;
-                else if (theGauge == GaugesLabel.Thirst) Gauges.Specialisation -= byValue;
-                else if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation -= byValue;
+                else if (theGauge == GaugesLabel.Tiredness) Gauges.Tiredness -= byValue;
+                else if (theGauge == GaugesLabel.Thirst) Gauges.Thirst -= byValue;
+                else if (theGauge == GaugesLabel.Workdesire) Gauges.WorkDesire -= byValue;
+                else if (theGauge == GaugesLabel.Pickaxe) Gauges.Pickaxe -= byValue;
             }
         }
+        
         #endregion
 
-        public void getNewDestination()
+        public Vector3 getNewDestination()
         {
-            //
+            Vector3 destination = new Vector3();
+            if (this._currentActivity == ActivitiesLabel.Deviant)
+            { }
+            else if (this._currentActivity == ActivitiesLabel.Explorer)
+            { }
+            else if (this._currentActivity == ActivitiesLabel.Miner)
+            { }
+            else if (this._currentActivity == ActivitiesLabel.Supply)
+            { }
+            else if (this._currentActivity == ActivitiesLabel.Vigile)
+            { }
+
+            return destination;
         }
 
     }
