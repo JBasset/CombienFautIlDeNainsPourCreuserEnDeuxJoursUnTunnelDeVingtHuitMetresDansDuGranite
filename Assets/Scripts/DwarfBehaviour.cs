@@ -3,9 +3,6 @@ using System.Collections;
 
 public class DwarfBehaviour : MonoBehaviour {
 
-
-
-
     public Transform Target;
 
     private Animator animator;
@@ -22,7 +19,16 @@ public class DwarfBehaviour : MonoBehaviour {
 	
 	void Update ()
     {
-        agent.SetDestination(Target.position);
+        if (Input.GetButtonDown("Enter"))
+            MoveTo(Target.position);
+
+        if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
+            agent.ResetPath(); animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+    }
+
+    private void MoveTo(Vector3 pos)
+    {
+        agent.SetDestination(pos);
         animator.SetFloat("Walk", 1);
     }
 
@@ -30,7 +36,6 @@ public class DwarfBehaviour : MonoBehaviour {
     {
         if (other.CompareTag("Road"))
         {
-            animator.SetFloat("Walk", 0);
             animator.SetFloat("Run", 1);
         }
     }
@@ -39,7 +44,6 @@ public class DwarfBehaviour : MonoBehaviour {
     {
         if(other.gameObject.CompareTag("Road"))
         {
-            animator.SetFloat("Walk", 1);
             animator.SetFloat("Run", 0);
         }
     }
