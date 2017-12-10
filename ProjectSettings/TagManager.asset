@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Road
   - Agent
+  - UI
   layers:
   - Default
   - TransparentFX

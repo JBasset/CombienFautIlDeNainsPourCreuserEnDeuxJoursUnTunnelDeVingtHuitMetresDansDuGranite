@@ -46,5 +46,11 @@ namespace Assets.Scripts
             foreach (GameObject mine in Variables.Mines)
                 Variables.NoticeableObjects.Add(mine);
         }
+
+        public List<GameObject> GetDwarves()
+        {
+            UpdateDwarves();
+            return Variables.Dwarves;
+        }
     }
 }
