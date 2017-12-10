@@ -6,7 +6,7 @@ TagManager:
   tags:
   - Road
   - Agent
-  - UI
+  - DwarfButton
   layers:
   - Default
   - TransparentFX
