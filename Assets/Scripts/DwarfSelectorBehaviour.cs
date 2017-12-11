@@ -22,7 +22,7 @@ namespace Assets.Scripts
         public void SetDwarfButtons()
         {
             List<GameObject> Dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
-            scrollablePanelRectTransform.sizeDelta = new Vector2(110, 50 + (Dwarves.Count-1) * 35);
+            scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count-1) * 35);
             for (int i = 0; i < Dwarves.Count; i++)
             {
                 Button newButton = Instantiate(DwarfButton);
