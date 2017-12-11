@@ -37,11 +37,6 @@ namespace Assets.Scripts
             animator.SetFloat("Walk", 1);
         }
 
-        private void LookAround()
-        {
-
-        }
-
         void OnTriggerStay(Collider other)
         {
             if (other.CompareTag("Road"))

@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Assets.Scripts
 {
     public class CameraBehaviour : MonoBehaviour
     {
+        public GameObject Dwarves;
+        
         private Camera cam;
         private float minDownScroll;
         private Ray ray;
@@ -21,21 +26,19 @@ namespace Assets.Scripts
         {
             MoveCamera();
 
-            Ray mouseRay = cam.ScreenPointToRay(Input.mousePosition);
             if (Input.GetMouseButtonDown(0))
             {
+                Ray mouseRay = cam.ScreenPointToRay(Input.mousePosition);
+
                 if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
-                {
                     lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
-                    lockedObject.transform.FindChild("Sphere").gameObject.SetActive(true);
-                }
-                else if (lockedObject)
-                {
-                    lockedObject.transform.FindChild("Sphere").gameObject.SetActive(false);
+                else if (lockedObject) // TODO : check if EventSystemManager.currentSystem.IsPointerOverEventSystemObject() works after we upgrade unity
                     lockedObject = null; // if the click is not on an agent, the camera unlocks
-                }
             }
-            if (lockedObject) LockCamera(lockedObject);
+            if (lockedObject)
+                LockCamera(lockedObject);
+            else
+                deactivateSpheres();
         }
 
         private void MoveCamera()
@@ -78,12 +81,24 @@ namespace Assets.Scripts
             );
         }
 
-        private void LockCamera(Collider agent)
+        public void LockCamera(Collider agent)
         {
+            lockedObject = agent;
             cam.transform.position = new Vector3
                 (agent.transform.position.x,
                 cam.transform.position.y,
                 agent.transform.position.z - 0.7f * (cam.transform.position.y - agent.transform.position.y)); // centers the camera on the target
+            deactivateSpheres();
+            agent.gameObject.transform.FindChild("Sphere").gameObject.SetActive(true);
+        }
+
+        private void deactivateSpheres()
+        {
+            for (int i = 0; i < Dwarves.transform.childCount; i++)
+            {
+                if (Dwarves.transform.GetChild(i).FindChild("Sphere").gameObject.activeSelf)
+                    Dwarves.transform.GetChild(i).FindChild("Sphere").gameObject.SetActive(false);
+            }
         }
     }
 }
