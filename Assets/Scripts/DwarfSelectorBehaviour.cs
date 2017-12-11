@@ -10,22 +10,29 @@ namespace Assets.Scripts
         public Button DwarfButton;
         public GameObject GE;
         public Camera MainCam;
+        public GameObject ScrollablePanel;
 
-        private Canvas thisCanvas;
+        private RectTransform scrollablePanelRectTransform;
 
         void Start()
         {
-            thisCanvas = GetComponent<Canvas>();
+            scrollablePanelRectTransform = ScrollablePanel.GetComponent<RectTransform>();
         }
 
         public void SetDwarfButtons()
         {
             List<GameObject> Dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
+            scrollablePanelRectTransform.sizeDelta = new Vector2(110, 50 + (Dwarves.Count-1) * 35);
             for (int i = 0; i < Dwarves.Count; i++)
             {
                 Button newButton = Instantiate(DwarfButton);
-                newButton.transform.SetParent(thisCanvas.transform, false);
-                newButton.transform.localPosition = new Vector3(350, 200 - (i*40), 0);
+                newButton.transform.SetParent(ScrollablePanel.transform, false);
+                newButton.transform.localPosition = new Vector3
+                    (
+                        newButton.transform.localPosition.x,
+                        newButton.transform.localPosition.y - (i*35),
+                        newButton.transform.localPosition.z
+                    );
 
                 GameObject Dwarf = Dwarves[i];
                 newButton.onClick.AddListener(delegate { lockCamera(Dwarf); });
@@ -39,9 +46,9 @@ namespace Assets.Scripts
 
         public void RemoveDwarfButtons()
         {
-            for (int i = 0; i < thisCanvas.transform.childCount; i++)
-                if (thisCanvas.transform.GetChild(i).CompareTag("DwarfButton"))
-                    Destroy(thisCanvas.transform.GetChild(i).gameObject);
+            for (int i = 0; i < ScrollablePanel.transform.childCount; i++)
+                if (ScrollablePanel.transform.GetChild(i).CompareTag("DwarfButton"))
+                    Destroy(ScrollablePanel.transform.GetChild(i).gameObject);
         }
     }
 }

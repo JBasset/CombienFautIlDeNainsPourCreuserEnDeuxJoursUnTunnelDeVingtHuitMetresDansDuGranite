@@ -32,8 +32,8 @@ namespace Assets.Scripts
 
                 if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
                     lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
-                else if (lockedObject) // TODO : check if EventSystemManager.currentSystem.IsPointerOverEventSystemObject() works after we upgrade unity
-                    lockedObject = null; // if the click is not on an agent, the camera unlocks
+                else if (lockedObject && !EventSystem.current.IsPointerOverGameObject())
+                    lockedObject = null; // if the click is not on an agent and not on an UI element, the camera unlocks
             }
             if (lockedObject)
                 LockCamera(lockedObject);
@@ -69,8 +69,9 @@ namespace Assets.Scripts
             else if (Input.mousePosition.x > Screen.width)
                 cam.transform.position += Vector3.right;
 
-            // moving the camera up and down
-            cam.transform.position += new Vector3(0, -(Input.mouseScrollDelta.y * 2), 0);
+            // moving the camera up and down (if the mouse isn't above UI element)
+            if (!EventSystem.current.IsPointerOverGameObject())
+                cam.transform.position += new Vector3(0, -(Input.mouseScrollDelta.y * 2), 0);
 
             // we clamp the camera position above the "world", and limit the down scroll to 10 units from the ground
             cam.transform.position = new Vector3
