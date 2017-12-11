@@ -8,82 +8,10 @@ using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
 
 namespace Assets.Scripts
 {
-    
-
-    class KnownDwarf
+    public class DwarfMemory:MonoBehaviour
     {
-        public Vector3 dwarfPosition;
-        public int id; public bool highThirst; public DateTime lastInteraction;
-        
-        public KnownDwarf() { // TODO: mettre un nain en paramètre
-            // this.id = nain.id
-            // this.highThirst = nain.memory. 
-            // TODO: associer une memoire à chaque nain
-            this.lastInteraction = DateTime.Now;
-        }
-    }
+        public GameObject gameEnvironment;
 
-    class KnownMine
-    {
-        public Vector3 minePosition;
-        public int id; public bool highThirst; public DateTime lastInteraction;
-
-        public KnownMine(int _id, bool _highThirst)
-        {
-            // this.id = minePosition.id
-            // this.highThirst = mine.thirstEvaluation()
-            // TODO: trouver un moyen d'évaluer la soif, genre thirstEvaluation()
-            this.lastInteraction = DateTime.Now;
-        }
-    }
-
-    class Gauges {
-        private VariableStorage variables;
-
-        private int[] _gauges = new int[5];
-
-        #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
-        public int Specialisation {
-            get { return _gauges[0]; }
-            set { _gauges[0] = stockGauge(value); }
-        }
-        public int Tiredness {
-            get { return _gauges[1]; }
-            set { _gauges[1] = stockGauge(value); }
-        }
-        public int Thirst {
-            get { return _gauges[2]; }
-            set { _gauges[2] = stockGauge(value); }
-        }
-        public int WorkDesire {
-            get { return _gauges[3]; }
-            set { _gauges[3] = stockGauge(value); }
-        }
-        public int Pickaxe{
-            get { return _gauges[4]; }
-            set { _gauges[4] = stockGauge(value); }
-        }
-        #endregion
-
-        public Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe) {
-            _gauges[0] = stockGauge(specialisation);
-            _gauges[1] = stockGauge(tiredness);
-            _gauges[2] = stockGauge(thirst);
-            _gauges[3] = stockGauge(workDesire);
-            _gauges[4] = stockGauge(pickaxe);
-        }
-
-        private int stockGauge(int value) {
-            int max = variables.maxValueGauge;
-            int min = variables.minValueGauge;
-            return (value > min) ? ((value < max) ? value : max) : min;
-        }
-    }
-
-    class DwarfMemory
-    {
-        private VariableStorage variables;
-        
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
 
@@ -93,7 +21,7 @@ namespace Assets.Scripts
         private DateTime _lastActivityChange;
         public DateTime LastActivityChange {  get { return _lastActivityChange; } }
 
-        private Gauges Gauges;
+        private _Gauges Gauges;
         public int Specialisation { get { return Gauges.Specialisation; } }
         public int Tirednesss { get { return Gauges.Tiredness; } }
         public int Thirst { get { return Gauges.Thirst; } }
@@ -102,21 +30,34 @@ namespace Assets.Scripts
 
         int? targetDwarf; // identité de la cible si c'est un vigile
 
-        // int targetPosition; // position cible ?
+        int targetPosition; // position cible ?
 
-        private List<KnownDwarf> _knownDwarves = new List<KnownDwarf>(); // nainConnus
-        public List<KnownDwarf> KnownDwarves { get { return _knownDwarves; } }
+        private List<_KnownDwarf> _knownDwarves = new List<_KnownDwarf>(); // nainConnus
+        public List<_KnownDwarf> KnownDwarves { get { return _knownDwarves; } }
 
-        private List<KnownMine> _knownMines = new List<KnownMine>();
-        public List<KnownMine> KnownMines { get { return _knownMines; } }
+        private List<_KnownMine> _knownMines = new List<_KnownMine>();
+        public List<_KnownMine> KnownMines { get { return _knownMines; } }
+        /* when a dwarf meets another, or walk through a mine, 
+         * he may update his knowledge of the mines 
+         * using updateMine(Vector3 thePosition, bool newHighThirst) */
+         
+        private DwarfBehaviour dwarfBehaviour;
 
-        public DwarfMemory() { // création d'une mémoire
+        
 
+        private Transform dwarfTransf;
+
+        void Start()
+        {
             // variables.startingActivity
-            _currentActivity = (ActivitiesLabel)variables.startingActivity.selectRandomItem();
+
+            //_currentActivity = (ActivitiesLabel)variables.startingActivity.selectRandomItem();
             
-            int max = variables.maxValueGauge;
-            this.Gauges = new Gauges(max, max, max, max, max);
+            dwarfBehaviour = GetComponent<DwarfBehaviour>();
+            dwarfTransf = GetComponent<Transform>();
+            
+            //int max = variables.maxValueGauge;
+            //this.Gauges = new Gauges(max, max, max, max, max);
         }
 
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
@@ -144,18 +85,59 @@ namespace Assets.Scripts
                 else if (theGauge == GaugesLabel.Pickaxe) Gauges.Pickaxe -= byValue;
             }
         }
-        
+
+        public bool UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, bool empty)
+        {            
+            // maybe this mine is already in the list
+            var thisMine = _knownMines.Where(o => (o.MinePosition == thePosition)).ToList();
+            if (thisMine.Any())
+            {
+                thisMine[0].LastInteraction = DateTime.Now;
+                thisMine[0].Empty = empty;
+                thisMine[0].DwarvesInTheMine = newDwarvesInTheMine;
+                thisMine[0].ThirstyDwarves = (newDwarvesInTheMine < newThirstyDwarves) ? 0 : newThirstyDwarves;
+            }
+
+            // if the mine isnt already known, let's add it
+            else _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, empty));
+
+            return true;
+
+
+
+
+
+        }
+
         #endregion
+
+        
 
         public Vector3 getNewDestination()
         {
+            VariableStorage variables;
             Vector3 destination = new Vector3();
             if (this._currentActivity == ActivitiesLabel.Deviant)
-            { /* TODO: remplir */ }
+            {
+                /* TODO: remplir */
+            }
             else if (this._currentActivity == ActivitiesLabel.Explorer)
             { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Miner)
-            { /* TODO: remplir */ }
+            {
+                List<_WeightedObject> theDest = new List<_WeightedObject>();
+                int w;
+                /*foreach (KnownMine mine in KnownMines)
+                {
+                    w = 20;
+                    w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
+                    if (mine.Empty) { w += 20; } // at least, looks like this mine ain't empty
+                    // if ( Vector3.Distance(dwarfTransf) )
+                    //(mine.MinePosition)
+                }*/
+                WeightedList destinations = new WeightedList(theDest);
+                destination = (Vector3)destinations.selectRandomItem();
+            }
             else if (this._currentActivity == ActivitiesLabel.Supply)
             { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Vigile)
@@ -168,5 +150,98 @@ namespace Assets.Scripts
             return destination;
         }
 
+
+        public class _KnownDwarf
+        {
+            public Vector3 dwarfPosition;
+            public int id; public bool highThirst; public DateTime lastInteraction;
+
+            public _KnownDwarf()
+            { // TODO: mettre un nain en paramètre
+              // this.id = nain.id
+              // this.highThirst = nain.memory. 
+              // TODO: associer une memoire à chaque nain
+                this.lastInteraction = DateTime.Now;
+            }
+        }
+        public class _KnownMine
+        {
+            public Vector3 MinePosition;
+            public DateTime LastInteraction;
+
+            public bool Empty;
+
+            private int _dwarvesInTheMine;
+            public int DwarvesInTheMine { get { return _dwarvesInTheMine; } set { _dwarvesInTheMine = (value > 0) ? value : 0; } }
+
+            private int _thirstyDwarves;
+            public int ThirstyDwarves { get { return _thirstyDwarves; } set { _thirstyDwarves = (value > 0) ? value : 0; } }
+
+            private VariableStorage variables;
+
+            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, bool empty)
+            {
+                this.Empty = empty;
+                this.MinePosition = minePosition;
+                this.LastInteraction = DateTime.Now;
+                this._dwarvesInTheMine = (dwarvesInTheMine > 0) ? dwarvesInTheMine : 0;
+                this._thirstyDwarves = (this._dwarvesInTheMine < thirstyDwarves) ? 0 : thirstyDwarves;
+            }
+
+            public bool ThirstEvaluationResult() { return (ThirstyDwarves >= variables.thirstyDwarvesLimit); }
+        }
+
+        public class _Gauges
+        {
+            private VariableStorage variables;
+
+            private int[] _gauges = new int[5];
+
+            #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
+            public int Specialisation
+            {
+                get { return _gauges[0]; }
+                set { _gauges[0] = stockGauge(value); }
+            }
+            public int Tiredness
+            {
+                get { return _gauges[1]; }
+                set { _gauges[1] = stockGauge(value); }
+            }
+            public int Thirst
+            {
+                get { return _gauges[2]; }
+                set { _gauges[2] = stockGauge(value); }
+            }
+            public int WorkDesire
+            {
+                get { return _gauges[3]; }
+                set { _gauges[3] = stockGauge(value); }
+            }
+            public int Pickaxe
+            {
+                get { return _gauges[4]; }
+                set { _gauges[4] = stockGauge(value); }
+            }
+            #endregion
+
+            public _Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe)
+            {
+                _gauges[0] = stockGauge(specialisation);
+                _gauges[1] = stockGauge(tiredness);
+                _gauges[2] = stockGauge(thirst);
+                _gauges[3] = stockGauge(workDesire);
+                _gauges[4] = stockGauge(pickaxe);
+            }
+
+            private int stockGauge(int value)
+            {
+                int max = variables.maxValueGauge;
+                int min = variables.minValueGauge;
+                return (value > min) ? ((value < max) ? value : max) : min;
+            }
+        }
     }
+
+    
 }
