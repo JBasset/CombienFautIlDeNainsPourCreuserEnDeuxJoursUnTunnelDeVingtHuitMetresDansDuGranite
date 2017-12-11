@@ -151,15 +151,19 @@ namespace Assets.Scripts
         {
             Vector3 destination = new Vector3();
             if (this._currentActivity == ActivitiesLabel.Deviant)
-            { }
+            { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Explorer)
-            { }
+            { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Miner)
-            { }
+            { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Supply)
-            { }
+            { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.Vigile)
-            { }
+            { /* TODO: remplir */ }
+            else if (this._currentActivity == ActivitiesLabel.GoToForge)
+            { /* TODO: remplir */ }
+            else if (this._currentActivity == ActivitiesLabel.GoToSleep)
+            { /* TODO: remplir */ }
 
             return destination;
         }
