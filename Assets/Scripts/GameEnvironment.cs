@@ -22,7 +22,7 @@ namespace Assets.Scripts
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
             dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
-            spawnsLeft = 0;
+            spawnsLeft = 1;
 
             UpdateNoticeables();
         }
@@ -36,9 +36,9 @@ namespace Assets.Scripts
             }
         }
 
-        public void CreateDwarf()
+        public void CreateDwarf(int quantity)
         {
-            spawnsLeft++; // we add a dwarf to the list of dwarves left to create
+            spawnsLeft += quantity; // we add a dwarf to the list of dwarves left to create
         }
 
         private bool IsSpawnFree()
@@ -54,6 +54,7 @@ namespace Assets.Scripts
             GameObject newDwarf = Instantiate(DwarfPrefab, dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
+            newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
         }
 
         public List<GameObject> GetDwarves()
