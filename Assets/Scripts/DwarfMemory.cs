@@ -10,8 +10,8 @@ namespace Assets.Scripts
 {
     public class DwarfMemory:MonoBehaviour
     {
-        public GameObject gameEnvironment;
-
+        private GameEnvironment gameEnvironment;
+        
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
 
@@ -49,13 +49,14 @@ namespace Assets.Scripts
 
         void Start()
         {
-            // variables.startingActivity
-
+            
             //_currentActivity = (ActivitiesLabel)variables.startingActivity.selectRandomItem();
             
             dwarfBehaviour = GetComponent<DwarfBehaviour>();
             dwarfTransf = GetComponent<Transform>();
+            gameEnvironment = dwarfTransf.parent.parent.parent.GetComponent<GameEnvironment>();
             
+
             //int max = variables.maxValueGauge;
             //this.Gauges = new Gauges(max, max, max, max, max);
         }
@@ -115,7 +116,6 @@ namespace Assets.Scripts
 
         public Vector3 getNewDestination()
         {
-            VariableStorage variables;
             Vector3 destination = new Vector3();
             if (this._currentActivity == ActivitiesLabel.Deviant)
             {
@@ -127,14 +127,14 @@ namespace Assets.Scripts
             {
                 List<_WeightedObject> theDest = new List<_WeightedObject>();
                 int w;
-                /*foreach (KnownMine mine in KnownMines)
+                foreach (_KnownMine mine in KnownMines)
                 {
                     w = 20;
                     w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
                     if (mine.Empty) { w += 20; } // at least, looks like this mine ain't empty
                     // if ( Vector3.Distance(dwarfTransf) )
                     //(mine.MinePosition)
-                }*/
+                }
                 WeightedList destinations = new WeightedList(theDest);
                 destination = (Vector3)destinations.selectRandomItem();
             }
@@ -176,9 +176,7 @@ namespace Assets.Scripts
 
             private int _thirstyDwarves;
             public int ThirstyDwarves { get { return _thirstyDwarves; } set { _thirstyDwarves = (value > 0) ? value : 0; } }
-
-            private VariableStorage variables;
-
+            
             public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, bool empty)
             {
                 this.Empty = empty;
@@ -193,8 +191,6 @@ namespace Assets.Scripts
 
         public class _Gauges
         {
-            private VariableStorage variables;
-
             private int[] _gauges = new int[5];
 
             #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
@@ -236,7 +232,7 @@ namespace Assets.Scripts
 
             private int stockGauge(int value)
             {
-                int max = variables.maxValueGauge;
+                int max = Variables.maxValueGauge;
                 int min = variables.minValueGauge;
                 return (value > min) ? ((value < max) ? value : max) : min;
             }
