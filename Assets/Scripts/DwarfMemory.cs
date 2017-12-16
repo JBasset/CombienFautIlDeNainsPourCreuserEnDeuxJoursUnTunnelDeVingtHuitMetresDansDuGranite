@@ -62,7 +62,7 @@ namespace Assets.Scripts
         }
 
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
-        public void increaseBy(GaugesLabel theGauge, int byValue) {
+        public void IncreaseBy(GaugesLabel theGauge, int byValue) {
             // exemple of use : one dwarf gets thirsty, his thirst increaseBy(Thirst,10)
             if (byValue > 0)
             {
@@ -74,7 +74,7 @@ namespace Assets.Scripts
             }
         }
 
-        public void lowerBy(GaugesLabel theGauge, int byValue)
+        public void LowerBy(GaugesLabel theGauge, int byValue)
         {
             // exemple of use : one dwarf drinks, his thirst lowerBy(Thirst,10)
             if (byValue > 0)
@@ -100,7 +100,7 @@ namespace Assets.Scripts
             }
 
             // if the mine isnt already known, let's add it
-            else _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, empty));
+            else _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, empty, gameEnvironment));
 
             return true;
 
@@ -114,7 +114,7 @@ namespace Assets.Scripts
 
         
 
-        public Vector3 getNewDestination()
+        public Vector3 GetNewDestination()
         {
             Vector3 destination = new Vector3();
             if (this._currentActivity == ActivitiesLabel.Deviant)
@@ -168,6 +168,7 @@ namespace Assets.Scripts
         {
             public Vector3 MinePosition;
             public DateTime LastInteraction;
+            GameEnvironment ge;
 
             public bool Empty;
 
@@ -177,8 +178,9 @@ namespace Assets.Scripts
             private int _thirstyDwarves;
             public int ThirstyDwarves { get { return _thirstyDwarves; } set { _thirstyDwarves = (value > 0) ? value : 0; } }
             
-            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, bool empty)
+            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, bool empty, GameEnvironment gameEnv)
             {
+                ge = gameEnv;
                 this.Empty = empty;
                 this.MinePosition = minePosition;
                 this.LastInteraction = DateTime.Now;
@@ -186,54 +188,56 @@ namespace Assets.Scripts
                 this._thirstyDwarves = (this._dwarvesInTheMine < thirstyDwarves) ? 0 : thirstyDwarves;
             }
 
-            public bool ThirstEvaluationResult() { return (ThirstyDwarves >= variables.thirstyDwarvesLimit); }
+            public bool ThirstEvaluationResult() { return (ThirstyDwarves >= ge.Variables.thirstyDwarvesLimit); }
         }
 
         public class _Gauges
         {
             private int[] _gauges = new int[5];
+            GameEnvironment ge;
 
             #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
             public int Specialisation
             {
                 get { return _gauges[0]; }
-                set { _gauges[0] = stockGauge(value); }
+                set { _gauges[0] = StockGauge(value); }
             }
             public int Tiredness
             {
                 get { return _gauges[1]; }
-                set { _gauges[1] = stockGauge(value); }
+                set { _gauges[1] = StockGauge(value); }
             }
             public int Thirst
             {
                 get { return _gauges[2]; }
-                set { _gauges[2] = stockGauge(value); }
+                set { _gauges[2] = StockGauge(value); }
             }
             public int WorkDesire
             {
                 get { return _gauges[3]; }
-                set { _gauges[3] = stockGauge(value); }
+                set { _gauges[3] = StockGauge(value); }
             }
             public int Pickaxe
             {
                 get { return _gauges[4]; }
-                set { _gauges[4] = stockGauge(value); }
+                set { _gauges[4] = StockGauge(value); }
             }
             #endregion
 
-            public _Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe)
+            public _Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe, GameEnvironment gameEnv)
             {
-                _gauges[0] = stockGauge(specialisation);
-                _gauges[1] = stockGauge(tiredness);
-                _gauges[2] = stockGauge(thirst);
-                _gauges[3] = stockGauge(workDesire);
-                _gauges[4] = stockGauge(pickaxe);
+                ge = gameEnv;
+                _gauges[0] = StockGauge(specialisation);
+                _gauges[1] = StockGauge(tiredness);
+                _gauges[2] = StockGauge(thirst);
+                _gauges[3] = StockGauge(workDesire);
+                _gauges[4] = StockGauge(pickaxe);
             }
 
-            private int stockGauge(int value)
+            private int StockGauge(int value)
             {
-                int max = Variables.maxValueGauge;
-                int min = variables.minValueGauge;
+                int max = ge.Variables.minValueGauge;
+                int min = ge.Variables.minValueGauge;
                 return (value > min) ? ((value < max) ? value : max) : min;
             }
         }

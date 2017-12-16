@@ -15,8 +15,8 @@ namespace Assets.Scripts
 
 
 
-        public static int maxValueGauge = 100;
-        public static int minValueGauge = 0;
+        public int maxValueGauge = 100;
+        public int minValueGauge = 0;
 
         #region HEURISTICS
         

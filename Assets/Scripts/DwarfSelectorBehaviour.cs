@@ -22,7 +22,7 @@ namespace Assets.Scripts
         public void SetDwarfButtons()
         {
             List<GameObject> Dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
-            scrollablePanelRectTransform.sizeDelta = new Vector2(110, 50 + (Dwarves.Count-1) * 35);
+            scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count-1) * 35);
             for (int i = 0; i < Dwarves.Count; i++)
             {
                 Button newButton = Instantiate(DwarfButton);
@@ -35,11 +35,11 @@ namespace Assets.Scripts
                     );
 
                 GameObject Dwarf = Dwarves[i];
-                newButton.onClick.AddListener(delegate { lockCamera(Dwarf); });
+                newButton.onClick.AddListener(delegate { LockCamera(Dwarf); });
             }
         }
 
-        private void lockCamera (GameObject Dwarf)
+        private void LockCamera (GameObject Dwarf)
         {
             MainCam.GetComponent<CameraBehaviour>().LockCamera(Dwarf.GetComponent<Collider>());
         }
