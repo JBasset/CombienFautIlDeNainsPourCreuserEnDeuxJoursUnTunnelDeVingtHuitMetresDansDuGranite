@@ -6,6 +6,7 @@ namespace Assets.Scripts
     public class DwarfBehaviour : MonoBehaviour
     {
         public Transform Target;
+        public GameObject GE;
 
         private Animator animator;
         private NavMeshAgent agent;
@@ -21,18 +22,20 @@ namespace Assets.Scripts
 
         void Update()
         {
-            if (Input.GetButtonDown("Jump"))
-                this.gameObject.SetActive(false);
-
             if (Input.GetButtonDown("Enter"))
                 MoveTo(Target.position);
-
-            Debug.Log("X :" + agent.destination.x + " Y :" + agent.destination.y + " Z :" + agent.destination.z);
 
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
             {
                 agent.ResetPath();
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+
+                // TODO : IF DWARF IS A MINER
+                foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
+                {
+                    if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
+                        EnterMine(mine);
+                }
             }
         }
 
@@ -42,26 +45,12 @@ namespace Assets.Scripts
             animator.SetFloat("Walk", 1);
         }
 
-        private bool EnterMine(GameObject mine)
+        private void EnterMine(GameObject mine)
         {
-            if (gameObject.transform.parent.name != "Mines")
-                return false;
-            else
-            {
-                Vector3 MineEntrance = mine.transform.FindChild("MineEntrance").position;
-                if (Vector3.Distance(MineEntrance, agent.transform.position) < 0.1f)
-                {
-                    // Enter the mine
-                }
-                else
-                {
-                    MoveTo(MineEntrance);
-                }
-                return true;
-            }
+            mine.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
+            this.gameObject.SetActive(false);
         }
 
-        #region running on roads
         void OnTriggerStay(Collider other)
         {
             if (other.CompareTag("Road"))
@@ -77,6 +66,5 @@ namespace Assets.Scripts
                 animator.SetFloat("Run", 0);
             }
         }
-        #endregion
     }
 }
