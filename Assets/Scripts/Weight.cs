@@ -30,17 +30,17 @@ namespace Assets.Scripts
         public WeightedList(List<_WeightedObject> wList) {
             foreach (_WeightedObject wO in wList)
             {
-                addItem(wO);
+                AddItem(wO);
             }
         }
 
-        public void addItem(_WeightedObject item) {
+        public void AddItem(_WeightedObject item) {
             for (int i = 0; i < item._weight; i++) {
                 list.Add(item._object);
             }
         }
 
-        public Object selectRandomItem() {
+        public Object SelectRandomItem() {
             int index = rnd.Next(list.Count);
             return list[index];
         }

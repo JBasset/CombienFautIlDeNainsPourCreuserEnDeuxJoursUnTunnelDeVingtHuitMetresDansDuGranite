@@ -15,6 +15,10 @@ namespace Assets.Scripts
         public float MapXMax = 500;
         public float MapZMax = 500;
 
+        // TODO : VRAIMENT RECUPERER LA POSITION ^^
+        public Vector3 beerPosition = new Vector3((float)5.778, (float)2.05, (float)-4.25630);
+        public Vector3 forgePosition = new Vector3((float)55.25, (float)1.9, (float)25.20);
+
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
 
@@ -24,14 +28,45 @@ namespace Assets.Scripts
         #region HEURISTICS
 
         // In this section, we store heuristics.
-        
-        // When is a mine considered "close" ?
-        public int closeMinefLimit = 50;
-        // When is a dwarf considered "close" ?
-        public int closeDwarfLimit = 50;
 
         // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
-        public int thirstyDwarvesLimit = 3; 
+        public int thirstyDwarvesLimit = 3;
+
+        // When do you think a pickaxe is deteriored enough to consider going to the forge ?
+        public int pickaxeLimit = 20;
+
+        #region Explorer
+        // When is a destination considered "too close from me" to be chosen ?
+        public int expl_positionTooClose = 50;
+        // When is a destination considered "too close from a mine I know" chosen ?
+        public int expl_positionTooKnown = 50;
+        #endregion
+
+        #region Deviant
+        // Weight of the "go to beer" decision (versus the ten 1-weighted random decisions) ?
+        public int dev_goToBeer = 5;
+        #endregion
+
+        #region Vigile
+        // When is a dwarf considered "close enough to be my target" ?
+        public int vig_closeDwarfLimit = 50;
+        #endregion
+
+        #region Supply
+        // When is a mine considered "close" ?
+        public int sup_closeMinefLimit = 50;
+        // When is a thirsty dwarf considered "close enough to be my target" ?
+        public int sup_closeDwarfLimit = 50;
+        #endregion
+
+        #region Miner
+        // When is a mine considered "pretty close" ?
+        public int min_closeMinefLimit = 50;
+        // When is a dwarf considered "pretty close" ?
+        public int min_closeDwarfLimit = 50;
+        #endregion
+        
+
 
         
         #endregion

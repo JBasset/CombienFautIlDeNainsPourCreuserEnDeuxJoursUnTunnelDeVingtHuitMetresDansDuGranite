@@ -30,7 +30,7 @@ namespace Assets.Scripts
 
         int? targetDwarf; // identité de la cible si c'est un vigile
 
-        int targetPosition; // position cible ?
+        Vector3 targetPosition; // position cible ?
 
         private List<_KnownDwarf> _knownDwarves = new List<_KnownDwarf>(); // nainConnus
         public List<_KnownDwarf> KnownDwarves { get { return _knownDwarves; } }
@@ -42,9 +42,7 @@ namespace Assets.Scripts
          * using updateMine(Vector3 thePosition, bool newHighThirst) */
          
         private DwarfBehaviour dwarfBehaviour;
-
         
-
         private Transform dwarfTransf;
 
         void Start()
@@ -111,46 +109,100 @@ namespace Assets.Scripts
         public Vector3 GetNewDestination()
         {
             Vector3 destination = new Vector3();
+
+            List<_WeightedObject> destList = new List<_WeightedObject>();
+
+            System.Random rnd = new System.Random();
+
+            int w;
+            
             if (this._currentActivity == ActivitiesLabel.Deviant)
             {
-                /* TODO: remplir */
+                // generation of random decisions, plus a "clever" decision : the beer.
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 theDest = new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500));
+                    destList.Add(new _WeightedObject(theDest, 1));
+                }
+                destList.Add(new _WeightedObject(gameEnvironment.Variables.beerPosition, gameEnvironment.Variables.dev_goToBeer));
             }
             else if (this._currentActivity == ActivitiesLabel.Explorer)
-            { /* TODO: remplir */ }
+            {
+                // generation of 10 "random" decisions, just not too close from the dwarf nor known mines
+                for (int i = 0; i < 10; i++)
+                {
+                    do {
+                        destination = new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500));
+                    } while (
+                        (Vector3.Distance(dwarfTransf.position, destination) < gameEnvironment.Variables.expl_positionTooClose)
+                        && KnownMines.All(
+                            mine => (Vector3.Distance(mine.MinePosition, destination) < gameEnvironment.Variables.expl_positionTooKnown)
+                        )
+                    );
+                    destList.Add(new _WeightedObject(destination, 1));
+                }
+            }
             else if (this._currentActivity == ActivitiesLabel.Miner)
             {
-                List<_WeightedObject> theDest = new List<_WeightedObject>();
-                int w;
                 foreach (_KnownMine mine in KnownMines)
                 {
                     w = 1;
                     w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
 
                     if (mine.Empty)
-                    { w ++; } // at least, looks like this mine ain't empty
+                    { w++; } // at least, looks like this mine ain't empty
 
-                    if ( Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.closeMinefLimit)
-                    { w ++; } // this mine is close enough
+                    if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.min_closeMinefLimit)
+                    { w++; } // this mine is close enough
 
-                    if (w>0) theDest.Add(new _WeightedObject(mine.MinePosition, 10*w));
+                    if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, 10 * w));
                 }
-                WeightedList destinations = new WeightedList(theDest);
-                destination = (Vector3)destinations.selectRandomItem();
             }
             else if (this._currentActivity == ActivitiesLabel.Supply)
-            { /* TODO: remplir */ }
+            {
+                foreach (_KnownMine mine in KnownMines)
+                {
+                    w = 1;
+                    w += mine.DwarvesInTheMine; // the more dwarves in the mine, the more he wants to go
+
+                    if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.sup_closeMinefLimit)
+                    { w++; } // this mine is close enough
+
+                    if (mine.ThirstEvaluationResult()) { w += 2; } // I know they want to drink in this mine
+
+                    // we add a mine if not empty
+                    if (!mine.Empty) destList.Add(new _WeightedObject(mine.MinePosition, 10 * w));
+                }
+                foreach (_KnownDwarf dwarf in KnownDwarves)
+                {
+                    // TODO : blah blah
+                }
+
+                /* TODO: remplir 
+                #region Supply
+                // When is a mine considered "close" ?
+                public int sup_closeMinefLimit = 50;
+                // When is a thirsty dwarf considered "close enough to be my target" ?
+                public int sup_closeDwarfLimit = 50;
+                #endregion
+                */
+            }
             else if (this._currentActivity == ActivitiesLabel.Vigile)
-            { /* TODO: remplir */ }
+            { /* TODO: remplir 
+                #region Vigile
+                // When is a dwarf considered "close enough to be my target" ?
+                public int vig_closeDwarfLimit = 50;
+                #endregion
+                */
+            }
             else if (this._currentActivity == ActivitiesLabel.GoToForge)
             { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.GoToSleep)
             { /* TODO: remplir */ }
 
-            return destination;
+            WeightedList destinations = new WeightedList(destList);
+            return (Vector3)destinations.SelectRandomItem(); ;
         }
-        
-
-
 
         public class _KnownDwarf
         {
@@ -165,6 +217,7 @@ namespace Assets.Scripts
                 this.lastInteraction = DateTime.Now;
             }
         }
+
         public class _KnownMine
         {
             public Vector3 MinePosition;
