@@ -36,11 +36,11 @@ namespace Assets.Scripts
                 newButton.transform.FindChild("Text").GetComponent<Text>().text = Dwarves[i].name;
 
                 GameObject Dwarf = Dwarves[i];
-                newButton.onClick.AddListener(delegate { lockCamera(Dwarf); });
+                newButton.onClick.AddListener(delegate { LockCamera(Dwarf); });
             }
         }
 
-        private void lockCamera (GameObject Dwarf)
+        private void LockCamera (GameObject Dwarf)
         {
             MainCam.GetComponent<CameraBehaviour>().LockCamera(Dwarf.GetComponent<Collider>());
         }

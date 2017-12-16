@@ -1069,6 +1069,7 @@ GameObject:
   - 195: {fileID: 19557042}
   - 136: {fileID: 13671148}
   - 114: {fileID: 11439834}
+  - 114: {fileID: 11430196}
   m_Layer: 0
   m_Name: Dwarf
   m_TagString: Agent
@@ -3608,6 +3609,20 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &11430196
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 186810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c26919585bcdff40ad9bef4b691818a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEnvironment: {fileID: 0}
+  GE: {fileID: 0}
+  MainCam: {fileID: 0}
 --- !u!114 &11439834
 MonoBehaviour:
   m_ObjectHideFlags: 1

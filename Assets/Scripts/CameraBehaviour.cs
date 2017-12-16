@@ -38,7 +38,7 @@ namespace Assets.Scripts
             if (lockedObject)
                 LockCamera(lockedObject);
             else
-                deactivateSpheres();
+                DeactivateSpheres();
         }
 
         private void MoveCamera()
@@ -89,11 +89,11 @@ namespace Assets.Scripts
                 (agent.transform.position.x,
                 cam.transform.position.y,
                 agent.transform.position.z - 0.7f * (cam.transform.position.y - agent.transform.position.y)); // centers the camera on the target
-            deactivateSpheres();
+            DeactivateSpheres();
             agent.gameObject.transform.FindChild("Sphere").gameObject.SetActive(true);
         }
 
-        private void deactivateSpheres()
+        private void DeactivateSpheres()
         {
             for (int i = 0; i < Dwarves.transform.childCount; i++)
             {
