@@ -17,6 +17,7 @@ namespace Assets.Scripts
 
         // TODO : VRAIMENT RECUPERER LA POSITION ^^
         public Vector3 beerPosition = new Vector3((float)5.778, (float)2.05, (float)-4.25630);
+        public Vector3 forgePosition = new Vector3((float)55.25, (float)1.9, (float)25.20);
 
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
@@ -25,6 +26,11 @@ namespace Assets.Scripts
 
         // In this section, we store heuristics.
 
+        // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
+        public int thirstyDwarvesLimit = 3;
+
+        // When do you think a pickaxe is deteriored enough to consider going to the forge ?
+        public int pickaxeLimit = 20;
 
         #region Explorer
         // When is a destination considered "too close from me" to be chosen ?
@@ -58,8 +64,6 @@ namespace Assets.Scripts
         #endregion
         
 
-        // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
-        public int thirstyDwarvesLimit = 3; 
 
         
         #endregion
