@@ -10571,6 +10571,7 @@ GameObject:
   - 4: {fileID: 2042136884}
   - 65: {fileID: 2042136885}
   - 23: {fileID: 2042136886}
+  - 114: {fileID: 2042136887}
   m_Layer: 0
   m_Name: Mine2
   m_TagString: Untagged
@@ -10641,6 +10642,18 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
+--- !u!114 &2042136887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2042136883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b5a2e580d22c834a9cc3dbeadebb25d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GE: {fileID: 2125695972}
 --- !u!1 &2053360092 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 131096, guid: da4539f4ded2f114db0e723adb3a9659, type: 2}
@@ -10863,6 +10876,7 @@ GameObject:
   - 4: {fileID: 2097721162}
   - 65: {fileID: 2097721163}
   - 23: {fileID: 2097721164}
+  - 114: {fileID: 2097721165}
   m_Layer: 0
   m_Name: Mine1
   m_TagString: Untagged
@@ -10933,6 +10947,18 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
+--- !u!114 &2097721165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2097721161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b5a2e580d22c834a9cc3dbeadebb25d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GE: {fileID: 2125695972}
 --- !u!1 &2125695972
 GameObject:
   m_ObjectHideFlags: 0
