@@ -22,7 +22,7 @@ namespace Assets.Scripts
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
             dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
-            spawnsLeft = 1;
+            spawnsLeft = 0;
 
             UpdateNoticeables();
         }
