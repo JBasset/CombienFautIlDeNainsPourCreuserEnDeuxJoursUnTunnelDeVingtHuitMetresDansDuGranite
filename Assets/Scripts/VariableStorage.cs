@@ -8,6 +8,8 @@ namespace Assets.Scripts
 {
     public class VariableStorage
     {
+        // TODO : attention, on a enlevé gotosleep donc faut pas en parler dans le rapport
+
         public List<GameObject> NoticeableObjects; // objects dwarves can see. used to test dwarves line of sight
         public List<GameObject> Dwarves; // list of all living dwarves in the game
         public List<GameObject> Mines; // list of the mines in the World
@@ -68,7 +70,7 @@ namespace Assets.Scripts
         
         #endregion
 
-        public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge, GoToSleep }
+        public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }
         public enum GaugesLabel { Specialisation, Tiredness, Thirst, Workdesire, Pickaxe}
 
         

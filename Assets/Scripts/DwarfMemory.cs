@@ -53,7 +53,6 @@ namespace Assets.Scripts
             dwarfBehaviour = GetComponent<DwarfBehaviour>();
             dwarfTransf = GetComponent<Transform>();
             gameEnvironment = dwarfTransf.parent.parent.parent.GetComponent<GameEnvironment>();
-            
 
             //int max = variables.maxValueGauge;
             //this.Gauges = new Gauges(max, max, max, max, max);
@@ -113,22 +112,37 @@ namespace Assets.Scripts
             List<_WeightedObject> destList = new List<_WeightedObject>();
 
             System.Random rnd = new System.Random();
+            /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous le 2nd choix quand rnd = 2 */
 
             int w;
-            
-            if (this._currentActivity == ActivitiesLabel.Deviant)
+
+            // Deviant : generation of random decisions, plus a "clever" decision : the beer.
+            if (this._currentActivity == ActivitiesLabel.Deviant) 
+                
             {
-                // generation of random decisions, plus a "clever" decision : the beer.
+                if (this.Thirst == gameEnvironment.Variables.maxValueGauge) /* change to another activity and reset destination */
+                { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
+
                 for (int i = 0; i < 10; i++)
                 {
-                    Vector3 theDest = new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500));
-                    destList.Add(new _WeightedObject(theDest, 1));
+                    do
+                    {
+                        destination = new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500));
+                    } while (
+                        (Vector3.Distance(dwarfTransf.position, destination) < gameEnvironment.Variables.expl_positionTooClose)
+                        && KnownMines.All(
+                            mine => (Vector3.Distance(mine.MinePosition, destination) < gameEnvironment.Variables.expl_positionTooKnown)
+                        )
+                    );
+                    destList.Add(new _WeightedObject(destination, 1));
                 }
                 destList.Add(new _WeightedObject(gameEnvironment.Variables.beerPosition, gameEnvironment.Variables.dev_goToBeer));
             }
-            else if (this._currentActivity == ActivitiesLabel.Explorer)
+
+            // Explorer : generation of 10 "random" decisions, just not too close from the dwarf nor known mines
+            else if (this._currentActivity == ActivitiesLabel.Explorer) 
             {
-                // generation of 10 "random" decisions, just not too close from the dwarf nor known mines
+
                 for (int i = 0; i < 10; i++)
                 {
                     do {
@@ -142,79 +156,101 @@ namespace Assets.Scripts
                     destList.Add(new _WeightedObject(destination, 1));
                 }
             }
+
+            // Miner : wich known mine will be targeted ?
             else if (this._currentActivity == ActivitiesLabel.Miner)
             {
-                foreach (_KnownMine mine in KnownMines)
+                foreach (_KnownMine mine in KnownMines.FindAll(m => (!m.Empty)).ToList())
                 {
-                    w = 1;
+                    w = 3; // TODO: réfléchir/tester
                     w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
-
-                    if (mine.Empty)
-                    { w++; } // at least, looks like this mine ain't empty
-
+                    
                     if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.min_closeMinefLimit)
                     { w++; } // this mine is close enough
 
-                    if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, 10 * w));
+                    if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, w));
                 }
             }
+
+            // Supply : choose either a mine or a thirsty dwarf
             else if (this._currentActivity == ActivitiesLabel.Supply)
             {
-                foreach (_KnownMine mine in KnownMines)
+                foreach (_KnownMine mine in KnownMines.FindAll(m => (!m.Empty)).ToList()) // we add a mine if not empty
                 {
+                    var mPosition = mine.MinePosition;
+
                     w = 1;
                     w += mine.DwarvesInTheMine; // the more dwarves in the mine, the more he wants to go
 
-                    if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.sup_closeMinefLimit)
+                    if (Vector3.Distance(dwarfTransf.position, mPosition) < gameEnvironment.Variables.sup_closeMinefLimit)
                     { w++; } // this mine is close enough
 
                     if (mine.ThirstEvaluationResult()) { w += 2; } // I know they want to drink in this mine
 
-                    // we add a mine if not empty
-                    if (!mine.Empty) destList.Add(new _WeightedObject(mine.MinePosition, 10 * w));
+                    destList.Add(new _WeightedObject(mPosition,  w));
                 }
-                foreach (_KnownDwarf dwarf in KnownDwarves)
+                foreach (_KnownDwarf dwarf in KnownDwarves.FindAll(d => (d.highThirst)).ToList()) // we add thirsty dwarves (weight depending on how close he is)
                 {
-                    // TODO : blah blah
+                    var dPosition = dwarf.dwarfPosition;
+                    w = (Vector3.Distance(dwarfTransf.position, dPosition) < gameEnvironment.Variables.sup_closeDwarfLimit) ? 5 : 1;
+                    destList.Add(new _WeightedObject(dPosition, w));
                 }
+            }
 
-                /* TODO: remplir 
-                #region Supply
-                // When is a mine considered "close" ?
-                public int sup_closeMinefLimit = 50;
-                // When is a thirsty dwarf considered "close enough to be my target" ?
-                public int sup_closeDwarfLimit = 50;
-                #endregion
-                */
-            }
+            // Vigile : go to a deviant dwarf, or a thirsty one if there's no deviant one
             else if (this._currentActivity == ActivitiesLabel.Vigile)
-            { /* TODO: remplir 
-                #region Vigile
-                // When is a dwarf considered "close enough to be my target" ?
-                public int vig_closeDwarfLimit = 50;
-                #endregion
-                */
+            {
+                foreach (_KnownDwarf dwarf in KnownDwarves.FindAll(d => (d.deviant)).ToList())
+                // we add deviant dwarves (weight depending on how close he is)
+                {
+                    var dPosition = dwarf.dwarfPosition;
+                    w = (Vector3.Distance(dwarfTransf.position, dPosition) < gameEnvironment.Variables.sup_closeDwarfLimit) ? 5 : 1;
+                    destList.Add(new _WeightedObject(dPosition, w));
+                }
+                
+                // if the vigile has no possible target, he goes to a (close?) thirsy dwarf
+                if (!destList.Any()) {
+                    foreach (_KnownDwarf dwarf in KnownDwarves.FindAll(d => (d.highThirst)).ToList())
+                    {
+                        var dPosition = dwarf.dwarfPosition;
+                        w = (Vector3.Distance(dwarfTransf.position, dPosition) < gameEnvironment.Variables.sup_closeDwarfLimit) ? 5 : 1;
+                        destList.Add(new _WeightedObject(dPosition, w));
+                    }
+                };
             }
+
+            // forge : go to the forge
             else if (this._currentActivity == ActivitiesLabel.GoToForge)
-            { /* TODO: remplir */ }
-            else if (this._currentActivity == ActivitiesLabel.GoToSleep)
-            { /* TODO: remplir */ }
+            {
+                if (this.Gauges.Pickaxe <= gameEnvironment.Variables.pickaxeLimit)
+                {
+                    return (Vector3)gameEnvironment.Variables.forgePosition;
+                }
+            }
+
+            else /* change to another activity and rester destination */
+            { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
+
+
+            if (!destList.Any()) /* change to another activity and reset destination */
+            { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
 
             WeightedList destinations = new WeightedList(destList);
-            return (Vector3)destinations.SelectRandomItem(); ;
+            return (Vector3)destinations.SelectRandomItem();
         }
 
         public class _KnownDwarf
         {
             public Vector3 dwarfPosition;
             public int id; public bool highThirst; public DateTime lastInteraction;
+            public bool deviant;
 
             public _KnownDwarf()
             { // TODO: mettre un nain en paramètre
               // this.id = nain.id
-              // this.highThirst = nain.memory. 
-              // TODO: associer une memoire à chaque nain
-                this.lastInteraction = DateTime.Now;
+              // this.highThirst = dwarf.highThirst
+              // this.deviant = dwarf.currentActivity == deviant
+            this.lastInteraction = DateTime.Now;
             }
         }
 
@@ -292,6 +328,7 @@ namespace Assets.Scripts
             {
                 int max = ge.Variables.minValueGauge;
                 int min = ge.Variables.minValueGauge;
+
                 return (value > min) ? ((value < max) ? value : max) : min;
             }
         }
