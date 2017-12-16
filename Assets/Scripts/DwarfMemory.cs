@@ -42,9 +42,7 @@ namespace Assets.Scripts
          * using updateMine(Vector3 thePosition, bool newHighThirst) */
          
         private DwarfBehaviour dwarfBehaviour;
-
         
-
         private Transform dwarfTransf;
 
         void Start()
@@ -113,10 +111,52 @@ namespace Assets.Scripts
             Vector3 destination = new Vector3();
             if (this._currentActivity == ActivitiesLabel.Deviant)
             {
-                /* TODO: remplir */
+                List<_WeightedObject> theDest = new List<_WeightedObject>();
+                int w;
+
+                System.Random rnd = new System.Random();
+                Vector3 theDest = new Vector3(rnd.Next(0,500), 0, rnd.Next(0,500));
+
+                theDest.Add(new _WeightedObject(mine.MinePosition, 10 * w));
+
+                foreach (_KnownMine mine in KnownMines)
+                {
+                    w = 1;
+                    w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
+
+                    if (mine.Empty)
+                    {
+                        w++;
+                    } // at least, looks like this mine ain't empty
+
+                    if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.min_closeMinefLimit)
+                    {
+                        w++;
+                    } // this mine is close enough
+
+                    
+                    WeightedList destinations = new WeightedList(theDest);
+                    destination = (Vector3)destinations.SelectRandomItem();
+                }
+                
+                /* TODO: remplir 
+                 
+                #region Deviant
+                // When is a destination considered "close enough from beer" ?
+                public int dev_closeFromBeer = 50;
+                #endregion
+             
+             */
             }
             else if (this._currentActivity == ActivitiesLabel.Explorer)
-            { /* TODO: remplir */ }
+            { 
+                /* TODO: remplir 
+                // When is a destination considered "too close from me" to be chosen ?
+                public int expl_positionTooClose = 50;
+                // When is a destination considered "too close from a mine I know" chosen ?
+                public int expl_positionTooKnown = 50;
+                */
+            }
             else if (this._currentActivity == ActivitiesLabel.Miner)
             {
                 List<_WeightedObject> theDest = new List<_WeightedObject>();
@@ -127,20 +167,38 @@ namespace Assets.Scripts
                     w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
 
                     if (mine.Empty)
-                    { w ++; } // at least, looks like this mine ain't empty
+                    {
+                        w++;
+                    } // at least, looks like this mine ain't empty
 
-                    if ( Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.closeMinefLimit)
-                    { w ++; } // this mine is close enough
+                    if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.min_closeMinefLimit)
+                    {
+                        w++;
+                    } // this mine is close enough
 
-                    if (w>0) theDest.Add(new _WeightedObject(mine.MinePosition, 10*w));
+                    if (w > 0) theDest.Add(new _WeightedObject(mine.MinePosition, 10 * w));
+                    WeightedList destinations = new WeightedList(theDest);
+                    destination = (Vector3)destinations.SelectRandomItem();
                 }
-                WeightedList destinations = new WeightedList(theDest);
-                destination = (Vector3)destinations.selectRandomItem();
             }
             else if (this._currentActivity == ActivitiesLabel.Supply)
-            { /* TODO: remplir */ }
+            { /* TODO: remplir 
+                #region Supply
+                // When is a mine considered "close" ?
+                public int sup_closeMinefLimit = 50;
+                // When is a thirsty dwarf considered "close enough to be my target" ?
+                public int sup_closeDwarfLimit = 50;
+                #endregion
+                */
+            }
             else if (this._currentActivity == ActivitiesLabel.Vigile)
-            { /* TODO: remplir */ }
+            { /* TODO: remplir 
+                #region Vigile
+                // When is a dwarf considered "close enough to be my target" ?
+                public int vig_closeDwarfLimit = 50;
+                #endregion
+                */
+            }
             else if (this._currentActivity == ActivitiesLabel.GoToForge)
             { /* TODO: remplir */ }
             else if (this._currentActivity == ActivitiesLabel.GoToSleep)
@@ -148,8 +206,7 @@ namespace Assets.Scripts
 
             return destination;
         }
-        
-
+            
 
 
         public class _KnownDwarf
@@ -165,6 +222,7 @@ namespace Assets.Scripts
                 this.lastInteraction = DateTime.Now;
             }
         }
+
         public class _KnownMine
         {
             public Vector3 MinePosition;

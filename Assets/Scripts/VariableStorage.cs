@@ -21,11 +21,39 @@ namespace Assets.Scripts
         #region HEURISTICS
 
         // In this section, we store heuristics.
-        
+
+
+        #region Explorer
+        // When is a destination considered "too close from me" to be chosen ?
+        public int expl_positionTooClose = 50;
+        // When is a destination considered "too close from a mine I know" chosen ?
+        public int expl_positionTooKnown = 50;
+        #endregion
+
+        #region Deviant
+        // When is a destination considered "close enough from beer" ?
+        public int dev_closeFromBeer = 50;
+        #endregion
+
+        #region Vigile
+        // When is a dwarf considered "close enough to be my target" ?
+        public int vig_closeDwarfLimit = 50;
+        #endregion
+
+        #region Supply
         // When is a mine considered "close" ?
-        public int closeMinefLimit = 50;
-        // When is a dwarf considered "close" ?
-        public int closeDwarfLimit = 50;
+        public int sup_closeMinefLimit = 50;
+        // When is a thirsty dwarf considered "close enough to be my target" ?
+        public int sup_closeDwarfLimit = 50;
+        #endregion
+
+        #region Miner
+        // When is a mine considered "pretty close" ?
+        public int min_closeMinefLimit = 50;
+        // When is a dwarf considered "pretty close" ?
+        public int min_closeDwarfLimit = 50;
+        #endregion
+        
 
         // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
         public int thirstyDwarvesLimit = 3; 
