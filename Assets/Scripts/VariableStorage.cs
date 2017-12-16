@@ -15,6 +15,9 @@ namespace Assets.Scripts
         public float MapXMax = 500;
         public float MapZMax = 500;
 
+        // TODO : VRAIMENT RECUPERER LA POSITION ^^
+        public Vector3 beerPosition = new Vector3((float)5.778, (float)2.05, (float)-4.25630);
+
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
 
@@ -31,8 +34,8 @@ namespace Assets.Scripts
         #endregion
 
         #region Deviant
-        // When is a destination considered "close enough from beer" ?
-        public int dev_closeFromBeer = 50;
+        // Weight of the "go to beer" decision (versus the ten 1-weighted random decisions) ?
+        public int dev_goToBeer = 5;
         #endregion
 
         #region Vigile
