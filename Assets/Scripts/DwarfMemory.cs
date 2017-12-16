@@ -104,15 +104,9 @@ namespace Assets.Scripts
 
             return true;
 
-
-
-
-
         }
 
         #endregion
-
-        
 
         public Vector3 GetNewDestination()
         {
@@ -129,11 +123,16 @@ namespace Assets.Scripts
                 int w;
                 foreach (_KnownMine mine in KnownMines)
                 {
-                    w = 20;
+                    w = 1;
                     w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
-                    if (mine.Empty) { w += 20; } // at least, looks like this mine ain't empty
-                    // if ( Vector3.Distance(dwarfTransf) )
-                    //(mine.MinePosition)
+
+                    if (mine.Empty)
+                    { w ++; } // at least, looks like this mine ain't empty
+
+                    if ( Vector3.Distance(dwarfTransf.position, mine.MinePosition) < gameEnvironment.Variables.closeMinefLimit)
+                    { w ++; } // this mine is close enough
+
+                    if (w>0) theDest.Add(new _WeightedObject(mine.MinePosition, 10*w));
                 }
                 WeightedList destinations = new WeightedList(theDest);
                 destination = (Vector3)destinations.selectRandomItem();
@@ -149,6 +148,8 @@ namespace Assets.Scripts
 
             return destination;
         }
+        
+
 
 
         public class _KnownDwarf

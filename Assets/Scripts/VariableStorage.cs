@@ -19,8 +19,17 @@ namespace Assets.Scripts
         public int minValueGauge = 0;
 
         #region HEURISTICS
+
+        // In this section, we store heuristics.
         
-        public int thirstyDwarvesLimit = 3; // if there is over (>=) than 3 thirsty dwarves in a mine, then the "ThirstEvaluation" results with a true
+        // When is a mine considered "close" ?
+        public int closeMinefLimit = 50;
+        // When is a dwarf considered "close" ?
+        public int closeDwarfLimit = 50;
+
+        // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
+        public int thirstyDwarvesLimit = 3; 
+
         
         #endregion
 
