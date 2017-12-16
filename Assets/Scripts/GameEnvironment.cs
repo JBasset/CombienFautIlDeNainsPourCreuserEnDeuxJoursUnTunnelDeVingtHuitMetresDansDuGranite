@@ -22,7 +22,7 @@ namespace Assets.Scripts
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
             dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
-            spawnsLeft = 0;
+            spawnsLeft = 1;
 
             UpdateNoticeables();
         }
@@ -55,12 +55,19 @@ namespace Assets.Scripts
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
+            newDwarf.GetComponent<DwarfBehaviour>().GE = this.gameObject;
         }
 
         public List<GameObject> GetDwarves()
         {
             UpdateDwarves();
             return Variables.Dwarves;
+        }
+
+        public List<GameObject> GetMines()
+        {
+            UpdateMines();
+            return Variables.Mines;
         }
 
         private void UpdateDwarves()
