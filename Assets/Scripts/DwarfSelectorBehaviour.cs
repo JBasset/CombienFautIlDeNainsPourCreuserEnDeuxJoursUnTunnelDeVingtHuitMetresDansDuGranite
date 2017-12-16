@@ -33,6 +33,7 @@ namespace Assets.Scripts
                         newButton.transform.localPosition.y - (i*35),
                         newButton.transform.localPosition.z
                     );
+                newButton.transform.FindChild("Text").GetComponent<Text>().text = Dwarves[i].name;
 
                 GameObject Dwarf = Dwarves[i];
                 newButton.onClick.AddListener(delegate { LockCamera(Dwarf); });
