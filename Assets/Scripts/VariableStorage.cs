@@ -24,6 +24,9 @@ namespace Assets.Scripts
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
 
+        public int oreSpawnRate = 1; // This simulation takes place in a world where gold "appears" continuously in mines. We neglect the economical impact of that property in the simulation's universe. Even if worthless, dwarves love gold.
+        public int dwarfOreMiningRate = 10;
+
         #region HEURISTICS
 
         // In this section, we store heuristics.

@@ -1,20 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ActivitiesLabel = Assets.Scripts.VariableStorage.ActivitiesLabel;
+using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
 
 namespace Assets.Scripts
 {
     public class DwarfBehaviour : MonoBehaviour
     {
         public Transform Target;
-        public GameObject GE;
+        public GameEnvironment GE;
 
+        private DwarfMemory memory;
         private Animator animator;
         private NavMeshAgent agent;
         private float normalSpeed;
-        private float roadSpeed;
 
         void Start()
         {
+            memory = GetComponent<DwarfMemory>();
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
             normalSpeed = agent.speed;
@@ -30,11 +33,13 @@ namespace Assets.Scripts
                 agent.ResetPath();
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
 
-                // TODO : IF DWARF IS A MINER
-                foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
+                if (memory.CurrentActivity == ActivitiesLabel.Miner)
                 {
-                    if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
-                        EnterMine(mine);
+                    foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
+                    {
+                        if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
+                            EnterMine(mine);
+                    }
                 }
             }
         }

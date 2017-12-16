@@ -10,7 +10,7 @@ namespace Assets.Scripts
 {
     public class DwarfMemory:MonoBehaviour
     {
-        private GameEnvironment gameEnvironment;
+        public GameEnvironment gameEnvironment;
         
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
@@ -52,7 +52,9 @@ namespace Assets.Scripts
             
             dwarfBehaviour = GetComponent<DwarfBehaviour>();
             dwarfTransf = GetComponent<Transform>();
-            gameEnvironment = dwarfTransf.parent.parent.parent.GetComponent<GameEnvironment>();
+
+            //gameEnvironment = dwarfTransf.parent.parent.parent.GetComponent<GameEnvironment>();
+            
 
             //int max = variables.maxValueGauge;
             //this.Gauges = new Gauges(max, max, max, max, max);

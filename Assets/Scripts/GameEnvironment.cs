@@ -6,7 +6,7 @@ namespace Assets.Scripts
 {
     public class GameEnvironment : MonoBehaviour
     {
-        public VariableStorage Variables;
+        public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
 
         private Transform gameEnvironment;
@@ -17,7 +17,6 @@ namespace Assets.Scripts
 
         void Start()
         {
-            Variables = new VariableStorage();
             gameEnvironment = GetComponent<Transform>();
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
@@ -55,7 +54,8 @@ namespace Assets.Scripts
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
-            newDwarf.GetComponent<DwarfBehaviour>().GE = this.gameObject;
+            newDwarf.GetComponent<DwarfBehaviour>().GE = this;
+            newDwarf.GetComponent<DwarfMemory>().gameEnvironment = this;
         }
 
         public List<GameObject> GetDwarves()
