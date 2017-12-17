@@ -34,5 +34,10 @@ namespace Assets.Scripts
         {
             dwarvesInside.Add(dwarf);
         }
+
+        public void RemoveDwarfInside(GameObject dwarf)
+        {
+            dwarvesInside.Remove(dwarf);
+        }
     }
 }

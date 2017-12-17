@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using ActivitiesLabel = Assets.Scripts.VariableStorage.ActivitiesLabel;
 using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
@@ -13,7 +14,7 @@ namespace Assets.Scripts
         private DwarfMemory memory;
         private Animator animator;
         private NavMeshAgent agent;
-
+        
         void Start()
         {
             memory = GetComponent<DwarfMemory>();
@@ -44,6 +45,8 @@ namespace Assets.Scripts
 
         private void MoveTo(Vector3 pos)
         {
+            if (memory.OccupiedMine)
+                ExitMine();
             agent.SetDestination(pos);
             animator.SetFloat("Walk", 1);
         }
@@ -51,7 +54,15 @@ namespace Assets.Scripts
         private void EnterMine(GameObject mine)
         {
             mine.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
+            memory.OccupiedMine = mine;
             this.gameObject.SetActive(false);
+        }
+
+        private void ExitMine()
+        {
+            memory.OccupiedMine.GetComponent<MineBehaviour>().RemoveDwarfInside(this.gameObject);
+            memory.OccupiedMine = null;
+            this.gameObject.SetActive(true);
         }
 
         void OnTriggerStay(Collider other)
