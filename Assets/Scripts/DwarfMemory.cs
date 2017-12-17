@@ -15,15 +15,10 @@ namespace Assets.Scripts
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
 
-        private ActivitiesLabel _previousActivity;
-        public ActivitiesLabel PreviousActivity { get { return _previousActivity; } }
-
         private DateTime _lastActivityChange;
         public DateTime LastActivityChange {  get { return _lastActivityChange; } }
 
         private _Gauges Gauges;
-        public int Specialisation { get { return Gauges.Specialisation; } }
-        public int Tirednesss { get { return Gauges.Tiredness; } }
         public int Thirst { get { return Gauges.Thirst; } }
         public int WorkDesire { get { return Gauges.WorkDesire; } }
         public int Pickaxe { get { return Gauges.Pickaxe; } }
@@ -65,9 +60,7 @@ namespace Assets.Scripts
             // exemple of use : one dwarf gets thirsty, his thirst increaseBy(Thirst,10)
             if (byValue > 0)
             {
-                if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation += byValue;
-                else if (theGauge == GaugesLabel.Tiredness) Gauges.Tiredness += byValue;
-                else if (theGauge == GaugesLabel.Thirst) Gauges.Thirst += byValue;
+                if (theGauge == GaugesLabel.Thirst) Gauges.Thirst += byValue;
                 else if (theGauge == GaugesLabel.Workdesire) Gauges.WorkDesire += byValue;
                 else if (theGauge == GaugesLabel.Pickaxe) Gauges.Pickaxe += byValue;
             }
@@ -78,9 +71,7 @@ namespace Assets.Scripts
             // exemple of use : one dwarf drinks, his thirst lowerBy(Thirst,10)
             if (byValue > 0)
             {
-                if (theGauge == GaugesLabel.Specialisation) Gauges.Specialisation -= byValue;
-                else if (theGauge == GaugesLabel.Tiredness) Gauges.Tiredness -= byValue;
-                else if (theGauge == GaugesLabel.Thirst) Gauges.Thirst -= byValue;
+                if (theGauge == GaugesLabel.Thirst) Gauges.Thirst -= byValue;
                 else if (theGauge == GaugesLabel.Workdesire) Gauges.WorkDesire -= byValue;
                 else if (theGauge == GaugesLabel.Pickaxe) Gauges.Pickaxe -= byValue;
             }
@@ -107,6 +98,71 @@ namespace Assets.Scripts
 
         #endregion
 
+        // The dwarf rethinks his activity : he may 1- change 2- keep on doing what he's doing
+        public void RethinkActivity() {
+            System.Random rnd = new System.Random();
+            /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous le 2nd choix quand rnd = 2 */
+            
+            var s = (int)((DateTime.Now - _lastActivityChange).TotalSeconds); // time since last change (in sec)
+
+            if (s < 5) { return; /* no changes */ }
+
+            /* we consider that the dwarf has a one chance out of four of changing activity,
+             * this probability is increased as time passes.
+             * thus, after 60 sec, the dwarf has a 0,3571 proba to change
+             * after 120 sec, he has a 0,625 proba to change
+             * 
+             * Fact is : the more he "rethinks", the more the risk that he changes his activity increases
+             */
+            var chances = 200 - ( s * gameEnvironment.Variables.attenuateTimeImpact );
+
+            if (rnd.Next(0, (int)chances) > 50) { return; /* no changes */ }
+
+            #region let's change his activity
+            
+            List<_WeightedObject> list = new List<_WeightedObject>();
+
+            var w = this.WorkDesire;
+            var p = this.Pickaxe;
+            var t = this.Thirst;
+            
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.GoToForge)
+            { list.Add(new _WeightedObject(ActivitiesLabel.GoToForge,
+                (int)((w + 2*(100 - p)) / 3)));
+            }
+
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Deviant)
+            { list.Add(new _WeightedObject(ActivitiesLabel.Deviant, 
+                (int)(((100 - w) + t) / 2)));
+            }
+
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Explorer)
+            { list.Add(new _WeightedObject(ActivitiesLabel.Explorer,
+                (int)((w + (100 - p)) / 2)));
+            }
+
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Miner)
+            { list.Add(new _WeightedObject(ActivitiesLabel.Miner,
+                (int)((w + p) / 2)));
+            }
+
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Supply)
+            { list.Add(new _WeightedObject(ActivitiesLabel.Supply,
+                (int)((w + (100 - t)) / 2)));
+            }
+
+            if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Vigile)
+            {
+                list.Add(new _WeightedObject(ActivitiesLabel.Vigile,
+                  (int)(w)));
+            }
+
+            #endregion
+
+            WeightedList startingActivity = new WeightedList(list);
+            _currentActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
+        }
+
         public Vector3 GetNewDestination()
         {
             Vector3 destination = new Vector3();
@@ -114,17 +170,13 @@ namespace Assets.Scripts
             List<_WeightedObject> destList = new List<_WeightedObject>();
 
             System.Random rnd = new System.Random();
-            /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous le 2nd choix quand rnd = 2 */
+            /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous la même destination */
 
             int w;
 
             // Deviant : generation of random decisions, plus a "clever" decision : the beer.
-            if (this._currentActivity == ActivitiesLabel.Deviant) 
-                
+            if (this._currentActivity == ActivitiesLabel.Deviant)                
             {
-                if (this.Thirst == gameEnvironment.Variables.maxValueGauge) /* change to another activity and reset destination */
-                { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
-
                 for (int i = 0; i < 10; i++)
                 {
                     do
@@ -144,7 +196,6 @@ namespace Assets.Scripts
             // Explorer : generation of 10 "random" decisions, just not too close from the dwarf nor known mines
             else if (this._currentActivity == ActivitiesLabel.Explorer) 
             {
-
                 for (int i = 0; i < 10; i++)
                 {
                     do {
@@ -224,18 +275,18 @@ namespace Assets.Scripts
             // forge : go to the forge
             else if (this._currentActivity == ActivitiesLabel.GoToForge)
             {
-                if (this.Gauges.Pickaxe <= gameEnvironment.Variables.pickaxeLimit)
+                if (this.Pickaxe <= gameEnvironment.Variables.pickaxeLimit)
                 {
                     return (Vector3)gameEnvironment.Variables.forgePosition;
                 }
             }
 
             else /* change to another activity and rester destination */
-            { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
+            { RethinkActivity(); return GetNewDestination(); }
 
 
             if (!destList.Any()) /* change to another activity and reset destination */
-            { /* TODO : BAH CHANGE D'ACTIVITE */ return GetNewDestination(); }
+            { RethinkActivity(); return GetNewDestination(); }
 
             WeightedList destinations = new WeightedList(destList);
             return (Vector3)destinations.SelectRandomItem();
@@ -285,45 +336,33 @@ namespace Assets.Scripts
 
         public class _Gauges
         {
-            private int[] _gauges = new int[5];
+            private int[] _gauges = new int[3];
             GameEnvironment ge;
 
-            #region get/set (specialisation, tiredness, thirst, workdesire, pickaxe)
-            public int Specialisation
+            #region get/set (thirst, workdesire, pickaxe)
+            public int Thirst
             {
                 get { return _gauges[0]; }
                 set { _gauges[0] = StockGauge(value); }
             }
-            public int Tiredness
+            public int WorkDesire
             {
                 get { return _gauges[1]; }
                 set { _gauges[1] = StockGauge(value); }
             }
-            public int Thirst
+            public int Pickaxe
             {
                 get { return _gauges[2]; }
                 set { _gauges[2] = StockGauge(value); }
             }
-            public int WorkDesire
-            {
-                get { return _gauges[3]; }
-                set { _gauges[3] = StockGauge(value); }
-            }
-            public int Pickaxe
-            {
-                get { return _gauges[4]; }
-                set { _gauges[4] = StockGauge(value); }
-            }
             #endregion
 
-            public _Gauges(int specialisation, int tiredness, int thirst, int workDesire, int pickaxe, GameEnvironment gameEnv)
+            public _Gauges(int thirst, int workDesire, int pickaxe, GameEnvironment gameEnv)
             {
                 ge = gameEnv;
-                _gauges[0] = StockGauge(specialisation);
-                _gauges[1] = StockGauge(tiredness);
-                _gauges[2] = StockGauge(thirst);
-                _gauges[3] = StockGauge(workDesire);
-                _gauges[4] = StockGauge(pickaxe);
+                _gauges[0] = StockGauge(thirst);
+                _gauges[1] = StockGauge(workDesire);
+                _gauges[2] = StockGauge(pickaxe);
             }
 
             private int StockGauge(int value)
