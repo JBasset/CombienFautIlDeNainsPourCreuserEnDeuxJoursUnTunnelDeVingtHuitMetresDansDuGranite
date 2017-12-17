@@ -55,7 +55,7 @@ namespace Assets.Scripts
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
             newDwarf.GetComponent<DwarfBehaviour>().GE = this;
-            newDwarf.GetComponent<DwarfMemory>().gameEnvironment = this;
+            newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
         }
 
         public List<GameObject> GetDwarves()

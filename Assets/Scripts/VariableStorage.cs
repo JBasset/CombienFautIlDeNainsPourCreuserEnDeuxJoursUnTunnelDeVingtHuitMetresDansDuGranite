@@ -76,7 +76,7 @@ namespace Assets.Scripts
         #endregion
 
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }
-        public enum GaugesLabel { Specialisation, Tiredness, Thirst, Workdesire, Pickaxe}
+        public enum GaugesLabel { /*Specialisation, Tiredness, */ Thirst, Workdesire, Pickaxe}
 
         
 
