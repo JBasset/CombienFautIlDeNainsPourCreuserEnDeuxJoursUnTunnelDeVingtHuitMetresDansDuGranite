@@ -75,7 +75,7 @@ namespace Assets.Scripts
                     Gauges.Pickaxe += byValue;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(theGauge), theGauge, null);
+                    return;
             }
         }
 
@@ -95,7 +95,7 @@ namespace Assets.Scripts
                     Gauges.Pickaxe -= byValue;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(theGauge), theGauge, null);
+                    return;
             }
         }
 
