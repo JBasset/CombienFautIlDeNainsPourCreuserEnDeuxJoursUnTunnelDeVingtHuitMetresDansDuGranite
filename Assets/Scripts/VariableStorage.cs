@@ -48,7 +48,7 @@ namespace Assets.Scripts
 
         #region Deviant
         // Weight of the "go to beer" decision (versus the ten 1-weighted random decisions) ?
-        public int dev_goToBeer = 5;
+        public int dev_goToBeer = 50; // considering that the list contains 10* 10-weighted random destinations
         #endregion
 
         #region Vigile
@@ -68,11 +68,17 @@ namespace Assets.Scripts
         public int min_closeMinefLimit = 50;
         // When is a dwarf considered "pretty close" ?
         public int min_closeDwarfLimit = 50;
+
+        /* importance given of the number of dwarves already in the mine
+         * this value affects a dwarf's chance to go in a densely populated mine 
+         * 0 : no incidence || >0 : the dwarf may prefer a less populated mine
+         */
+        public double min_pplInTheMineImportance = 1.5; 
         #endregion
-        
 
 
-        
+
+
         #endregion
 
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }

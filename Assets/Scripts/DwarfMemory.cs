@@ -50,7 +50,7 @@ namespace Assets.Scripts
         }
 
 
-        public void DwarfInitialization()
+        public void DwarfMemoryInitialization()
         {
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
@@ -194,7 +194,7 @@ namespace Assets.Scripts
             var rnd = new System.Random();
             /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous la même destination */
 
-            int w;
+            int w; // a 0~100 weight
 
             // Deviant : generation of random decisions, plus a "clever" decision : the beer.
             switch (this._currentActivity)
@@ -211,7 +211,7 @@ namespace Assets.Scripts
                                 mine => (Vector3.Distance(mine.MinePosition, destination) < GameEnvironment.Variables.expl_positionTooKnown)
                             )
                         );
-                        destList.Add(new _WeightedObject(destination, 1));
+                        destList.Add(new _WeightedObject(destination, 10));
                     }
                     destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition, GameEnvironment.Variables.dev_goToBeer));
                     break;
@@ -232,11 +232,11 @@ namespace Assets.Scripts
                 case ActivitiesLabel.Miner:
                     foreach (_KnownMine mine in KnownMines.FindAll(m => (!m.Empty)).ToList())
                     {
-                        w = 3; // TODO: réfléchir/tester
-                        w -= mine.DwarvesInTheMine; // the more dwarves are ALREADY in the mine, the less he wants to go
+                        w = 80 - (int)(mine.DwarvesInTheMine * GameEnvironment.Variables.min_pplInTheMineImportance); 
+                        // the more dwarves are ALREADY in the mine, the less he wants to go
                     
                         if (Vector3.Distance(dwarfTransf.position, mine.MinePosition) < GameEnvironment.Variables.min_closeMinefLimit)
-                        { w++; } // this mine is close enough
+                        { w+=20; } // this mine is close enough
 
                         if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, w));
                     }
@@ -246,15 +246,15 @@ namespace Assets.Scripts
                     {
                         var mPosition = mine.MinePosition;
 
-                        w = 1;
-                        w += mine.DwarvesInTheMine; // the more dwarves in the mine, the more he wants to go
+                        w = 10 + (int)(mine.DwarvesInTheMine);
+                        // the more dwarves in the mine, the more he wants to go
 
                         if (Vector3.Distance(dwarfTransf.position, mPosition) < GameEnvironment.Variables.sup_closeMinefLimit)
-                        { w++; } // this mine is close enough
+                        { w+=10; } // this mine is close enough
 
-                        if (mine.ThirstEvaluationResult()) { w += 2; } // I know they want to drink in this mine
+                        if (mine.ThirstEvaluationResult()) { w += 10; } // I know they want to drink in this mine
 
-                        destList.Add(new _WeightedObject(mPosition,  w));
+                        destList.Add(new _WeightedObject(mPosition, w));
                     }
                     foreach (_KnownDwarf dwarf in KnownDwarves.FindAll(d => (d.highThirst)).ToList()) // we add thirsty dwarves (weight depending on how close he is)
                     {
