@@ -12,6 +12,9 @@ namespace Assets.Scripts
         
         private Camera cam;
         private float minDownScroll;
+        private bool rotating;
+        private Quaternion lockedCameraRotation;
+        private Vector3 initialRotationPosition;
         private Ray ray;
         private RaycastHit hit;
         private Collider lockedObject;
@@ -20,11 +23,24 @@ namespace Assets.Scripts
         {
             cam = GetComponent<Camera>();
             minDownScroll = 0;
+            rotating = false;
+            lockedCameraRotation = cam.transform.rotation;
         }
 
         void Update()
         {
-            MoveCamera();
+            if (Input.GetMouseButtonDown(1))
+            {
+                rotating = true;
+                initialRotationPosition = Input.mousePosition;
+            }
+            else if (Input.GetMouseButtonUp(1))
+                rotating = false;
+
+            if (rotating)
+                RotateCamera();
+            else
+                MoveCamera();
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -39,6 +55,11 @@ namespace Assets.Scripts
                 LockCamera(lockedObject);
             else
                 DeactivateSpheres();
+        }
+
+        private void RotateCamera()
+        {
+            cam.transform.Rotate(0, -(initialRotationPosition.x - Input.mousePosition.x)/100, 0, Space.World);
         }
 
         private void MoveCamera()
@@ -59,15 +80,15 @@ namespace Assets.Scripts
 
             // moving the camera back and forth
             if (Input.mousePosition.y < 0)
-                cam.transform.position += Vector3.back;
+                cam.transform.Translate(0, -(2f / 3f), -(1f / 3f), Space.Self);
             else if (Input.mousePosition.y > Screen.height)
-                cam.transform.position += Vector3.forward;
+                cam.transform.Translate(0, (2f / 3f), (1f / 3f), Space.Self);
 
             // moving the camera right and left
             if (Input.mousePosition.x < 0)
-                cam.transform.position += Vector3.left;
+                cam.transform.Translate(Vector3.left, Space.Self);
             else if (Input.mousePosition.x > Screen.width)
-                cam.transform.position += Vector3.right;
+                cam.transform.Translate(Vector3.right, Space.Self);
 
             // moving the camera up and down (if the mouse isn't above UI element)
             if (!EventSystem.current.IsPointerOverGameObject())
@@ -85,6 +106,7 @@ namespace Assets.Scripts
         public void LockCamera(Collider agent)
         {
             lockedObject = agent;
+            cam.transform.rotation = lockedCameraRotation;
             cam.transform.position = new Vector3
                 (agent.transform.position.x,
                 cam.transform.position.y,
