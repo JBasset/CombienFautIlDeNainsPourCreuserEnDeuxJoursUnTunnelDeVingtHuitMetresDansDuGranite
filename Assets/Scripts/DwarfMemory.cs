@@ -11,7 +11,9 @@ namespace Assets.Scripts
     public class DwarfMemory:MonoBehaviour
     {
         public GameEnvironment GameEnvironment;
-        
+
+        public GameObject OccupiedMine;
+
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
 
@@ -60,8 +62,11 @@ namespace Assets.Scripts
                 "Hey, I'm in " + this.name + " DwarfMemoryInitialization ! ");
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
+
             this.Gauges = new _Gauges(100, 100, 100, GameEnvironment);
             Debug.Log( this.name + " initialization done, Pickaxe is : " + this.Pickaxe);
+
+            OccupiedMine = null;
         }
 
 
