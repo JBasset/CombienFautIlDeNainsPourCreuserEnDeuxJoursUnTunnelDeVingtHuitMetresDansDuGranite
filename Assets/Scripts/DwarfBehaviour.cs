@@ -13,14 +13,12 @@ namespace Assets.Scripts
         private DwarfMemory memory;
         private Animator animator;
         private NavMeshAgent agent;
-        private float normalSpeed;
 
         void Start()
         {
             memory = GetComponent<DwarfMemory>();
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
-            normalSpeed = agent.speed;
         }
 
         void Update()
