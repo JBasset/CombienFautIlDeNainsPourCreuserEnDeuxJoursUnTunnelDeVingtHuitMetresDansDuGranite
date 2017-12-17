@@ -51,6 +51,7 @@ namespace Assets.Scripts
         private void InstantiateDwarf()
         {
             GameObject newDwarf = Instantiate(DwarfPrefab, dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
+            newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
