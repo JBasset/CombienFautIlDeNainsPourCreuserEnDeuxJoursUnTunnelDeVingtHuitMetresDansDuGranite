@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,7 +21,10 @@ namespace Assets.Scripts
         private _Gauges Gauges;
         public int Thirst { get { return Gauges.Thirst; } }
         public int WorkDesire { get { return Gauges.WorkDesire; } }
-        public int Pickaxe { get { return Gauges.Pickaxe; } }
+        public int Pickaxe { get {
+            Debug.Log(
+                "Hey DwarfMemory.Pickaxe here. Someone asks me how many " + Gauges.Pickaxe + " is ! ");
+                return Gauges.Pickaxe; } }
 
         // int? targetDwarf; // identité de la cible si c'est un vigile
 
@@ -52,9 +56,12 @@ namespace Assets.Scripts
 
         public void DwarfMemoryInitialization()
         {
+            Debug.Log(
+                "Hey, I'm in " + this.name + " DwarfMemoryInitialization ! ");
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
-            Gauges = new _Gauges(100, 100, 100, GameEnvironment);
+            this.Gauges = new _Gauges(100, 100, 100, GameEnvironment);
+            Debug.Log( this.name + " initialization done, Pickaxe is : " + this.Pickaxe);
         }
 
 
@@ -127,7 +134,7 @@ namespace Assets.Scripts
             
             var s = (int)((DateTime.Now - _lastActivityChange).TotalSeconds); // time since last change (in sec)
 
-            if (s < 5) { return; /* no changes */ }
+            if (s < GameEnvironment.Variables.lowerBoundBeforeRethink) { return; /* no changes */ }
 
             /* we consider that the dwarf has a one chance out of four of changing activity,
              * this probability is increased as time passes.
@@ -163,17 +170,20 @@ namespace Assets.Scripts
                 (int)((w + (100 - p)) / 2)));
             }
 
-            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Miner)
+            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Miner 
+                && KnownMines.Any(m => !m.Empty))
             { list.Add(new _WeightedObject(ActivitiesLabel.Miner,
                 (int)((w + p) / 2)));
             }
 
-            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Supply)
+            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Supply
+                && KnownDwarves.Any(d => d.highThirst))
             { list.Add(new _WeightedObject(ActivitiesLabel.Supply,
                 (int)((w + (100 - t)) / 2)));
             }
 
-            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Vigile)
+            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.Vigile
+                && KnownDwarves.Any(d => d.deviant))
             {
                 list.Add(new _WeightedObject(ActivitiesLabel.Vigile,
                   (int)(w)));
@@ -195,8 +205,7 @@ namespace Assets.Scripts
             /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous la même destination */
 
             int w; // a 0~100 weight
-
-            // Deviant : generation of random decisions, plus a "clever" decision : the beer.
+            
             switch (this._currentActivity)
             {
                 case ActivitiesLabel.Deviant:
@@ -297,7 +306,16 @@ namespace Assets.Scripts
             { RethinkActivity(); return GetNewDestination(); }
 
             var destinations = new WeightedList(destList);
-            return (Vector3)destinations.SelectRandomItem();
+
+            Debug.Log(
+                this.name + " destList count : " + destList.Count);
+
+            var theDest = (Vector3)destinations.SelectRandomItem();
+
+            Debug.Log(
+                this.name + "dest " + theDest);
+
+            return theDest;
         }
 
         public class _KnownDwarf
@@ -360,25 +378,35 @@ namespace Assets.Scripts
             }
             public int Pickaxe
             {
-                get { return _gauges[2]; }
+                get {
+                    Debug.Log(
+                        "Hi. _Gauges.Pickaxe getter here. Actually it's " + _gauges[2] + " ! ");
+                    return _gauges[2]; }
                 set { _gauges[2] = StockGauge(value); }
             }
             #endregion
 
             public _Gauges(int thirst, int workDesire, int pickaxe, GameEnvironment gameEnv)
             {
+                Debug.Log(
+                    "Hey, I'm in _Gauges constructor trying to set pickaxe to" + pickaxe + " :) ");
                 ge = gameEnv;
                 _gauges[0] = StockGauge(thirst);
                 _gauges[1] = StockGauge(workDesire);
                 _gauges[2] = StockGauge(pickaxe);
+                Debug.Log(
+                    "Annnnnnnd pickaxe is now " + pickaxe + " ! ");
             }
 
             private int StockGauge(int value)
             {
-                var max = ge.Variables.minValueGauge;
+                Debug.Log(
+                    "I want this value ( " + value + " ) to be 100 ! ");
                 var min = ge.Variables.minValueGauge;
-
-                return (value > min) ? ((value < max) ? value : max) : min;
+                var max = ge.Variables.minValueGauge;
+                Debug.Log(
+                    " HEEEEY \r HEEEEEY LISTEN !! ");
+                return (value > max)? max : ((value < min)? min : value);
             }
         }
     }

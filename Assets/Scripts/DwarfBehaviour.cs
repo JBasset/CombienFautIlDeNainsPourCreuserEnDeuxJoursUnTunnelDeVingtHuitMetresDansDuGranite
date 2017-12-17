@@ -15,7 +15,7 @@ namespace Assets.Scripts
         private NavMeshAgent agent;
         private float normalSpeed;
 
-        void Start()
+        public void Start()
         {
             memory = GetComponent<DwarfMemory>();
             agent = GetComponent<NavMeshAgent>();
@@ -23,11 +23,11 @@ namespace Assets.Scripts
             normalSpeed = agent.speed;
         }
 
-        void Update()
+        public void Update()
         {
             if (Input.GetButtonDown("Enter"))
                 MoveTo(Target.position);
-
+            
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
             {
                 agent.ResetPath();
@@ -42,6 +42,14 @@ namespace Assets.Scripts
                     }
                 }
             }
+        }
+
+        public void UpdateActivityAndPosition()
+        {
+            memory.RethinkActivity();
+            MoveTo(memory.GetNewDestination());
+            // TODO : il faut que les jauges bougent, que la pioche s'abîme ou se répare
+            // TODO : ET QUE LES NAINS INTERAGISSENT QUAND ILS SE CROISENT
         }
 
         private void MoveTo(Vector3 pos)

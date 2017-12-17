@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Scripts
 {
@@ -15,13 +16,16 @@ namespace Assets.Scripts
         private Vector3 dwarvesSpawn;
         private int spawnsLeft; // number of dwarves to create
 
+        private int LastGeneralActivityUpdate;
+
         void Start()
         {
             gameEnvironment = GetComponent<Transform>();
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
             dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
-            spawnsLeft = 1;
+            spawnsLeft = 2;
+            LastGeneralActivityUpdate = 0;
 
             UpdateNoticeables();
         }
@@ -33,6 +37,19 @@ namespace Assets.Scripts
                 InstantiateDwarf();
                 spawnsLeft--;
             }
+            if (Time.time - LastGeneralActivityUpdate >= Variables.activityRethinkChangeRate)
+            {
+                LastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
+                foreach (var myDwarf in Variables.Dwarves)
+                {
+                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndPosition();
+                    Debug.Log(
+                        myDwarf.name + 
+                        " Target :" + myDwarf.GetComponent<DwarfBehaviour>().Target +
+                        "\r Pioche :" + myDwarf.GetComponent<DwarfMemory>().Pickaxe +
+                        "\r CurrentActivity :" + myDwarf.GetComponent<DwarfMemory>().CurrentActivity);
+                }
+            }
         }
 
         public void CreateDwarf(int quantity)
@@ -42,21 +59,21 @@ namespace Assets.Scripts
 
         private bool IsSpawnFree()
         {
-            foreach (GameObject Dwarf in Variables.Dwarves)
-                if (Vector3.Distance(Dwarf.transform.position, dwarvesSpawn) <= 2) // if any dwarf is under 2 units from the spawn
-                    return false;
-            return true;
+            return Variables.Dwarves.All(d => !(Vector3.Distance(d.transform.position, dwarvesSpawn) <= 2));
+            // if any dwarf is under 2 units from the spawn, returns false
         }
 
         private void InstantiateDwarf()
         {
             GameObject newDwarf = Instantiate(DwarfPrefab, dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
-            newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
             newDwarf.GetComponent<DwarfBehaviour>().GE = this;
             newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
+            newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
+            Debug.Log(
+                "After DwarfMemoryInitialization " + newDwarf.name + " Pickaxe: " + newDwarf.GetComponent<DwarfMemory>().Pickaxe);
         }
 
         public List<GameObject> GetDwarves()
@@ -74,14 +91,14 @@ namespace Assets.Scripts
         private void UpdateDwarves()
         {
             Variables.Dwarves = new List<GameObject> { };
-            for (int i = 0; i < dwarves.childCount; i++)
+            for (var i = 0; i < dwarves.childCount; i++)
                 Variables.Dwarves.Add(dwarves.GetChild(i).gameObject);
         }
 
         private void UpdateMines()
         {
             Variables.Mines = new List<GameObject> { };
-            for (int i = 0; i < mines.childCount; i++)
+            for (var i = 0; i < mines.childCount; i++)
                 Variables.Mines.Add(mines.GetChild(i).gameObject);
         }
 

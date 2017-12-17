@@ -29,6 +29,9 @@ namespace Assets.Scripts
 
         public double attenuateTimeImpact = 1; /* this value (0 <= x <= 1) affects a dwarf's chance to rethink his activity */
 
+        public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int lowerBoundBeforeRethink = 2; // in seconds, used in DwarfMemory.RethinkActivity()
+
         #region HEURISTICS
 
         // In this section, we store heuristics.
@@ -41,7 +44,7 @@ namespace Assets.Scripts
 
         #region Explorer
         // When is a destination considered "too close from me" to be chosen ?
-        public int expl_positionTooClose = 50;
+        public int expl_positionTooClose = 70;
         // When is a destination considered "too close from a mine I know" chosen ?
         public int expl_positionTooKnown = 50;
         #endregion
