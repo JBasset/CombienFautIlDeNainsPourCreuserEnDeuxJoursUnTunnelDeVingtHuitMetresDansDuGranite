@@ -18,6 +18,9 @@ namespace Assets.Scripts
         private NavMeshAgent agent;
         private int LastSecond;
 
+        private Ray ray;
+        private RaycastHit hit;
+
         private float normalSpeed;
         
         public void Start()
@@ -143,6 +146,40 @@ namespace Assets.Scripts
             {
                 animator.SetFloat("Run", 0);
             }
+        }
+
+        private List<GameObject> DwarvesInSight()
+        {
+            List<GameObject> dwarvesInSight =  new List<GameObject>();
+            foreach (GameObject Dwarf in GE.Variables.Dwarves)
+            {
+                if (Dwarf != this.gameObject && Vector3.Distance(this.transform.position, Dwarf.transform.position) <= GE.Variables.SightDistance)
+                {
+                    ray = new Ray(this.transform.position, (Dwarf.transform.position - this.transform.position));
+                    if (Physics.Raycast(ray, out hit, GE.Variables.SightDistance) && hit.collider.gameObject == Dwarf)
+                    {
+                        dwarvesInSight.Add(Dwarf);
+                    }
+                }
+            }
+            return dwarvesInSight;
+        }
+
+        private List<GameObject> MinesInSight()
+        {
+            List<GameObject> minesInSight = new List<GameObject>();
+            foreach (GameObject Mine in GE.Variables.Mines)
+            {
+                if (Vector3.Distance(this.transform.position, Mine.transform.position) <= GE.Variables.SightDistance)
+                {
+                    ray = new Ray(this.transform.position, (Mine.transform.position - this.transform.position));
+                    if (Physics.Raycast(ray, out hit, GE.Variables.SightDistance) && hit.collider.gameObject == Mine)
+                    {
+                        minesInSight.Add(Mine);
+                    }
+                }
+            }
+            return minesInSight;
         }
     }
 }
