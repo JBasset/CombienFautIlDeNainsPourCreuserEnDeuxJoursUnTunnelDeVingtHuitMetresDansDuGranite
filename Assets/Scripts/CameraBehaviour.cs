@@ -10,7 +10,9 @@ namespace Assets.Scripts
     {
         public GameObject Dwarves;
         public GameObject DwarfInfoPanel;
+        public GameObject MineInfoPanel;
         public GameEnvironment gameEnvironment;
+        public GameObject UI;
 
         private Camera cam;
         private float minDownScroll;
@@ -21,6 +23,7 @@ namespace Assets.Scripts
         private RaycastHit hit;
         private Collider lockedAgent;
         private Collider lockedMine;
+        private int lastSecond;
 
         #region DwarfInfoPanel fields
         private Text dwarfName;
@@ -40,6 +43,12 @@ namespace Assets.Scripts
         private Text timeAsExplorer;
         private Text timeAsVigile;
         private Text timeAsDeviant;
+        #endregion
+
+        #region MineInfoPanel fields
+        private Text mineName;
+        private Text goldOre;
+        private Text dwarvesInside;
         #endregion
 
         void Start()
@@ -74,7 +83,14 @@ namespace Assets.Scripts
             timeAsVigile = Time.FindChild("Vigile").FindChild("Value").GetComponent<Text>();
             timeAsDeviant = Time.FindChild("Deviant").FindChild("Value").GetComponent<Text>();
             #endregion
-        }
+
+            #region MineInfoPanel fields
+            GeneralInfo = MineInfoPanel.transform.FindChild("GeneralInfo");
+            mineName = GeneralInfo.FindChild("MineName").GetComponent<Text>();
+            goldOre = GeneralInfo.FindChild("GoldOre").FindChild("Value").GetComponent<Text>();
+            dwarvesInside = GeneralInfo.FindChild("DwarvesInside").FindChild("Value").GetComponent<Text>();
+            #endregion
+    }
 
     void Update()
         {
@@ -100,10 +116,13 @@ namespace Assets.Scripts
                     if (hit.collider.CompareTag("Agent"))
                     {
                         lockedAgent = hit.collider; // on clicking on an agent, we set it as the camera lock
+                        lockedMine = null;
                     }
                     else if (hit.collider.CompareTag("Mine"))
                     {
                         lockedMine = hit.collider;
+                        lockedAgent = null;
+                        DeactivateSpheres();
                     }
                     else if ((lockedAgent || lockedMine) && !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
                     {
@@ -111,6 +130,7 @@ namespace Assets.Scripts
                         lockedMine = null;
                         DeactivateSpheres();
                         DwarfInfoPanel.SetActive(false);
+                        MineInfoPanel.SetActive(false);
                     }
                 }
             }
@@ -123,6 +143,14 @@ namespace Assets.Scripts
             else if (lockedMine)
             {
                 LockCamera(lockedMine);
+                UpdateMineInfoPanel();
+            }
+
+            if (Time.time - lastSecond >= 1)
+            {
+                lastSecond = (int)Mathf.Floor(Time.time);
+                if (lockedMine)
+                    UI.GetComponent<UIBehaviour>().SetDwarfInMineButtons(lockedMine.GetComponent<MineBehaviour>());
             }
         }
 
@@ -174,7 +202,6 @@ namespace Assets.Scripts
 
         public void LockCamera(Collider col)
         {
-            Debug.Log("LOOOOOOOCK");
             cam.transform.rotation = lockedCameraRotation;
             cam.transform.position = new Vector3
                 (col.transform.position.x,
@@ -232,14 +259,14 @@ namespace Assets.Scripts
                 */
 
                 DwarfInfoPanel.SetActive(true);
+                MineInfoPanel.SetActive(false);
             }
             #endregion
             else if (col.CompareTag("Mine"))
-            #region Mine
             {
-
+                MineInfoPanel.SetActive(true);
+                DwarfInfoPanel.SetActive(false);
             }
-            #endregion
         }
 
         private void UpdateDwarfInfoPanel()
@@ -270,6 +297,15 @@ namespace Assets.Scripts
             timeAsVigile.text = "" + memory.TimeAsVigile;
             timeAsDeviant.text = "" + memory.TimeAsDeviant;
             #endregion
+        }
+
+        private void UpdateMineInfoPanel()
+        {
+            MineBehaviour mine = lockedMine.GetComponent<MineBehaviour>();
+
+            mineName.text = lockedMine.name;
+            goldOre.text = "" + mine.Ore;
+            dwarvesInside.text = "" + mine.DwarvesInside.Count;
         }
 
         private void DeactivateSpheres()

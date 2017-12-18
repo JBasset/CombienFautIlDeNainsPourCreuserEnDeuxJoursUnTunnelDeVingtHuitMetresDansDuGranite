@@ -156,115 +156,118 @@ namespace Assets.Scripts
                     }
                 }
 
-                if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
+                if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
                 {
-                    if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
                     {
-                        memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
-                    }
+                        if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
+                        {
+                            memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
+                        }
 
-                    if (Vector3.Distance(agent.destination, GE.Variables.forgePosition) < 0.1f)
-                    {
-                        memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
-                    }
+                        if (Vector3.Distance(agent.destination, GE.Variables.forgePosition) < 0.1f)
+                        {
+                            memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
+                        }
 
-                    agent.ResetPath();
-                    animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
-                    animator.SetFloat("Run", 0);
+                        agent.ResetPath();
+                        animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+                        animator.SetFloat("Run", 0);
 
-                    switch (memory.CurrentActivity)
-                    {
-                        case ActivitiesLabel.Deviant:
-                            UpdateActivityAndDestination();
-                            break;
+                        switch (memory.CurrentActivity)
+                        {
+                            case ActivitiesLabel.Deviant:
+                                UpdateActivityAndDestination();
+                                break;
 
-                        case ActivitiesLabel.Explorer:
-                            UpdateActivityAndDestination();
-                            break;
+                            case ActivitiesLabel.Explorer:
+                                UpdateActivityAndDestination();
+                                break;
 
-                        case ActivitiesLabel.Vigile:
+                            case ActivitiesLabel.Vigile:
 
-                            #region Vigile
+                                #region Vigile
 
-                            List<GameObject> deviantsInSight = DwarvesInSight()
-                                .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
-                                .ToList();
-                            if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
+                                List<GameObject> deviantsInSight = DwarvesInSight()
+                                    .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity ==
+                                                ActivitiesLabel.Deviant)
+                                    .ToList();
+                                if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
 
-                            {
-                                GameObject TargetedDeviant = deviantsInSight[0];
-                                if (Vector3.Distance(this.transform.position,
-                                        TargetedDeviant.transform.position) < 2) // if he reached him
                                 {
-                                    TargetedDeviant.GetComponent<DwarfMemory>()
-                                        .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
-                                    memory.DeviantsStopped++;
-                                    TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
-                                    UpdateActivityAndDestination();
+                                    GameObject TargetedDeviant = deviantsInSight[0];
+                                    if (Vector3.Distance(this.transform.position,
+                                            TargetedDeviant.transform.position) < 2) // if he reached him
+                                    {
+                                        TargetedDeviant.GetComponent<DwarfMemory>()
+                                            .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                                        memory.DeviantsStopped++;
+                                        TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                                        UpdateActivityAndDestination();
+                                    }
+                                    else
+                                    {
+                                        animator.SetFloat("Run", 1);
+                                        MoveTo(TargetedDeviant.transform.position);
+                                    }
+                                }
+                                else if (memory.KnownDwarves.Any(d => d.Deviant))
+                                {
+                                    foreach (DwarfMemory._KnownDwarf Dwarf in memory.KnownDwarves)
+                                    {
+                                        if (Dwarf.Deviant)
+                                        {
+                                            MoveTo(Dwarf.DwarfPosition);
+                                            break;
+                                        }
+                                    }
                                 }
                                 else
+                                    UpdateActivityAndDestination();
+                                break;
+
+                            #endregion
+
+                            case ActivitiesLabel.Supply:
+                                // TODO if reach target (soifard) do da thing
+                                // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
+                                break;
+
+                            case ActivitiesLabel.Miner:
+
+                                #region Miner
+
+                                List<GameObject> mine = GE
+                                    .GetComponent<GameEnvironment>()
+                                    .GetMines()
+                                    .Where(m => Vector3.Distance(
+                                                    agent.transform.position,
+                                                    m.transform.FindChild("MineEntrance").position) < 0.1f
+                                    ).ToList();
+                                if (mine.Any())
+                                    EnterMine(mine[0]);
+                                else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
                                 {
-                                    animator.SetFloat("Run", 1);
-                                    MoveTo(TargetedDeviant.transform.position);
-                                }
-                            }
-                            else if (memory.KnownDwarves.Any(d => d.Deviant))
-                            {
-                                foreach (DwarfMemory._KnownDwarf Dwarf in memory.KnownDwarves)
-                                {
-                                    if (Dwarf.Deviant)
+                                    foreach (DwarfMemory._KnownMine Mine in memory.KnownMines)
                                     {
-                                        MoveTo(Dwarf.DwarfPosition);
-                                        break;
+                                        if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
+                                        {
+                                            MoveTo(Mine.MinePosition);
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            else
-                                UpdateActivityAndDestination();
-                            break;
+                                else
+                                    UpdateActivityAndDestination();
+                                break;
 
-                        #endregion
+                            #endregion
 
-                        case ActivitiesLabel.Supply:
-                            // TODO if reach target (soifard) do da thing
-                            // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
-                            break;
+                            case ActivitiesLabel.GoToForge:
+                                // TODO if gotoforge ENTERFORGE
+                                break;
 
-                        case ActivitiesLabel.Miner:
-
-                            #region Miner
-
-                            List<GameObject> mine = GE
-                                .GetComponent<GameEnvironment>()
-                                .GetMines()
-                                .Where(m => Vector3.Distance(
-                                                agent.transform.position,
-                                                m.transform.FindChild("MineEntrance").position) < 0.1f
-                                ).ToList();
-                            if (mine.Any())
-                                EnterMine(mine[0]);
-                            else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
-                            {
-                                foreach (DwarfMemory._KnownMine Mine in memory.KnownMines)
-                                {
-                                    if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
-                                    {
-                                        MoveTo(Mine.MinePosition);
-                                        break;
-                                    }
-                                }
-                            }
-                            else
-                                UpdateActivityAndDestination();
-                            break;
-
-                        #endregion
-
-                        case ActivitiesLabel.GoToForge:
-                            // TODO if gotoforge ENTERFORGE
-                            break;
-
-                        default: break;
+                            default: break;
+                        }
                     }
                 }
             }
