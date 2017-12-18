@@ -58,36 +58,47 @@ namespace Assets.Scripts
                     memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
                 }
 
-                List<GameObject> mine = GE.GetComponent<GameEnvironment>().GetMines()
-                    .Where(m => Vector3.Distance(
-                        agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
-                        ).ToList();
-                if (mine.Any())
-                {
-                    EnterMine(mine[0]);
-                    // TODO : make sure the dwarf dig ( c'est dans le switch ? )
-                }
-
                 agent.ResetPath();
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+                animator.SetFloat("Run", 0);
 
                 switch (memory.CurrentActivity)
                 {
                     case ActivitiesLabel.Deviant: UpdateActivityAndDestination(); break;
+
                     case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
+
                     case ActivitiesLabel.Vigile:
+                        List<GameObject> deviantsInSight = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant).ToList();
+                        if (deviantsInSight.Any())
+                        {
+                            
+                        }
                         // TODO : si un vigile atteint un déviant blah blah
                         // TODO if reach target (vigile) do da thing
                         break;
+
                     case ActivitiesLabel.Supply:
                         // TODO if reach target (soifard) do da thing
                         // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
                         break;
+
                     case ActivitiesLabel.Miner:
+                        List<GameObject> mine = GE.GetComponent<GameEnvironment>().GetMines()
+                            .Where(m => Vector3.Distance(
+                        agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
+                        ).ToList();
+                        if (mine.Any())
+                        {
+                            EnterMine(mine[0]);
+                            // TODO : make sure the dwarf dig ( c'est dans le switch ? )
+                        }
                         break;
+
                     case ActivitiesLabel.GoToForge:
                         // TODO if gotoforge ENTERFORGE
                         break;
+
                     default: break;
                 }
             }

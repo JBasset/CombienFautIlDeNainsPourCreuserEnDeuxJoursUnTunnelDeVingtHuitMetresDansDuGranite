@@ -200,6 +200,11 @@ namespace Assets.Scripts
                         Sphere.GetComponent<Renderer>().material.color = Color.black;
                         break;
                     }
+                default:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.grey;
+                        break;
+                    }
             }
             /*
             Sphere Color :
