@@ -9,7 +9,7 @@ namespace Assets.Scripts
     {
         public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
-        public DwarfSelectorBehaviour UI;
+        public UIBehaviour UI;
 
         private Transform gameEnvironment;
         private Transform dwarves;
