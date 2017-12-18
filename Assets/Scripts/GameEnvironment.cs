@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,11 @@ namespace Assets.Scripts
         private Transform gameEnvironment;
         private Transform dwarves;
         private Transform mines;
-        private Vector3 dwarvesSpawn;
         private int spawnsLeft; // number of dwarves to create
+
+        private Text timeSinceStart;
+        private Text totalGoldMined;
+        private Text totalBeerDrank;
 
         private int LastGeneralActivityUpdate;
 
@@ -24,8 +28,13 @@ namespace Assets.Scripts
             gameEnvironment = GetComponent<Transform>();
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
-            dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
             spawnsLeft = 2;
+
+            Transform GeneralStatsPanel = UI.transform.FindChild("GeneralStats");
+            timeSinceStart = GeneralStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
+            totalGoldMined = GeneralStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
+            totalBeerDrank = GeneralStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
+
             LastGeneralActivityUpdate = 0;
 
             UpdateNoticeables();
@@ -55,13 +64,13 @@ namespace Assets.Scripts
 
         private bool IsSpawnFree()
         {
-            return Variables.Dwarves.All(d => !(Vector3.Distance(d.transform.position, dwarvesSpawn) <= 2));
+            return Variables.Dwarves.All(d => !(Vector3.Distance(d.transform.position, Variables.dwarvesSpawn) <= 2));
             // if any dwarf is under 2 units from the spawn, returns false
         }
 
         private void InstantiateDwarf()
         {
-            GameObject newDwarf = Instantiate(DwarfPrefab, dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
+            GameObject newDwarf = Instantiate(DwarfPrefab, Variables.dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;

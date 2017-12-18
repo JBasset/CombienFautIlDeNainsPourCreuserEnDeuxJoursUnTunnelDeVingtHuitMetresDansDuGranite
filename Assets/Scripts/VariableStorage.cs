@@ -17,11 +17,9 @@ namespace Assets.Scripts
         public float MapXMax = 500;
         public float MapZMax = 500;
 
-        // TODO : VRAIMENT RECUPERER LA POSITION ^^
-        // TODO : JEAN HALP LA VRAIE POSITION ELLEESTOU ? :sob:
-
-        public Vector3 beerPosition = new Vector3((float)5.778, (float)2.05, (float)-4.25630);
-        public Vector3 forgePosition = new Vector3((float)55.25, (float)1.9, (float)25.20);
+        public Vector3 beerPosition = new Vector3((float)203.27, (float)1.13, (float)246.37);
+        public Vector3 forgePosition = new Vector3((float)194.75, (float)0.9, (float)275.2);
+        public Vector3 dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
 
         public int maxValueGauge = 100;
         public int minValueGauge = 0;
