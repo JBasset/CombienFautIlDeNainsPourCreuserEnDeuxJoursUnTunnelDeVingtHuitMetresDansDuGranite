@@ -14,19 +14,30 @@ namespace Assets.Scripts
         private DwarfMemory memory;
         private Animator animator;
         private NavMeshAgent agent;
+        private int LastSecond;
 
         private float normalSpeed;
         
         public void Start()
         {
-            Debug.Log(" fedzsudsjid \r hfqugbrqzFUPEBHGQNZOZB Qhbreofijazhfe heeellloooooooooo");
             memory = GetComponent<DwarfMemory>();
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
+            LastSecond = 0;
         }
 
         public void Update()
         {
+            if (Time.time - LastSecond >= 1)
+            {
+                LastSecond = (int)Mathf.Floor(Time.time);
+                if (memory.CurrentActivity == ActivitiesLabel.Miner) memory.TimeAsMiner += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Supply) memory.TimeAsSupply += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Explorer) memory.TimeAsExplorer += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Vigile) memory.TimeAsVigile += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Deviant) memory.TimeAsDeviant += 1;
+            }
+
             if (Input.GetButtonDown("Enter"))
                 MoveTo(Target.position);
             
@@ -65,8 +76,12 @@ namespace Assets.Scripts
 
         public void UpdateActivityAndDestination()
         {
+<<<<<<< HEAD
             Debug.Log("###  entering void UpdateActivityAndDestination()");
             if (memory.RethinkActivity() || !agent.hasPath)
+=======
+            if (memory.RethinkActivity())
+>>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
             {
                 MoveTo(memory.GetNewDestination());
             }
@@ -77,17 +92,12 @@ namespace Assets.Scripts
 
         public void FirstMove()
         {
-            Debug.Log("###  entering void FirstMove()");
-            Debug.Log("### memory exists : pickaxe is " + memory.Pickaxe);
-            Debug.Log(" ======== AAAAAND memory.GetNewDestination() ===========");
             var desti = memory.GetNewDestination();
-            Debug.Log("desti = "+ desti);
             MoveTo(desti);
         }
 
         private void MoveTo(Vector3 pos)
         {
-            Debug.Log("###  MoveTo("+ pos + ")");
             if (memory.OccupiedMine)
                 ExitMine();
             agent.SetDestination(pos);
