@@ -153,7 +153,13 @@ namespace Assets.Scripts
             Debug.Log("||Reth  " + this.name +
                 " chances = " + chances);
 
-            if (rnd.Next(0, (int)chances) > 50) {
+
+            // NOTE THAT EXPLORATION IS REALLY IMPORTANT : AN EXPLORER'S WATCH WON'T END unless he needs beer
+            if (_currentActivity == ActivitiesLabel.Explorer && !KnownMines.Any())
+            { chances -= (0.5 * this.Thirst); }
+
+
+            if ((int)chances <= 50 || rnd.Next(0, (int)chances) > 50) {
                 Debug.Log("||Reth  " + this.name +
                     " 5 more minutes please.. ");
                 return false; /* no changes */ }
@@ -170,48 +176,44 @@ namespace Assets.Scripts
             var p = this.Pickaxe;
             var t = this.Thirst;
             
-            if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit && _currentActivity != ActivitiesLabel.GoToForge)
-            { list.Add(new _WeightedObject(ActivitiesLabel.GoToForge,
-                (int)((w + 2*(100 - p)) / 3)));
-
-                Debug.Log("||Reth  " + this.name +
-                          "  added GoToForge, w = " + ((w + 2 * (100 - p)) / 3));
-
+            if (_currentActivity != ActivitiesLabel.GoToForge
+               && this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit )
+            {
+                var w0 = (int) ((w + 2 * (100 - p)) / 3);
+                list.Add(new _WeightedObject(ActivitiesLabel.GoToForge,w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Deviant)
-            { list.Add(new _WeightedObject(ActivitiesLabel.Deviant, 
-                (int)(((100 - w) + t) / 2)));
-
-                Debug.Log("||Reth  " + this.name +
-                          "  added Deviant, w = " + (((100 - w) + t) / 2));
+            {
+                var w0 = (int) (((100 - w) + t) / 2);
+                list.Add(new _WeightedObject(ActivitiesLabel.Deviant, w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Explorer)
-            { list.Add(new _WeightedObject(ActivitiesLabel.Explorer,
-                (int)((w + (100 - p)) / 2)));
-
-                Debug.Log("||Reth  " + this.name +
-                          "  added Explorer, w = " + ((w + (100 - p)) / 2));
+            {
+                var w0 = (KnownMines.Any()) ? (int) ((w + (100 - p)) / 2) : (int) ((w + 100) / 2);
+                list.Add(new _WeightedObject(ActivitiesLabel.Explorer, w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Miner 
-                && KnownMines.Any(m => !m.Empty))
-            { list.Add(new _WeightedObject(ActivitiesLabel.Miner,
-                (int)((w + p) / 2)));
+                && KnownMines.Any(m => !m.Empty) && this.Pickaxe >= 10)
+            {
+                var w0 = (int) ((w + p) / 2);
+                list.Add(new _WeightedObject(ActivitiesLabel.Miner, w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Supply
-                && KnownDwarves.Any(d => d.highThirst))
-            { list.Add(new _WeightedObject(ActivitiesLabel.Supply,
-                (int)((w + (100 - t)) / 2)));
+                && KnownDwarves.Any(d => d.highThirst) && this.Thirst >= 10)
+            {
+                var w0 = (int)((w + (100 - t)) / 2);
+                list.Add(new _WeightedObject(ActivitiesLabel.Supply,w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Vigile
-                && KnownDwarves.Any(d => d.deviant))
+                && KnownDwarves.Any(d => d.deviant) && this.Thirst >= 10)
             {
-                list.Add(new _WeightedObject(ActivitiesLabel.Vigile,
-                  (int)(w)));
+                var w0 = w;
+                list.Add(new _WeightedObject(ActivitiesLabel.Vigile,w0));
             }
 
             Debug.Log("||Reth  " + this.name +
@@ -302,6 +304,7 @@ namespace Assets.Scripts
                     {
                         w = 80 - (int)(mine.DwarvesInTheMine * GameEnvironment.Variables.min_pplInTheMineImportance); 
                         // the more dwarves are ALREADY in the mine, the less he wants to go
+                        // TODO : pondérer avec la récence de l'info ?
                     
                         if (Vector3.Distance(_dwarfTransf.position, mine.MinePosition) < GameEnvironment.Variables.min_closeMinefLimit)
                         { w+=20; } // this mine is close enough

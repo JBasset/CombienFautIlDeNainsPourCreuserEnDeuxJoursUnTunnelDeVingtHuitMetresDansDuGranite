@@ -35,20 +35,37 @@ namespace Assets.Scripts
                 agent.ResetPath();
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
 
-                if (memory.CurrentActivity == ActivitiesLabel.Miner)
+                switch (memory.CurrentActivity)
                 {
-                    foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
+                    case ActivitiesLabel.Deviant: UpdateActivityAndDestination(); break;
+                    case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
+                    case ActivitiesLabel.Vigile:
+                        // TODO if reach target (vigile) do da thing
+                        break;
+                    case ActivitiesLabel.Supply:
+                        // TODO if reach target (soifard) do da thing
+                        // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
+                        break;
+                    case ActivitiesLabel.Miner:
                     {
-                        if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
-                            EnterMine(mine);
+                        foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
+                        {
+                            if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
+                                EnterMine(mine);
+                        }
                     }
+                        break;
+                    case ActivitiesLabel.GoToForge:
+                        // TODO if gotoforge ENTERFORGE
+                        break;
+                    default: break;
                 }
             }
         }
 
-        public void UpdateActivityAndPosition()
+        public void UpdateActivityAndDestination()
         {
-            Debug.Log("###  entering void UpdateActivityAndPosition()");
+            Debug.Log("###  entering void UpdateActivityAndDestination()");
             if (memory.RethinkActivity())
             {
                 MoveTo(memory.GetNewDestination());

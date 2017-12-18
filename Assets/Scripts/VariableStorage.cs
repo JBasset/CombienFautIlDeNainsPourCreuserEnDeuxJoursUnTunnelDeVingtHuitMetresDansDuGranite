@@ -29,8 +29,8 @@ namespace Assets.Scripts
 
         public double attenuateTimeImpact = 1; /* this value (0 <= x <= 1) affects a dwarf's chance to rethink his activity */
 
-        public int activityRethinkChangeRate = 5; // in UnityEngine.Time, used in gameEnvironment.Update()
-        public int lowerBoundBeforeRethink = 2; // in seconds, used in DwarfMemory.RethinkActivity()
+        public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int lowerBoundBeforeRethink = 3; // in seconds, used in DwarfMemory.RethinkActivity()
 
         #region HEURISTICS
 
