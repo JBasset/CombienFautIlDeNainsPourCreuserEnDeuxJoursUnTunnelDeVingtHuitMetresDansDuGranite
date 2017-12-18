@@ -9,6 +9,7 @@ namespace Assets.Scripts
     {
         public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
+        public DwarfSelectorBehaviour UI;
 
         private Transform gameEnvironment;
         private Transform dwarves;
@@ -81,6 +82,8 @@ namespace Assets.Scripts
             newDwarf.GetComponent<DwarfMemory>().Start();
 
             Debug.Log(newDwarf.GetComponent<DwarfMemory>() + " (.GetComponent<DwarfBehaviour>())");
+
+            UI.SetDwarfButtons();
 
             newDwarf.GetComponent<DwarfBehaviour>().FirstMove();
         }

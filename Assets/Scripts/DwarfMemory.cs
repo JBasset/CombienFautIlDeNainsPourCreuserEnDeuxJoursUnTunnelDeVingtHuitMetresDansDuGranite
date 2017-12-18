@@ -61,7 +61,7 @@ namespace Assets.Scripts
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
 
-            this.Gauges = new _Gauges(100, 100, 100, GameEnvironment);
+            this.Gauges = new _Gauges(GameEnvironment);
             Debug.Log( this.name + " initialization done, Pickaxe is : " + this.Pickaxe);
 
             OccupiedMine = null;
@@ -447,7 +447,7 @@ namespace Assets.Scripts
             }
             #endregion
 
-            public _Gauges(int thirst, int workDesire, int pickaxe, GameEnvironment gameEnv)
+            public _Gauges(GameEnvironment gameEnv, int thirst = 100, int workDesire = 100, int pickaxe = 100)
             {
                 Debug.Log(
                     "Hey, I'm in _Gauges constructor trying to set pickaxe to" + pickaxe + " :) ");

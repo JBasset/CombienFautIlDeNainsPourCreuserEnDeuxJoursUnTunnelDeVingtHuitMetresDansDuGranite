@@ -10,6 +10,7 @@ namespace Assets.Scripts
     {
         public GameObject Dwarves;
         public GameObject DwarfInfoPanel;
+        public GameEnvironment gameEnvironment;
 
         private Camera cam;
         private float minDownScroll;
@@ -20,15 +21,55 @@ namespace Assets.Scripts
         private RaycastHit hit;
         private Collider lockedObject;
 
+        #region DwarfInfoPanel fields
+        private Text dwarfName;
+        private Text dwarfActivity;
+        private Slider beerCarried;
+        private Slider thirst;
+        private Slider workDesire;
+        private Slider pickaxe;
+        private Text oreMined;
+        private Text beerDrank;
+        private Text beerGiven;
+        private Text deviantsStopped;
+        private Text timeAsMiner;
+        private Text timeAsSupply;
+        private Text timeAsExplorer;
+        private Text timeAsVigile;
+        private Text timeAsDeviant;
+        #endregion
+
         void Start()
         {
             cam = GetComponent<Camera>();
             minDownScroll = 0;
             rotating = false;
             lockedCameraRotation = cam.transform.rotation;
+
+            #region DwarfInfoPanel fields
+            Transform GeneralInfo = DwarfInfoPanel.transform.FindChild("GeneralInfo");
+            Transform Gauges = GeneralInfo.FindChild("Gauges");
+            Transform Stats = DwarfInfoPanel.transform.FindChild("Stats");
+            Transform Beer = Stats.FindChild("Beer");
+            Transform Time = Stats.FindChild("Time");
+            dwarfName = GeneralInfo.FindChild("DwarfName").GetComponent<Text>();
+            dwarfActivity = GeneralInfo.FindChild("DwarfActivity").GetComponent<Text>();
+            beerCarried = GeneralInfo.FindChild("BeerCarried").FindChild("Slider").GetComponent<Slider>();
+            thirst = Gauges.FindChild("Thirst").FindChild("Slider").GetComponent<Slider>();
+            workDesire = Gauges.FindChild("WorkDesire").FindChild("Slider").GetComponent<Slider>();
+            pickaxe = Gauges.FindChild("Pickaxe").FindChild("Slider").GetComponent<Slider>();
+            oreMined = Stats.FindChild("GoldOreMined").FindChild("Value").GetComponent<Text>();
+            beerDrank = Beer.FindChild("BeerDrank").FindChild("Value").GetComponent<Text>();
+            beerGiven = Beer.FindChild("BeerGiven").FindChild("Value").GetComponent<Text>();
+            timeAsMiner = Time.FindChild("Miner").FindChild("Value").GetComponent<Text>();
+            timeAsSupply = Time.FindChild("Supply").FindChild("Value").GetComponent<Text>();
+            timeAsExplorer = Time.FindChild("Explorer").FindChild("Value").GetComponent<Text>();
+            timeAsVigile = Time.FindChild("Vigile").FindChild("Value").GetComponent<Text>();
+            timeAsDeviant = Time.FindChild("Deviant").FindChild("Value").GetComponent<Text>();
+            #endregion
         }
 
-        void Update()
+    void Update()
         {
             if (Input.GetMouseButtonDown(1))
             {
@@ -48,7 +89,9 @@ namespace Assets.Scripts
                 Ray mouseRay = cam.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
+                {
                     lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
+                }
                 else if (lockedObject && !EventSystem.current.IsPointerOverGameObject())
                 {
                     lockedObject = null; // if the click is not on an agent and not on an UI element, the camera unlocks
@@ -60,7 +103,7 @@ namespace Assets.Scripts
             if (lockedObject)
             {
                 LockCamera(lockedObject);
-                UpdateDwarfInfoPanel(lockedObject.gameObject);
+                UpdateDwarfInfoPanel();
             }
         }
 
@@ -122,12 +165,15 @@ namespace Assets.Scripts
             agent.gameObject.transform.FindChild("Sphere").gameObject.SetActive(true);
 
             DwarfInfoPanel.SetActive(true);
-            UpdateDwarfInfoPanel(agent.gameObject);
         }
 
-        private void UpdateDwarfInfoPanel(GameObject agent)
+        private void UpdateDwarfInfoPanel()
         {
-            DwarfInfoPanel.transform.FindChild("DwarfName").GetComponent<Text>().text = agent.name;
+            DwarfMemory memory = lockedObject.GetComponent<DwarfMemory>();
+            dwarfName.text = lockedObject.name;
+            dwarfActivity.text = memory.CurrentActivity.ToString();
+            //beerCarried.value
+            thirst.value = memory.Thirst / gameEnvironment.Variables.maxValueGauge; 
         }
 
         private void DeactivateSpheres()
