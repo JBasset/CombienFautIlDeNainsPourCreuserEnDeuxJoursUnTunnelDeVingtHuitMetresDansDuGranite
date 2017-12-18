@@ -17,6 +17,8 @@ namespace Assets.Scripts
 
         public GameObject OccupiedMine;
 
+        public Vector3? savedDestination;
+
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
         
@@ -298,6 +300,12 @@ namespace Assets.Scripts
 
         public Vector3 GetNewDestination()
         {
+            if (savedDestination != null)
+            {
+                var d = (Vector3)savedDestination;
+                savedDestination = null;
+                return d;
+            }
 
             var rnd = new System.Random();
 
@@ -415,7 +423,11 @@ namespace Assets.Scripts
                 case ActivitiesLabel.GoToForge:
                     #region Adds forge (not questionable)
                     if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit)
-                    { return (Vector3)GameEnvironment.Variables.forgePosition; }
+                    {
+                        var d = (Vector3)GameEnvironment.Variables.forgePosition;
+                        savedDestination = d;
+                        return d;
+                    }
                     break;
                     #endregion
                 default:
@@ -431,10 +443,10 @@ namespace Assets.Scripts
             #region STEP TWO : SELECT AN OPTION
             var destinations = new WeightedList(destList);
 
-            var theDest = (Vector3) destinations.SelectRandomItem();
+            savedDestination = (Vector3) destinations.SelectRandomItem();
             #endregion
             
-            return theDest;
+            return (Vector3)savedDestination;
         }
 
         public class _KnownDwarf

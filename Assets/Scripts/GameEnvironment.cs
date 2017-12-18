@@ -61,36 +61,7 @@ namespace Assets.Scripts
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
-
-            foreach (var observableMine in Variables.Mines)
-            {
-                var minePosition = observableMine.transform.FindChild("MineEntrance").position;
-                var nearDwarves = Variables.Dwarves.Where( d => Vector3.Distance(
-                    d.transform.position, minePosition) < 0.1f
-                    ).ToList();
-                foreach (var dwarf in nearDwarves)
-                {
-                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().dwarvesInside;
-                    var thirstyDwarves = dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < Variables.thirstyDwarvesGaugeLimit) ;
-                    var ore = observableMine.GetComponent<MineBehaviour>().ore;
-
-                    dwarf.GetComponent<DwarfMemory>().UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now);
-                }
-            }
-
-            foreach (var myDwarf in Variables.Dwarves)
-            {
-                foreach (var metDwarf in Variables.Dwarves.Where(
-                    d => (myDwarf.gameObject.name != d.gameObject.name) && false /* TODO : mettre fonction Jean */))
-                {
-                    foreach (var knownMine in metDwarf.GetComponent<DwarfMemory>().KnownMines)
-                    {
-                        myDwarf.GetComponent<DwarfMemory>().UpdateMine(knownMine);
-                    }
-                }
-            }
             
-
             if (Time.time - LastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
             {
                 LastGaneralGaugesUpdate = (int) Mathf.Floor(Time.time);
