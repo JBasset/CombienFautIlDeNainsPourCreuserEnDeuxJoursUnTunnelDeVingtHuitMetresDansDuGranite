@@ -33,6 +33,8 @@ namespace Assets.Scripts
         /* proba = 0.25 + (attenuateTimeImpact * nbsec / 100 ) */
 
         public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int gaugeUpdateRate = 2; // in UnityEngine.Time, used in gameEnvironment.Update()
+
         public int lowerBoundBeforeRethink = 3; // in seconds, used in DwarfMemory.RethinkActivity()
 
         #region HEURISTICS
@@ -88,7 +90,7 @@ namespace Assets.Scripts
         #endregion
 
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }
-        public enum GaugesLabel { /*Specialisation, Tiredness, */ Thirst, Workdesire, Pickaxe}
+        public enum GaugesLabel { /*Specialisation, Tiredness, */ ThirstSatisfaction, Workdesire, Pickaxe}
 
         
 

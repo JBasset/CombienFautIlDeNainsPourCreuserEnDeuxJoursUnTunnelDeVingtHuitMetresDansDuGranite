@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using ActivitiesLabel = Assets.Scripts.VariableStorage.ActivitiesLabel;
 using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
 
@@ -43,6 +45,25 @@ namespace Assets.Scripts
             
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
             {
+                if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
+                {
+                    memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
+                }
+
+                if (Vector3.Distance(agent.destination, GE.Variables.forgePosition) < 0.1f)
+                {
+                    memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
+                }
+
+                List<GameObject> mine = GE.GetComponent<GameEnvironment>().GetMines()
+                    .Where(m => Vector3.Distance(
+                        agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
+                        ).ToList();
+                if (mine.Any())
+                {
+                    EnterMine(mine[0]);
+                }
+
                 agent.ResetPath();
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
 
@@ -51,6 +72,7 @@ namespace Assets.Scripts
                     case ActivitiesLabel.Deviant: UpdateActivityAndDestination(); break;
                     case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
                     case ActivitiesLabel.Vigile:
+                        // TODO : si un vigile atteint un déviant blah blah
                         // TODO if reach target (vigile) do da thing
                         break;
                     case ActivitiesLabel.Supply:
@@ -58,13 +80,6 @@ namespace Assets.Scripts
                         // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
                         break;
                     case ActivitiesLabel.Miner:
-                    {
-                        foreach (GameObject mine in GE.GetComponent<GameEnvironment>().GetMines())
-                        {
-                            if (Vector3.Distance(mine.transform.FindChild("MineEntrance").position, agent.transform.position) < 0.1f)
-                                EnterMine(mine);
-                        }
-                    }
                         break;
                     case ActivitiesLabel.GoToForge:
                         // TODO if gotoforge ENTERFORGE

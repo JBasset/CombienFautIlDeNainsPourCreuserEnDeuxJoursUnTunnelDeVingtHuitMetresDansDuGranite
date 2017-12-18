@@ -27,7 +27,7 @@ namespace Assets.Scripts
         private Text knownDwarves;
         private Text knownMines;
         private Slider beerCarried;
-        private Slider thirst;
+        private Slider thirstSatisfaction;
         private Slider workDesire;
         private Slider pickaxe;
         private Text oreMined;
@@ -60,7 +60,7 @@ namespace Assets.Scripts
             knownDwarves = Known.FindChild("Dwarves").FindChild("Value").GetComponent<Text>();
             knownMines = Known.FindChild("Mines").FindChild("Value").GetComponent<Text>();
             beerCarried = GeneralInfo.FindChild("BeerCarried").FindChild("Slider").GetComponent<Slider>();
-            thirst = Gauges.FindChild("Thirst").FindChild("Slider").GetComponent<Slider>();
+            thirstSatisfaction = Gauges.FindChild("ThirstSatisfaction").FindChild("Slider").GetComponent<Slider>();
             workDesire = Gauges.FindChild("WorkDesire").FindChild("Slider").GetComponent<Slider>();
             pickaxe = Gauges.FindChild("Pickaxe").FindChild("Slider").GetComponent<Slider>();
             oreMined = Stats.FindChild("GoldOreMined").FindChild("Value").GetComponent<Text>();
@@ -183,7 +183,7 @@ namespace Assets.Scripts
             //TODO : knownDwarves, knownMines, beerCarried.value
 
             int maxValueGauge = gameEnvironment.Variables.maxValueGauge;
-            thirst.value = (float)memory.Thirst / (float)maxValueGauge;
+            thirstSatisfaction.value = (float)memory.ThirstSatisfaction / (float)maxValueGauge;
             workDesire.value = (float)memory.WorkDesire / (float)maxValueGauge;
             pickaxe.value = (float)memory.Pickaxe / (float)maxValueGauge;
             #endregion

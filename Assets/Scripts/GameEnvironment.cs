@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ActivitiesLabel = Assets.Scripts.VariableStorage.ActivitiesLabel;
+using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
 
 namespace Assets.Scripts
 {
@@ -18,6 +20,7 @@ namespace Assets.Scripts
         private int spawnsLeft; // number of dwarves to create
 
         private int LastGeneralActivityUpdate;
+        private int LastGaneralGaugesUpdate;
 
         void Start()
         {
@@ -27,6 +30,7 @@ namespace Assets.Scripts
             dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
             spawnsLeft = 2;
             LastGeneralActivityUpdate = 0;
+            LastGaneralGaugesUpdate = 0;
 
             UpdateNoticeables();
         }
@@ -44,6 +48,39 @@ namespace Assets.Scripts
                 foreach (var myDwarf in Variables.Dwarves)
                 {
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                }
+            }
+            if (Time.time - LastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
+            {
+                LastGaneralGaugesUpdate = (int) Mathf.Floor(Time.time);
+                foreach (var myDwarf in Variables.Dwarves)
+                {
+                    switch (myDwarf.GetComponent<DwarfMemory>().CurrentActivity)
+                    {
+                        case ActivitiesLabel.Miner:
+                            if (myDwarf.GetComponent<DwarfMemory>().OccupiedMine)
+                                myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Pickaxe, 1);
+                            break;
+                        default: break;
+                        /*case ActivitiesLabel.Deviant: break;
+                        case ActivitiesLabel.Explorer: break;
+                        case ActivitiesLabel.Vigile: break;
+                        case ActivitiesLabel.Supply: break;
+                        case ActivitiesLabel.GoToForge: break;*/
+                    }
+
+                    myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.ThirstSatisfaction, 1);
+
+                    if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction > 50)
+                    {
+                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire,
+                            (int) (100 / myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
+                    }
+                    else
+                    {
+                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire,
+                            (int) (100 / myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
+                    }
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace Assets.Scripts
         public DateTime LastActivityChange {  get { return _lastActivityChange; } }
 
         private _Gauges Gauges;
-        public int Thirst { get { return Gauges.Thirst; } }
+        public int ThirstSatisfaction { get { return Gauges.ThirstSatisfaction; } }
         public int WorkDesire { get { return Gauges.WorkDesire; } }
         public int Pickaxe { get {
             return Gauges.Pickaxe; } }
@@ -89,12 +89,12 @@ namespace Assets.Scripts
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
         public void IncreaseBy(GaugesLabel theGauge, int byValue)
         {
-            // exemple of use : one dwarf gets thirsty, his thirst increaseBy(Thirst,10)
+            // exemple of use : one dwarf gets thirsty, his thirst increaseBy(ThirstSatisfaction,10)
             if (byValue <= 0) return;
             switch (theGauge)
             {
-                case GaugesLabel.Thirst:
-                    Gauges.Thirst += byValue;
+                case GaugesLabel.ThirstSatisfaction:
+                    Gauges.ThirstSatisfaction += byValue;
                     break;
                 case GaugesLabel.Workdesire:
                     Gauges.WorkDesire += byValue;
@@ -109,12 +109,12 @@ namespace Assets.Scripts
 
         public void LowerBy(GaugesLabel theGauge, int byValue)
         {
-            // exemple of use : one dwarf drinks, his thirst lowerBy(Thirst,10)
+            // exemple of use : one dwarf drinks, his thirst lowerBy(ThirstSatisfaction,10)
             if (byValue <= 0) return;
             switch (theGauge)
             {
-                case GaugesLabel.Thirst:
-                    Gauges.Thirst -= byValue;
+                case GaugesLabel.ThirstSatisfaction:
+                    Gauges.ThirstSatisfaction -= byValue;
                     break;
                 case GaugesLabel.Workdesire:
                     Gauges.WorkDesire -= byValue;
@@ -168,25 +168,31 @@ namespace Assets.Scripts
              */
             var chanceToChangeMyActivity = 25 + (s * GameEnvironment.Variables.attenuateTimeImpact);
 
+            if (_currentActivity != ActivitiesLabel.Deviant)
+            { chanceToChangeMyActivity += (0.5 * (100 - this.ThirstSatisfaction)); }
+
             switch (_currentActivity)
             {
                 case ActivitiesLabel.Deviant:
                 {
                     // I'm (most likely) not a deviant anymore !
-                    if (Thirst > 75 || WorkDesire > 75) { chanceToChangeMyActivity += (0.5 * this.Thirst); }
+                    if (ThirstSatisfaction > 75 || WorkDesire > 75) { chanceToChangeMyActivity += (0.5 * this.ThirstSatisfaction); }
+                    
+                    // I may stay a deviant for a while
+                    if (ThirstSatisfaction < 25 || WorkDesire < 25) { chanceToChangeMyActivity -= (0.5 * ( 100 - this.ThirstSatisfaction) ); }
                     break;
-                }
+                    }
                 case ActivitiesLabel.Explorer:
                 {
                     // NOTE THAT EXPLORATION IS REALLY IMPORTANT : AN EXPLORER'S WATCH WON'T END unless he needs beer
-                    if (!KnownMines.Any()) { chanceToChangeMyActivity -= (0.5 * this.Thirst); }
+                    if (!KnownMines.Any()) { chanceToChangeMyActivity -= (0.5 * this.ThirstSatisfaction); }
                     break;
                 }
                 case ActivitiesLabel.Vigile: //TODO : completer
                     break;
                 case ActivitiesLabel.Supply:  //TODO : completer
                     break;
-                case ActivitiesLabel.Miner:  //TODO : completer
+                case ActivitiesLabel.Miner:  //TODO : completer : je suis actuellement un mineur, je compte le rester un moment ! C'est mon objectif dans la vie quand même.
                     break;
                 case ActivitiesLabel.GoToForge: //TODO : completer
                     break;
@@ -204,7 +210,7 @@ namespace Assets.Scripts
 
             var w = this.WorkDesire;
             var p = this.Pickaxe;
-            var t = this.Thirst;
+            var t = this.ThirstSatisfaction;
 
             if (_currentActivity != ActivitiesLabel.GoToForge
                 && this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit)
@@ -233,14 +239,14 @@ namespace Assets.Scripts
             }
 
             if (_currentActivity != ActivitiesLabel.Supply
-                && KnownDwarves.Any(d => d.HighThirst) && this.Thirst >= 10)
+                && KnownDwarves.Any(d => d.HighThirst) && this.ThirstSatisfaction >= 10)
             {
                 var w0 = (int)((w + (100 - t)) / 2);
                 list.Add(new _WeightedObject(ActivitiesLabel.Supply, w0));
             }
 
             if (_currentActivity != ActivitiesLabel.Vigile
-                && KnownDwarves.Any(d => d.Deviant) && this.Thirst >= 10)
+                && KnownDwarves.Any(d => d.Deviant) && this.ThirstSatisfaction >= 10)
             {
                 var w0 = w;
                 list.Add(new _WeightedObject(ActivitiesLabel.Vigile, w0));
@@ -269,9 +275,9 @@ namespace Assets.Scripts
             var destList = new List<_WeightedObject>();
 
             int w; // a 0~100 weight
-
-            #region STEP ONE : EXPLORING MY OPTIONS (depending on my activity)
             
+            #region STEP ONE : EXPLORING MY OPTIONS (depending on my activity)
+
             switch (this._currentActivity)
             {
                 case ActivitiesLabel.Deviant:
@@ -449,7 +455,7 @@ namespace Assets.Scripts
             GameEnvironment ge;
 
             #region get/set (thirst, workdesire, pickaxe)
-            public int Thirst
+            public int ThirstSatisfaction
             {
                 get { return _gauges[0]; }
                 set { _gauges[0] = StockGauge(value); }
