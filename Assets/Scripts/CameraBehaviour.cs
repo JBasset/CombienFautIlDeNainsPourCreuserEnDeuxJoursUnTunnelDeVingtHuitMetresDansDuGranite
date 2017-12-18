@@ -58,7 +58,10 @@ namespace Assets.Scripts
             }
 
             if (lockedObject)
+            {
                 LockCamera(lockedObject);
+                UpdateDwarfInfoPanel(lockedObject.gameObject);
+            }
         }
 
         private void RotateCamera()
