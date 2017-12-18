@@ -43,7 +43,7 @@ namespace Assets.Scripts
                 LastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
                 foreach (var myDwarf in Variables.Dwarves)
                 {
-                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndPosition();
+                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
         }

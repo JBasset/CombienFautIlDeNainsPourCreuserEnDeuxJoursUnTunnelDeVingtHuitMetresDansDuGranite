@@ -18,6 +18,8 @@ namespace Assets.Scripts
         public float MapZMax = 500;
 
         // TODO : VRAIMENT RECUPERER LA POSITION ^^
+        // TODO : JEAN HALP LA VRAIE POSITION ELLEESTOU ? :sob:
+
         public Vector3 beerPosition = new Vector3((float)5.778, (float)2.05, (float)-4.25630);
         public Vector3 forgePosition = new Vector3((float)55.25, (float)1.9, (float)25.20);
 
@@ -28,9 +30,10 @@ namespace Assets.Scripts
         public int dwarfOreMiningRate = 10;
 
         public double attenuateTimeImpact = 1; /* this value (0 <= x <= 1) affects a dwarf's chance to rethink his activity */
+        /* proba = 0.25 + (attenuateTimeImpact * nbsec / 100 ) */
 
-        public int activityRethinkChangeRate = 5; // in UnityEngine.Time, used in gameEnvironment.Update()
-        public int lowerBoundBeforeRethink = 2; // in seconds, used in DwarfMemory.RethinkActivity()
+        public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int lowerBoundBeforeRethink = 3; // in seconds, used in DwarfMemory.RethinkActivity()
 
         #region HEURISTICS
 
