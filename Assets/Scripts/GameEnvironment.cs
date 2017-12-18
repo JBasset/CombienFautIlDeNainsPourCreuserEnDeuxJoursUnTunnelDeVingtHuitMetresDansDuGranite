@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,24 +12,33 @@ namespace Assets.Scripts
     {
         public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
-        public DwarfSelectorBehaviour UI;
+        public UIBehaviour UI;
 
         private Transform gameEnvironment;
         private Transform dwarves;
         private Transform mines;
-        private Vector3 dwarvesSpawn;
         private int spawnsLeft; // number of dwarves to create
+
+        private Text timeSinceStart;
+        private Text totalGoldMined;
+        private Text totalBeerDrank;
 
         private int LastGeneralActivityUpdate;
         private int LastGaneralGaugesUpdate;
+        private int lastSecond;
 
         void Start()
         {
             gameEnvironment = GetComponent<Transform>();
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
-            dwarvesSpawn = new Vector3(212, 1.2f, 250); // center of the village
             spawnsLeft = 2;
+
+            Transform GeneralStatsPanel = UI.transform.FindChild("GeneralStats");
+            timeSinceStart = GeneralStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
+            totalGoldMined = GeneralStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
+            totalBeerDrank = GeneralStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
+
             LastGeneralActivityUpdate = 0;
             LastGaneralGaugesUpdate = 0;
 
@@ -50,6 +60,7 @@ namespace Assets.Scripts
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
+
             if (Time.time - LastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
             {
                 LastGaneralGaugesUpdate = (int) Mathf.Floor(Time.time);
@@ -83,6 +94,13 @@ namespace Assets.Scripts
                     }
                 }
             }
+
+            if (Time.time - lastSecond >= 1)
+            {
+                lastSecond = (int)Mathf.Floor(Time.time);
+                Variables.TimeSinceStart = lastSecond;
+            }
+            UpdateGeneralStats();
         }
 
         public void CreateDwarf(int quantity)
@@ -92,13 +110,13 @@ namespace Assets.Scripts
 
         private bool IsSpawnFree()
         {
-            return Variables.Dwarves.All(d => !(Vector3.Distance(d.transform.position, dwarvesSpawn) <= 2));
+            return Variables.Dwarves.All(d => !(Vector3.Distance(d.transform.position, Variables.dwarvesSpawn) <= 2));
             // if any dwarf is under 2 units from the spawn, returns false
         }
 
         private void InstantiateDwarf()
         {
-            GameObject newDwarf = Instantiate(DwarfPrefab, dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
+            GameObject newDwarf = Instantiate(DwarfPrefab, Variables.dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
             newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
@@ -149,6 +167,13 @@ namespace Assets.Scripts
                 Variables.NoticeableObjects.Add(dwarf);
             foreach (GameObject mine in Variables.Mines)
                 Variables.NoticeableObjects.Add(mine);
+        }
+
+        private void UpdateGeneralStats()
+        {
+            timeSinceStart.text = "" + Variables.TimeSinceStart;
+            totalGoldMined.text = "" + Variables.TotalGoldMined;
+            totalBeerDrank.text = "" + Variables.TotalBeerDrank;
         }
     }
 }

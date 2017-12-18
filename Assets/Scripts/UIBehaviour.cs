@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts
 {
-    public class DwarfSelectorBehaviour : MonoBehaviour
+    public class UIBehaviour : MonoBehaviour
     {
         public Button DwarfButton;
         public GameObject GE;

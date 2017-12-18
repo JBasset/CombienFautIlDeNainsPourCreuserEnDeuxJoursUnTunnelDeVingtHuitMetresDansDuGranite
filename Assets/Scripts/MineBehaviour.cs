@@ -28,16 +28,19 @@ namespace Assets.Scripts
                 LastSecond = (int)Mathf.Floor(Time.time);
                 ore += gameEnvironment.Variables.oreSpawnRate;
 
+                int miningRate = gameEnvironment.Variables.dwarfOreMiningRate;
                 foreach (GameObject Dwarf in dwarvesInside)
                 {
-                    if (ore >= 5)
+                    if (ore >= miningRate)
                     {
-                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += 5;
-                        ore -= 5;
+                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += miningRate;
+                        gameEnvironment.Variables.TotalGoldMined += miningRate;
+                        ore -= miningRate;
                     }
                     else
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += ore;
+                        gameEnvironment.Variables.TotalGoldMined += ore;
                         ore = 0;
                         EmptyMine();
                         break;

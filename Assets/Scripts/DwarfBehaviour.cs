@@ -62,6 +62,7 @@ namespace Assets.Scripts
                 if (mine.Any())
                 {
                     EnterMine(mine[0]);
+                    // TODO : make sure the dwarf dig ( c'est dans le switch ? )
                 }
 
                 agent.ResetPath();
