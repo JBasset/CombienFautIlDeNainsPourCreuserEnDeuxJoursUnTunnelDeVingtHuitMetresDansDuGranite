@@ -116,10 +116,13 @@ namespace Assets.Scripts
                     if (hit.collider.CompareTag("Agent"))
                     {
                         lockedAgent = hit.collider; // on clicking on an agent, we set it as the camera lock
+                        lockedMine = null;
                     }
                     else if (hit.collider.CompareTag("Mine"))
                     {
                         lockedMine = hit.collider;
+                        lockedAgent = null;
+                        DeactivateSpheres();
                     }
                     else if ((lockedAgent || lockedMine) && !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
                     {
