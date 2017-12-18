@@ -24,6 +24,8 @@ namespace Assets.Scripts
         #region DwarfInfoPanel fields
         private Text dwarfName;
         private Text dwarfActivity;
+        private Text knownDwarves;
+        private Text knownMines;
         private Slider beerCarried;
         private Slider thirst;
         private Slider workDesire;
@@ -48,12 +50,15 @@ namespace Assets.Scripts
 
             #region DwarfInfoPanel fields
             Transform GeneralInfo = DwarfInfoPanel.transform.FindChild("GeneralInfo");
+            Transform Known = GeneralInfo.FindChild("Known");
             Transform Gauges = GeneralInfo.FindChild("Gauges");
             Transform Stats = DwarfInfoPanel.transform.FindChild("Stats");
             Transform Beer = Stats.FindChild("Beer");
             Transform Time = Stats.FindChild("Time");
             dwarfName = GeneralInfo.FindChild("DwarfName").GetComponent<Text>();
             dwarfActivity = GeneralInfo.FindChild("DwarfActivity").GetComponent<Text>();
+            knownDwarves = Known.FindChild("Dwarves").FindChild("Value").GetComponent<Text>();
+            knownMines = Known.FindChild("Mines").FindChild("Value").GetComponent<Text>();
             beerCarried = GeneralInfo.FindChild("BeerCarried").FindChild("Slider").GetComponent<Slider>();
             thirst = Gauges.FindChild("Thirst").FindChild("Slider").GetComponent<Slider>();
             workDesire = Gauges.FindChild("WorkDesire").FindChild("Slider").GetComponent<Slider>();
@@ -61,6 +66,7 @@ namespace Assets.Scripts
             oreMined = Stats.FindChild("GoldOreMined").FindChild("Value").GetComponent<Text>();
             beerDrank = Beer.FindChild("BeerDrank").FindChild("Value").GetComponent<Text>();
             beerGiven = Beer.FindChild("BeerGiven").FindChild("Value").GetComponent<Text>();
+            deviantsStopped = Stats.FindChild("DeviantsStopped").FindChild("Value").GetComponent<Text>();
             timeAsMiner = Time.FindChild("Miner").FindChild("Value").GetComponent<Text>();
             timeAsSupply = Time.FindChild("Supply").FindChild("Value").GetComponent<Text>();
             timeAsExplorer = Time.FindChild("Explorer").FindChild("Value").GetComponent<Text>();
@@ -170,10 +176,29 @@ namespace Assets.Scripts
         private void UpdateDwarfInfoPanel()
         {
             DwarfMemory memory = lockedObject.GetComponent<DwarfMemory>();
+            #region GeneralInfo
             dwarfName.text = lockedObject.name;
             dwarfActivity.text = memory.CurrentActivity.ToString();
-            //beerCarried.value
-            thirst.value = memory.Thirst / gameEnvironment.Variables.maxValueGauge; 
+
+            //TODO : knownDwarves, knownMines, beerCarried.value
+
+            int maxValueGauge = gameEnvironment.Variables.maxValueGauge;
+            thirst.value = (float)memory.Thirst / (float)maxValueGauge;
+            workDesire.value = (float)memory.WorkDesire / (float)maxValueGauge;
+            pickaxe.value = (float)memory.Pickaxe / (float)maxValueGauge;
+            #endregion
+
+            #region Stats
+            oreMined.text = "" + memory.GoldOreMined;
+            beerDrank.text = "" + memory.BeerDrank;
+            beerGiven.text = "" + memory.BeerGiven;
+            deviantsStopped.text = "" + memory.DeviantsStopped;
+            timeAsMiner.text = "" + memory.TimeAsMiner;
+            timeAsSupply.text = "" + memory.TimeAsSupply;
+            timeAsExplorer.text = "" + memory.TimeAsExplorer;
+            timeAsVigile.text = "" + memory.TimeAsVigile;
+            timeAsDeviant.text = "" + memory.TimeAsDeviant;
+            #endregion
         }
 
         private void DeactivateSpheres()

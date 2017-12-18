@@ -44,11 +44,6 @@ namespace Assets.Scripts
                 foreach (var myDwarf in Variables.Dwarves)
                 {
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndPosition();
-                    Debug.Log(
-                        myDwarf.name + 
-                        " Target :" + myDwarf.GetComponent<DwarfBehaviour>().Target +
-                        "\r Pioche :" + myDwarf.GetComponent<DwarfMemory>().Pickaxe +
-                        "\r CurrentActivity :" + myDwarf.GetComponent<DwarfMemory>().CurrentActivity);
                 }
             }
         }
@@ -73,15 +68,9 @@ namespace Assets.Scripts
             newDwarf.GetComponent<DwarfBehaviour>().GE = this;
             newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
             newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
-            Debug.Log(
-                "After DwarfMemoryInitialization, " + newDwarf.name + "'s pickaxe is " + newDwarf.GetComponent<DwarfMemory>().Pickaxe);
-            Debug.Log("### call +"+ newDwarf + ".GetComponent<DwarfBehaviour>().FirstMove();");
-            Debug.Log(newDwarf.GetComponent<DwarfBehaviour>() + " (.GetComponent<DwarfBehaviour>())");
 
             newDwarf.GetComponent<DwarfBehaviour>().Start();
             newDwarf.GetComponent<DwarfMemory>().Start();
-
-            Debug.Log(newDwarf.GetComponent<DwarfMemory>() + " (.GetComponent<DwarfBehaviour>())");
 
             UI.SetDwarfButtons();
 

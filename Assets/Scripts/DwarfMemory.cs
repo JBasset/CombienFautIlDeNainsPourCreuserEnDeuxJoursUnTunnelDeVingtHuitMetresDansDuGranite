@@ -26,6 +26,17 @@ namespace Assets.Scripts
         public int Pickaxe { get {
             return Gauges.Pickaxe; } }
 
+        // stats
+        public int GoldOreMined;
+        public int BeerDrank;
+        public int BeerGiven;
+        public int DeviantsStopped;
+        public int TimeAsMiner;
+        public int TimeAsSupply;
+        public int TimeAsExplorer;
+        public int TimeAsVigile;
+        public int TimeAsDeviant;
+
         // int? targetDwarf; // identité de la cible si c'est un vigile
 
         // Vector3 targetPosition; // position cible ?
@@ -56,16 +67,23 @@ namespace Assets.Scripts
 
         public void DwarfMemoryInitialization()
         {
-            Debug.Log(
-                "Hey, I'm in " + this.name + " DwarfMemoryInitialization ! ");
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
 
             this.Gauges = new _Gauges(GameEnvironment);
-            Debug.Log( this.name + " initialization done, Pickaxe is : " + this.Pickaxe);
 
             OccupiedMine = null;
-        }
+
+            GoldOreMined = 0;
+            BeerDrank = 0;
+            BeerGiven = 0;
+            DeviantsStopped = 0;
+            TimeAsMiner = 0;
+            TimeAsSupply = 0;
+            TimeAsExplorer = 0;
+            TimeAsVigile = 0;
+            TimeAsDeviant = 0;
+    }
 
 
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
@@ -132,8 +150,6 @@ namespace Assets.Scripts
 
         // The dwarf rethinks his activity : he may 1- change 2- keep on doing what he's doing
         public bool RethinkActivity() {
-            Debug.Log("||Reth  " +
-                this.name + " entering rethink activity");
             var rnd = new System.Random();
             /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous le 2nd choix quand rnd = 2 */
             
@@ -149,9 +165,6 @@ namespace Assets.Scripts
              * Fact is : the more he "rethinks", the more the risk that he changes his activity increases
              */
             var chances = 200 - ( s * GameEnvironment.Variables.attenuateTimeImpact );
-
-            Debug.Log("||Reth  " + this.name +
-                " chances = " + chances);
 
             if (rnd.Next(0, (int)chances) > 50) {
                 Debug.Log("||Reth  " + this.name +
@@ -232,22 +245,15 @@ namespace Assets.Scripts
 
         public Vector3 GetNewDestination()
         {
-            Debug.Log("###  " +
-                      this.name + " entering GetNewDestination");
 
             Vector3 destination;
 
             var destList = new List<_WeightedObject>();
 
-            Debug.Log(" ** creating some random shit");
-
             var rnd = new System.Random();
             /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous la même destination */
 
             int w; // a 0~100 weight
-
-            Debug.Log("###  " +
-                      this._currentActivity + " (_currentActivity)");
 
             switch (this._currentActivity)
             {
@@ -268,25 +274,14 @@ namespace Assets.Scripts
                     destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition, GameEnvironment.Variables.dev_goToBeer));
                     break;
                 case ActivitiesLabel.Explorer:
-                    Debug.Log(" YAY I'M AN EXPLOROROR");
                     for (var i = 0; i < 10; i++)
                     {
                         do
                         {
-                            Debug.Log(" CAN DOOOO ");
                             var x = rnd.Next(0, 500);
                             var y = rnd.Next(0, 500);
                             destination = new Vector3(x, 0, y);
                             Debug.Log(" destination set to : " + destination);
-                            Debug.Log(" quoi dans le fuck ? ");
-                            Debug.Log(" _dwarfTransf.position " + _dwarfTransf.position);
-                            Debug.Log(" destination " + destination);
-                            Debug.Log(" Vector3.Distance(_dwarfTransf.position, destination) : " + Vector3.Distance(_dwarfTransf.position, destination));
-                            Debug.Log(" GameEnvironment.Variables.expl_positionTooClose " + GameEnvironment.Variables.expl_positionTooClose);
-                            Debug.Log(" KnownMines.Any( ... " + KnownMines.Any(
-                                          mine => (Vector3.Distance(mine.MinePosition, destination) <
-                                                   GameEnvironment.Variables.expl_positionTooKnown)));
-                            Debug.Log(" quoi dans le fuck ? ");
 
                         } while (
                             (Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.expl_positionTooClose)
@@ -360,20 +355,12 @@ namespace Assets.Scripts
                     RethinkActivity(); return GetNewDestination();
             }
 
-            Debug.Log("###  exit switchcase");
-
             if (!destList.Any()) /* change to another activity and reset destination */
             { RethinkActivity(); return GetNewDestination(); }
 
             var destinations = new WeightedList(destList);
 
-            Debug.Log(
-                this.name + " destList count : " + destList.Count);
-
             var theDest = (Vector3)destinations.SelectRandomItem();
-
-            Debug.Log(
-                this.name + "dest " + theDest);
 
             return theDest;
         }
@@ -446,8 +433,6 @@ namespace Assets.Scripts
 
             public _Gauges(GameEnvironment gameEnv, int thirst = 100, int workDesire = 100, int pickaxe = 100)
             {
-                Debug.Log(
-                    "Hey, I'm in _Gauges constructor trying to set pickaxe to" + pickaxe + " :) ");
                 ge = gameEnv;
                 _gauges[0] = StockGauge(thirst);
                 _gauges[1] = StockGauge(workDesire);

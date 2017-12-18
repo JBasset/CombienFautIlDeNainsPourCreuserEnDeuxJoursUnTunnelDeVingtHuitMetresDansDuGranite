@@ -26,7 +26,23 @@ namespace Assets.Scripts
             if (Time.time - LastSecond >= 1)
             {
                 LastSecond = (int)Mathf.Floor(Time.time);
-                ore += gameEnvironment.Variables.oreSpawnRate - dwarvesInside.Count * gameEnvironment.Variables.dwarfOreMiningRate;
+                ore += gameEnvironment.Variables.oreSpawnRate;
+
+                foreach (GameObject Dwarf in dwarvesInside)
+                {
+                    if (ore >= 5)
+                    {
+                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += 5;
+                        ore -= 5;
+                    }
+                    else
+                    {
+                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += ore;
+                        ore = 0;
+                        EmptyMine();
+                        break;
+                    }
+                }
             }
         }
 
@@ -38,6 +54,14 @@ namespace Assets.Scripts
         public void RemoveDwarfInside(GameObject dwarf)
         {
             dwarvesInside.Remove(dwarf);
+        }
+
+        private void EmptyMine()
+        {
+            foreach(GameObject Dwarf in dwarvesInside)
+            {
+                Dwarf.GetComponent<DwarfMemory>().GetNewDestination();
+            }
         }
     }
 }
