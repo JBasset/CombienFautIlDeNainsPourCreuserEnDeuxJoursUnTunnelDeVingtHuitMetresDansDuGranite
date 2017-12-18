@@ -90,12 +90,12 @@ namespace Assets.Scripts
                     if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction > 50)
                     {
                         myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire,
-                            (int) (100 / myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
+                            (int) (0.01 * myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
                     }
                     else
                     {
                         myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire,
-                            (int) (100 / myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
+                            (int) (0.01 * myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
                     }
                 }
             }
