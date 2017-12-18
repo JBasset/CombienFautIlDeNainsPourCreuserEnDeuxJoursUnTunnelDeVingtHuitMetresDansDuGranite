@@ -168,7 +168,53 @@ namespace Assets.Scripts
                 cam.transform.position.y,
                 agent.transform.position.z - 0.7f * (cam.transform.position.y - agent.transform.position.y)); // centers the camera on the target
             DeactivateSpheres();
-            agent.gameObject.transform.FindChild("Sphere").gameObject.SetActive(true);
+
+            #region sphere color
+            GameObject Sphere = agent.gameObject.transform.FindChild("Sphere").gameObject;
+            Sphere.SetActive(true);
+
+            switch (agent.GetComponent<DwarfMemory>().CurrentActivity)
+            {
+                case VariableStorage.ActivitiesLabel.Miner:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.yellow;
+                        break;
+                    }
+                case VariableStorage.ActivitiesLabel.Explorer:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.green;
+                        break;
+                    }
+                case VariableStorage.ActivitiesLabel.Supply:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.blue;
+                        break;
+                    }
+                case VariableStorage.ActivitiesLabel.Vigile:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.red;
+                        break;
+                    }
+                case VariableStorage.ActivitiesLabel.Deviant:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.black;
+                        break;
+                    }
+                default:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.grey;
+                        break;
+                    }
+            }
+            /*
+            Sphere Color :
+            - Miner : Yellow
+            - Explorer : Green
+            - Supply : Blue
+            - Vigile : Red
+            - Deviant : Black
+            */
+            #endregion
 
             DwarfInfoPanel.SetActive(true);
         }
