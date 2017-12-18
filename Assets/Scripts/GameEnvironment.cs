@@ -71,7 +71,11 @@ namespace Assets.Scripts
                     {
                         case ActivitiesLabel.Miner:
                             if (myDwarf.GetComponent<DwarfMemory>().OccupiedMine)
+                            {
                                 myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Pickaxe, 1);
+                                if (myDwarf.GetComponent<DwarfMemory>().Pickaxe == 0)
+                                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                            }
                             break;
                         default: break;
                         /*case ActivitiesLabel.Deviant: break;
