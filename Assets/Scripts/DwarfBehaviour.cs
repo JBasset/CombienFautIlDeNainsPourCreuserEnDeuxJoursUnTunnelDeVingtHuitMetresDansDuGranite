@@ -135,7 +135,7 @@ namespace Assets.Scripts
                 }
             }
 
-            if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
+            if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
             {
                 if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
                 {
