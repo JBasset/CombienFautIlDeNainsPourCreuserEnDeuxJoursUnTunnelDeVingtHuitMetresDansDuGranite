@@ -5084,7 +5084,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Beer carried :'
+  m_Text: Beer carried
 --- !u!222 &678159333
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -12402,7 +12402,7 @@ GameObject:
   - 222: {fileID: 1357393467}
   - 114: {fileID: 1357393466}
   m_Layer: 5
-  m_Name: Thirst
+  m_Name: ThirstSatisfaction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12459,7 +12459,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Thirst
+  m_Text: Thirst statisfaction
 --- !u!222 &1357393467
 CanvasRenderer:
   m_ObjectHideFlags: 0
