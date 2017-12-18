@@ -22,6 +22,7 @@ namespace Assets.Scripts
         private Text totalBeerDrank;
 
         private int LastGeneralActivityUpdate;
+        private int lastSecond;
 
         void Start()
         {
@@ -55,6 +56,12 @@ namespace Assets.Scripts
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
+            if (Time.time - lastSecond >= 1)
+            {
+                lastSecond = (int)Mathf.Floor(Time.time);
+                Variables.TimeSinceStart = lastSecond;
+            }
+            UpdateGeneralStats();
         }
 
         public void CreateDwarf(int quantity)
@@ -121,6 +128,13 @@ namespace Assets.Scripts
                 Variables.NoticeableObjects.Add(dwarf);
             foreach (GameObject mine in Variables.Mines)
                 Variables.NoticeableObjects.Add(mine);
+        }
+
+        private void UpdateGeneralStats()
+        {
+            timeSinceStart.text = "" + Variables.TimeSinceStart;
+            totalGoldMined.text = "" + Variables.TotalGoldMined;
+            totalBeerDrank.text = "" + Variables.TotalBeerDrank;
         }
     }
 }

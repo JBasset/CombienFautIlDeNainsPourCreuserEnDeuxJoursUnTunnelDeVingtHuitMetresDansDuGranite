@@ -34,11 +34,13 @@ namespace Assets.Scripts
                     if (ore >= miningRate)
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += miningRate;
+                        gameEnvironment.Variables.TotalGoldMined += miningRate;
                         ore -= miningRate;
                     }
                     else
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += ore;
+                        gameEnvironment.Variables.TotalGoldMined += ore;
                         ore = 0;
                         EmptyMine();
                         break;
