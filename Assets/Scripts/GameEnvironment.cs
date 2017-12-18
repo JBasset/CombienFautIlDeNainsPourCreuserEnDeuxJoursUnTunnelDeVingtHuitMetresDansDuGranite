@@ -73,7 +73,16 @@ namespace Assets.Scripts
             newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
             newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
             Debug.Log(
-                "After DwarfMemoryInitialization " + newDwarf.name + " Pickaxe: " + newDwarf.GetComponent<DwarfMemory>().Pickaxe);
+                "After DwarfMemoryInitialization, " + newDwarf.name + "'s pickaxe is " + newDwarf.GetComponent<DwarfMemory>().Pickaxe);
+            Debug.Log("### call +"+ newDwarf + ".GetComponent<DwarfBehaviour>().FirstMove();");
+            Debug.Log(newDwarf.GetComponent<DwarfBehaviour>() + " (.GetComponent<DwarfBehaviour>())");
+
+            newDwarf.GetComponent<DwarfBehaviour>().Start();
+            newDwarf.GetComponent<DwarfMemory>().Start();
+
+            Debug.Log(newDwarf.GetComponent<DwarfMemory>() + " (.GetComponent<DwarfBehaviour>())");
+
+            newDwarf.GetComponent<DwarfBehaviour>().FirstMove();
         }
 
         public List<GameObject> GetDwarves()

@@ -7,11 +7,11 @@ namespace Assets.Scripts
 {
     public class _WeightedObject // create a weighted object, like : (chat, 3)
     {
-        public Object _object; public int _weight;
+        public object TheObject; public int TheWeight;
 
         public _WeightedObject(Object obj, int weight)
         {
-            this._object = obj; this._weight = weight;
+            this.TheObject = obj; this.TheWeight = weight;
         }
     }
 
@@ -23,26 +23,26 @@ namespace Assets.Scripts
          *  thus, weighted random selection \o/ 
          *  ---> just call selectRandomItem()
          */
-        private static Random rnd = new Random();
+        private static readonly Random Rnd = new Random();
 
-        public List<Object> list = new List<Object>();
+        public List<object> List = new List<object>();
 
-        public WeightedList(List<_WeightedObject> wList) {
-            foreach (_WeightedObject wO in wList)
+        public WeightedList(IEnumerable<_WeightedObject> wList) {
+            foreach (var weiObj in wList)
             {
-                AddItem(wO);
+                AddItem(weiObj);
             }
         }
 
         public void AddItem(_WeightedObject item) {
-            for (int i = 0; i < item._weight; i++) {
-                list.Add(item._object);
+            for (var i = 0; i < item.TheWeight; i++) {
+                List.Add(item.TheObject);
             }
         }
 
-        public Object SelectRandomItem() {
-            int index = rnd.Next(list.Count);
-            return list[index];
+        public object SelectRandomItem() {
+            var index = Rnd.Next(List.Count);
+            return List[index];
         }
     }
 }

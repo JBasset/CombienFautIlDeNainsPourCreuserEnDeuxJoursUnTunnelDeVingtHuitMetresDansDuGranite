@@ -17,8 +17,9 @@ namespace Assets.Scripts
 
         private float normalSpeed;
         
-        void Start()
+        public void Start()
         {
+            Debug.Log(" fedzsudsjid \r hfqugbrqzFUPEBHGQNZOZB Qhbreofijazhfe heeellloooooooooo");
             memory = GetComponent<DwarfMemory>();
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
@@ -47,14 +48,29 @@ namespace Assets.Scripts
 
         public void UpdateActivityAndPosition()
         {
-            memory.RethinkActivity();
-            MoveTo(memory.GetNewDestination());
+            Debug.Log("###  entering void UpdateActivityAndPosition()");
+            if (memory.RethinkActivity())
+            {
+                MoveTo(memory.GetNewDestination());
+            }
+
             // TODO : il faut que les jauges bougent, que la pioche s'abîme ou se répare
             // TODO : ET QUE LES NAINS INTERAGISSENT QUAND ILS SE CROISENT
         }
 
+        public void FirstMove()
+        {
+            Debug.Log("###  entering void FirstMove()");
+            Debug.Log("### memory exists : pickaxe is " + memory.Pickaxe);
+            Debug.Log(" ======== AAAAAND memory.GetNewDestination() ===========");
+            var desti = memory.GetNewDestination();
+            Debug.Log("desti = "+ desti);
+            MoveTo(desti);
+        }
+
         private void MoveTo(Vector3 pos)
         {
+            Debug.Log("###  MoveTo("+ pos + ")");
             if (memory.OccupiedMine)
                 ExitMine();
             agent.SetDestination(pos);
