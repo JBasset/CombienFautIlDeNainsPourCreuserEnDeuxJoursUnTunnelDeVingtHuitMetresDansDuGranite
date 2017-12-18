@@ -110,7 +110,18 @@ namespace Assets.Scripts
                         List<GameObject> deviantsInSight = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant).ToList();
                         if (deviantsInSight.Any())
                         {
-                            
+                            GameObject TargetedDeviant = deviantsInSight[0];
+                            if (Vector3.Distance(this.transform.position, TargetedDeviant.transform.position) < 0.1f)
+                            {
+                                TargetedDeviant.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                                TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                                UpdateActivityAndDestination();
+                            }
+                            else
+                            {
+                                animator.SetFloat("Run", 1);
+                                MoveTo(TargetedDeviant.transform.position);
+                            }
                         }
                         // TODO : si un vigile atteint un déviant blah blah
                         // TODO if reach target (vigile) do da thing
