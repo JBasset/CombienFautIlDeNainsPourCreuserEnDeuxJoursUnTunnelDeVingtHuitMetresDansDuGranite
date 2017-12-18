@@ -136,13 +136,12 @@ namespace Assets.Scripts
         }
         
 
-        public void UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, int ore, DateTime newDateTime)
+        public void UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, int ore, DateTime newDateTime, string newName)
         {            
             // maybe this mine is already in the list
-            var thisMine = _knownMines.Where(
-                o => (Vector3.Distance(thePosition, o.MinePosition) < 0.1f /*o.MinePosition == thePosition*/)).ToList();
+            var thisMine = _knownMines.Where(m => m.Name == newName).ToList();
 
-            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, ore, newDateTime));
+            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, ore, newDateTime, newName));
             // if the mine isnt already known, let's add it
 
             else if (thisMine[0].informatonTakenDateTime > newDateTime)
@@ -160,10 +159,9 @@ namespace Assets.Scripts
         public void UpdateMine(_KnownMine newMine)
         {
             // maybe this mine is already in the list
-            var thisMine = _knownMines.Where(
-                o => (Vector3.Distance(newMine.MinePosition, o.MinePosition) < 0.1f /*o.MinePosition == mine.MinePosition*/)).ToList();
+            var thisMine = _knownMines.Where(m => m.Name == newMine.Name).ToList();
 
-            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(newMine.MinePosition, newMine.DwarvesInTheMine, newMine.ThirstyDwarves, newMine.Ore, newMine.informatonTakenDateTime));
+            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(newMine.MinePosition, newMine.DwarvesInTheMine, newMine.ThirstyDwarves, newMine.Ore, newMine.informatonTakenDateTime, newMine.Name));
             // if the mine isnt already known, let's add it
 
             else if (thisMine[0].informatonTakenDateTime > newMine.informatonTakenDateTime)
@@ -292,7 +290,7 @@ namespace Assets.Scripts
             var newActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
             // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             _currentActivity = newActivity;
-
+            
             #endregion
             
             return true;
@@ -344,8 +342,6 @@ namespace Assets.Scripts
 
                             var x = rnd.Next(0, 500);var y = rnd.Next(0, 500);
                             destination = new Vector3(x, 0, y);
-                            Debug.Log(" destination set to : " + destination);
-                            
                         } while (
                             (Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.expl_positionTooClose)
                             || KnownMines.Any(
@@ -466,6 +462,8 @@ namespace Assets.Scripts
 
         public class _KnownMine
         {
+
+            public string Name;
             public Vector3 MinePosition;
             public DateTime informatonTakenDateTime;
 
@@ -478,9 +476,10 @@ namespace Assets.Scripts
             public int ThirstyDwarves { get { return _thirstyDwarves; } set { _thirstyDwarves = (value > 0) ? value : 0; } }
             // number of dwarves under thirstyDwarvesGaugeLimit
 
-            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, int ore, DateTime newDateTime)
+            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, int ore, DateTime newDateTime, string name)
             {
                 this.Ore = ore;
+                this.Name = name;
                 this.MinePosition = minePosition;
                 this.informatonTakenDateTime = newDateTime;
                 this._dwarvesInTheMine = (dwarvesInTheMine > 0) ? dwarvesInTheMine : 0;

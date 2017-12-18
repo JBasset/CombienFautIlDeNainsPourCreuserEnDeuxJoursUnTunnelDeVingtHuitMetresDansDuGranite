@@ -39,17 +39,60 @@ namespace Assets.Scripts
                 var minePosition = observableMine.transform.FindChild("MineEntrance").position;
                 if (Vector3.Distance(agent.transform.position, minePosition) < 0.3f) // maybe change 0.3f ? TODO hahaha
                 {
-                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().dwarvesInside;
+                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
                     var thirstyDwarves = dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < GE.Variables.thirstyDwarvesGaugeLimit);
-                    var ore = observableMine.GetComponent<MineBehaviour>().ore;
+                    var ore = observableMine.GetComponent<MineBehaviour>().Ore;
 
-                    memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now);
+                    memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now, observableMine.name);
                 }
             }
             #endregion
 
-            #region  whenever a dwarf talks to another...
-            // TODO : TODO (todo todo todo todo todooooo
+            #region  whenever a dwarf is close from another
+            // whatever you're doign : stop
+            if (DwarvesInSight().Any())
+            {
+                switch (memory.CurrentActivity)
+                {
+                    case ActivitiesLabel.Explorer:
+                        foreach (var seenDwarf in DwarvesInSight())
+                        {
+                            foreach (var kd in memory.KnownDwarves)
+                            {
+                                /*
+                                 * if (
+                                    kd.Name != seenDwarf.gameObject.name
+                                    || (kd.Name == sen)
+                                    )
+                                {
+                                
+                                }
+                                */
+                            }
+                        }
+                        
+                        break;
+                    case ActivitiesLabel.Deviant:
+                        break;
+                    case ActivitiesLabel.Vigile:
+                        break;
+                    case ActivitiesLabel.Supply:
+                        break;
+                    case ActivitiesLabel.Miner:
+                        break;
+                    case ActivitiesLabel.GoToForge:
+                        break;
+                }
+                foreach (var myMine in MinesInSight())
+                {
+                    if (memory.KnownMines.All(kmine => kmine.Name != myMine.name))
+                    {
+                        MoveTo(MinesInSight()[0].transform.FindChild("MineEntrance").position);
+                        UpdateActivityAndDestination();
+                    }
+                }
+            }
+
             /*foreach (var myDwarf in GE.Variables.Dwarves)
             {
                 foreach (var metDwarf in myDwarf.GetComponent<DwarfBehaviour>().DwarvesInSight())
@@ -74,7 +117,24 @@ namespace Assets.Scripts
 
             if (Input.GetButtonDown("Enter"))
                 MoveTo(Target.position);
-            
+
+
+            if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
+            {
+                // if there is any mine in sight
+                if (MinesInSight().Any())
+                {
+                    foreach (var myMine in MinesInSight())
+                    {
+                        if (memory.KnownMines.All(kmine => kmine.Name != myMine.name))
+                        {
+                            MoveTo(MinesInSight()[0].transform.FindChild("MineEntrance").position);
+                            UpdateActivityAndDestination();
+                        }
+                    }
+                }
+            }
+
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 0.1f)
             {
                 if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
@@ -95,19 +155,12 @@ namespace Assets.Scripts
                 {
                     case ActivitiesLabel.Deviant: UpdateActivityAndDestination(); break;
 
-                    case ActivitiesLabel.Explorer:
-                        // if there is any mine in sight THAT I DON'T KNOW then move to it
-                        if (MinesInSight().Any(
-                            m => !memory.KnownMines.Any(
-                                kmine => Vector3.Distance(kmine.MinePosition, m.transform.FindChild("MineEntrance").position) < 0.1f)))
-                        {
-                            MoveTo(MinesInSight()[0].transform.FindChild("MineEntrance").position);
-                        }
-                        else UpdateActivityAndDestination();
-                        break;
+                    case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
 
                     case ActivitiesLabel.Vigile:
-                        List<GameObject> deviantsInSight = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant).ToList();
+                        List<GameObject> deviantsInSight = DwarvesInSight()
+                            .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
+                            .ToList();
                         if (deviantsInSight.Any())
                         {
                             GameObject TargetedDeviant = deviantsInSight[0];
@@ -133,9 +186,11 @@ namespace Assets.Scripts
                         break;
 
                     case ActivitiesLabel.Miner:
-                        List<GameObject> mine = GE.GetComponent<GameEnvironment>().GetMines()
+                        List<GameObject> mine = GE
+                            .GetComponent<GameEnvironment>()
+                            .GetMines()
                             .Where(m => Vector3.Distance(
-                        agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
+                                    agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
                         ).ToList();
                         if (mine.Any())
                         {

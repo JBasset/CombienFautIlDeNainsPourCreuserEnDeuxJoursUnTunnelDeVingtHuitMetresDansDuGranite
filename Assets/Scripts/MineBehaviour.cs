@@ -8,40 +8,46 @@ namespace Assets.Scripts
     {
         public GameObject GE;
 
-        private GameEnvironment gameEnvironment;
-        public int ore;
-        private int LastSecond;
-        public List<GameObject> dwarvesInside;
+        private GameEnvironment _gameEnvironment;
+        public int Ore;
+        private int _lastSecond;
+        public List<GameObject> DwarvesInside;
 
         void Start()
         {
-            gameEnvironment = GE.GetComponent<GameEnvironment>();
-            ore = Random.Range(0, gameEnvironment.Variables.dwarfOreMiningRate * 60); // random value between 0 and the amount of gold ore one dwarf can mine in 1 min.
-            LastSecond = 0;
-            dwarvesInside = new List<GameObject>();
+            _gameEnvironment = GE.GetComponent<GameEnvironment>();
+            Ore = Random.Range(0, _gameEnvironment.Variables.dwarfOreMiningRate * 60); // random value between 0 and the amount of gold ore one dwarf can mine in 1 min.
+            _lastSecond = 0;
+            DwarvesInside = new List<GameObject>();
         }
 
         void Update()
         {
-            if (Time.time - LastSecond >= 1)
+            if (Time.time - _lastSecond >= 1)
             {
-                LastSecond = (int)Mathf.Floor(Time.time);
-                ore += gameEnvironment.Variables.oreSpawnRate;
+                _lastSecond = (int)Mathf.Floor(Time.time);
+                Ore += _gameEnvironment.Variables.oreSpawnRate;
 
-                int miningRate = gameEnvironment.Variables.dwarfOreMiningRate;
-                foreach (GameObject Dwarf in dwarvesInside)
+                foreach (var d in DwarvesInside)
                 {
-                    if (ore >= miningRate)
+                    d.GetComponent<DwarfMemory>().TimeAsMiner++;
+                }
+
+                var miningRate = _gameEnvironment.Variables.dwarfOreMiningRate;
+                foreach (var Dwarf in DwarvesInside)
+                {
+                    Debug.Log(Dwarf.name + "is in" + this.name);
+                    if (Ore >= miningRate)
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += miningRate;
-                        gameEnvironment.Variables.TotalGoldMined += miningRate;
-                        ore -= miningRate;
+                        _gameEnvironment.Variables.TotalGoldMined += miningRate;
+                        Ore -= miningRate;
                     }
                     else
                     {
-                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += ore;
-                        gameEnvironment.Variables.TotalGoldMined += ore;
-                        ore = 0;
+                        Dwarf.GetComponent<DwarfMemory>().GoldOreMined += Ore;
+                        _gameEnvironment.Variables.TotalGoldMined += Ore;
+                        Ore = 0;
                         EmptyMine();
                         break;
                     }
@@ -51,17 +57,17 @@ namespace Assets.Scripts
 
         public void AddDwarfInside(GameObject dwarf)
         {
-            dwarvesInside.Add(dwarf);
+            DwarvesInside.Add(dwarf);
         }
 
         public void RemoveDwarfInside(GameObject dwarf)
         {
-            dwarvesInside.Remove(dwarf);
+            DwarvesInside.Remove(dwarf);
         }
 
         private void EmptyMine()
         {
-            foreach(GameObject Dwarf in dwarvesInside)
+            foreach(var Dwarf in DwarvesInside)
             {
                 Dwarf.GetComponent<DwarfMemory>().GetNewDestination();
             }
