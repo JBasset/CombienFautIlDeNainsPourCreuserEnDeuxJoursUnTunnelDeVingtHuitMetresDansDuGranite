@@ -40,6 +40,9 @@ namespace Assets.Scripts
 
         public int lowerBoundBeforeRethink = 3; // in seconds, used in DwarfMemory.RethinkActivity()
 
+        // distance the dwarves can see
+        public int SightDistance = 50;
+
         #region HEURISTICS
 
         // In this section, we store heuristics.

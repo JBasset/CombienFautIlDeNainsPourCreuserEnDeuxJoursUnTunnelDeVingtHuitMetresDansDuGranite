@@ -92,9 +92,9 @@ namespace Assets.Scripts
 
             if (Input.GetMouseButtonDown(0))
             {
-                Ray mouseRay = cam.ScreenPointToRay(Input.mousePosition);
+                ray = cam.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
+                if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("Agent"))
                 {
                     lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
                 }
