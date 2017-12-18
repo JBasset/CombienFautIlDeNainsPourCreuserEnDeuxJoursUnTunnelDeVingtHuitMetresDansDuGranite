@@ -33,11 +33,11 @@ namespace Assets.Scripts
 
         public void Update()
         {
-
+            #region  whenever a dwarf is close from a mine, he learns about it
             foreach (var observableMine in GE.Variables.Mines)
             {
                 var minePosition = observableMine.transform.FindChild("MineEntrance").position;
-                if (Vector3.Distance(agent.transform.position, minePosition) < 0.1f)
+                if (Vector3.Distance(agent.transform.position, minePosition) < 0.3f) // maybe change 0.3f ? TODO hahaha
                 {
                     var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().dwarvesInside;
                     var thirstyDwarves = dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < GE.Variables.thirstyDwarvesGaugeLimit);
@@ -46,7 +46,10 @@ namespace Assets.Scripts
                     memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now);
                 }
             }
+            #endregion
 
+            #region  whenever a dwarf talks to another...
+            // TODO : TODO (todo todo todo todo todooooo
             /*foreach (var myDwarf in GE.Variables.Dwarves)
             {
                 foreach (var metDwarf in myDwarf.GetComponent<DwarfBehaviour>().DwarvesInSight())
@@ -57,6 +60,7 @@ namespace Assets.Scripts
                     }
                 }
             }*/
+            #endregion
 
             if (Time.time - LastSecond >= 1)
             {
@@ -91,7 +95,16 @@ namespace Assets.Scripts
                 {
                     case ActivitiesLabel.Deviant: UpdateActivityAndDestination(); break;
 
-                    case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
+                    case ActivitiesLabel.Explorer:
+                        // if there is any mine in sight THAT I DON'T KNOW then move to it
+                        if (MinesInSight().Any(
+                            m => !memory.KnownMines.Any(
+                                kmine => Vector3.Distance(kmine.MinePosition, m.transform.FindChild("MineEntrance").position) < 0.1f)))
+                        {
+                            MoveTo(MinesInSight()[0].transform.FindChild("MineEntrance").position);
+                        }
+                        else UpdateActivityAndDestination();
+                        break;
 
                     case ActivitiesLabel.Vigile:
                         List<GameObject> deviantsInSight = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant).ToList();
