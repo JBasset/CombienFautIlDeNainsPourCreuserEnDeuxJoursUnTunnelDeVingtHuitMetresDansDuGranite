@@ -9,9 +9,9 @@ namespace Assets.Scripts
         public GameObject GE;
 
         private GameEnvironment gameEnvironment;
-        private int ore;
+        public int ore;
         private int LastSecond;
-        private List<GameObject> dwarvesInside;
+        public List<GameObject> dwarvesInside;
 
         void Start()
         {

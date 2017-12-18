@@ -12,7 +12,12 @@ namespace Assets.Scripts
     {
         public GameEnvironment GameEnvironment;
 
+        public readonly int minValueGauge;
+        public readonly int maxValueGauge;
+
         public GameObject OccupiedMine;
+
+        public Vector3? savedDestination;
 
         private ActivitiesLabel _currentActivity;
         public ActivitiesLabel CurrentActivity { get { return _currentActivity; } }
@@ -70,7 +75,10 @@ namespace Assets.Scripts
             _currentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             _lastActivityChange = DateTime.Now;
 
-            this.Gauges = new _Gauges(GameEnvironment);
+            this.Gauges = new _Gauges(GameEnvironment.Variables.maxValueGauge, GameEnvironment.Variables.minValueGauge);
+
+            var minValueGauge = GameEnvironment.Variables.minValueGauge;
+            var maxValueGauge = GameEnvironment.Variables.maxValueGauge;
 
             OccupiedMine = null;
 
@@ -126,23 +134,47 @@ namespace Assets.Scripts
                     return;
             }
         }
+        
 
-        public bool UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, bool empty)
+        public void UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, int ore, DateTime newDateTime)
         {            
             // maybe this mine is already in the list
-            var thisMine = _knownMines.Where(o => (o.MinePosition == thePosition)).ToList();
-            if (thisMine.Any())
+            var thisMine = _knownMines.Where(
+                o => (Vector3.Distance(thePosition, o.MinePosition) < 0.1f /*o.MinePosition == thePosition*/)).ToList();
+
+            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, ore, newDateTime));
+            // if the mine isnt already known, let's add it
+
+            else if (thisMine[0].informatonTakenDateTime > newDateTime)
             {
-                thisMine[0].LastInteraction = DateTime.Now;
-                thisMine[0].Empty = empty;
+                thisMine[0].informatonTakenDateTime = newDateTime;
+                thisMine[0].Ore = ore;
                 thisMine[0].DwarvesInTheMine = newDwarvesInTheMine;
                 thisMine[0].ThirstyDwarves = (newDwarvesInTheMine < newThirstyDwarves) ? 0 : newThirstyDwarves;
             }
+        
+            // else our information is more recent
 
+        }
+
+        public void UpdateMine(_KnownMine newMine)
+        {
+            // maybe this mine is already in the list
+            var thisMine = _knownMines.Where(
+                o => (Vector3.Distance(newMine.MinePosition, o.MinePosition) < 0.1f /*o.MinePosition == mine.MinePosition*/)).ToList();
+
+            if (!thisMine.Any()) _knownMines.Add(new _KnownMine(newMine.MinePosition, newMine.DwarvesInTheMine, newMine.ThirstyDwarves, newMine.Ore, newMine.informatonTakenDateTime));
             // if the mine isnt already known, let's add it
-            else _knownMines.Add(new _KnownMine(thePosition, newDwarvesInTheMine, newThirstyDwarves, empty, GameEnvironment));
 
-            return true;
+            else if (thisMine[0].informatonTakenDateTime > newMine.informatonTakenDateTime)
+            {
+                thisMine[0].informatonTakenDateTime = newMine.informatonTakenDateTime;
+                thisMine[0].Ore = newMine.Ore;
+                thisMine[0].DwarvesInTheMine = newMine.DwarvesInTheMine;
+                thisMine[0].ThirstyDwarves = (newMine.DwarvesInTheMine < newMine.ThirstyDwarves) ? 0 : newMine.ThirstyDwarves;
+            }
+
+            // else our information is more recent
 
         }
 
@@ -232,7 +264,7 @@ namespace Assets.Scripts
             }
 
             if (_currentActivity != ActivitiesLabel.Miner
-                && KnownMines.Any(m => !m.Empty) && this.Pickaxe >= 10)
+                && KnownMines.Any(m => m.Ore >= 5) && this.Pickaxe >= 10)
             {
                 var w0 = (int)((w + p) / 2);
                 list.Add(new _WeightedObject(ActivitiesLabel.Miner, w0));
@@ -268,6 +300,12 @@ namespace Assets.Scripts
 
         public Vector3 GetNewDestination()
         {
+            if (savedDestination != null)
+            {
+                var d = (Vector3)savedDestination;
+                savedDestination = null;
+                return d;
+            }
 
             var rnd = new System.Random();
 
@@ -320,7 +358,7 @@ namespace Assets.Scripts
                     #endregion
                 case ActivitiesLabel.Miner:
                     #region Adds every non-empty mines (0-100 depending on distance and dwarf number)
-                    foreach (_KnownMine mine in KnownMines.FindAll(m => (!m.Empty)).ToList())
+                    foreach (_KnownMine mine in KnownMines.FindAll(m => (m.Ore > 5)).ToList())
                     {
                         w = 80 - (int)(mine.DwarvesInTheMine * GameEnvironment.Variables.min_pplInTheMineImportance);
                         // the more dwarves are ALREADY in the mine, the less he wants to go
@@ -344,7 +382,7 @@ namespace Assets.Scripts
                         { w += 10; } 
                         // this mine is close enough
 
-                        if (mine.ThirstEvaluationResult()) { w += 10; } 
+                        w += 2 * mine.ThirstyDwarves;
                         // I know they want to drink in this mine
 
                         destList.Add(new _WeightedObject(mPosition, w));
@@ -385,7 +423,11 @@ namespace Assets.Scripts
                 case ActivitiesLabel.GoToForge:
                     #region Adds forge (not questionable)
                     if (this.Pickaxe <= GameEnvironment.Variables.pickaxeLimit)
-                    { return (Vector3)GameEnvironment.Variables.forgePosition; }
+                    {
+                        var d = (Vector3)GameEnvironment.Variables.forgePosition;
+                        savedDestination = d;
+                        return d;
+                    }
                     break;
                     #endregion
                 default:
@@ -401,10 +443,10 @@ namespace Assets.Scripts
             #region STEP TWO : SELECT AN OPTION
             var destinations = new WeightedList(destList);
 
-            var theDest = (Vector3) destinations.SelectRandomItem();
+            savedDestination = (Vector3) destinations.SelectRandomItem();
             #endregion
             
-            return theDest;
+            return (Vector3)savedDestination;
         }
 
         public class _KnownDwarf
@@ -425,34 +467,34 @@ namespace Assets.Scripts
         public class _KnownMine
         {
             public Vector3 MinePosition;
-            public DateTime LastInteraction;
-            GameEnvironment ge;
+            public DateTime informatonTakenDateTime;
 
-            public bool Empty;
+            public int Ore;
 
             private int _dwarvesInTheMine;
             public int DwarvesInTheMine { get { return _dwarvesInTheMine; } set { _dwarvesInTheMine = (value > 0) ? value : 0; } }
 
             private int _thirstyDwarves;
             public int ThirstyDwarves { get { return _thirstyDwarves; } set { _thirstyDwarves = (value > 0) ? value : 0; } }
-            
-            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, bool empty, GameEnvironment gameEnv)
+            // number of dwarves under thirstyDwarvesGaugeLimit
+
+            public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, int ore, DateTime newDateTime)
             {
-                ge = gameEnv;
-                this.Empty = empty;
+                this.Ore = ore;
                 this.MinePosition = minePosition;
-                this.LastInteraction = DateTime.Now;
+                this.informatonTakenDateTime = newDateTime;
                 this._dwarvesInTheMine = (dwarvesInTheMine > 0) ? dwarvesInTheMine : 0;
                 this._thirstyDwarves = (this._dwarvesInTheMine < thirstyDwarves) ? 0 : thirstyDwarves;
             }
-
-            public bool ThirstEvaluationResult() { return (ThirstyDwarves >= ge.Variables.thirstyDwarvesLimit); }
+            
         }
 
         public class _Gauges
         {
             private readonly int[] _gauges = new int[3];
             GameEnvironment ge;
+            private int max;
+            private int min;
 
             #region get/set (thirst, workdesire, pickaxe)
             public int ThirstSatisfaction
@@ -473,9 +515,10 @@ namespace Assets.Scripts
             }
             #endregion
 
-            public _Gauges(GameEnvironment gameEnv, int thirst = 100, int workDesire = 100, int pickaxe = 100)
+            public _Gauges(int maxValueGauge, int minValueGauge, int thirst = 100, int workDesire = 100, int pickaxe = 100)
             {
-                ge = gameEnv;
+                max = maxValueGauge;
+                min = minValueGauge;
                 _gauges[0] = StockGauge(thirst);
                 _gauges[1] = StockGauge(workDesire);
                 _gauges[2] = StockGauge(pickaxe);
@@ -483,10 +526,7 @@ namespace Assets.Scripts
 
             private int StockGauge(int value)
             {
-                var min = ge.Variables.minValueGauge;
-                var max = ge.Variables.maxValueGauge;
-                
-                return (value >= max)? max : ((value <= min)? min : value);
+                return (value >= max) ? max : ((value <= min) ? min : value);
             }
         }
     }

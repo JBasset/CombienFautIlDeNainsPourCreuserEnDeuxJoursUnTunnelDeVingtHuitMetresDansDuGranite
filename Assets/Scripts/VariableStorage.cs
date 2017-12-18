@@ -48,7 +48,7 @@ namespace Assets.Scripts
         // In this section, we store heuristics.
 
         // From how many thirsty dwarves should we worry ? ( number of dwarves from which "ThirstEvaluation" results with a true)
-        public int thirstyDwarvesLimit = 3;
+        public int thirstyDwarvesGaugeLimit = 60;
 
         // When do you think a pickaxe is deteriored enough to consider going to the forge ?
         public int pickaxeLimit = 20;

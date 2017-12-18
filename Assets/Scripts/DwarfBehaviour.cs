@@ -33,6 +33,31 @@ namespace Assets.Scripts
 
         public void Update()
         {
+
+            foreach (var observableMine in GE.Variables.Mines)
+            {
+                var minePosition = observableMine.transform.FindChild("MineEntrance").position;
+                if (Vector3.Distance(agent.transform.position, minePosition) < 0.1f)
+                {
+                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().dwarvesInside;
+                    var thirstyDwarves = dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < GE.Variables.thirstyDwarvesGaugeLimit);
+                    var ore = observableMine.GetComponent<MineBehaviour>().ore;
+
+                    memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now);
+                }
+            }
+
+            /*foreach (var myDwarf in GE.Variables.Dwarves)
+            {
+                foreach (var metDwarf in myDwarf.GetComponent<DwarfBehaviour>().DwarvesInSight())
+                {
+                    foreach (var knownMine in metDwarf.GetComponent<DwarfMemory>().KnownMines)
+                    {
+                        myDwarf.GetComponent<DwarfMemory>().UpdateMine(knownMine);
+                    }
+                }
+            }*/
+
             if (Time.time - LastSecond >= 1)
             {
                 LastSecond = (int)Mathf.Floor(Time.time);
@@ -170,7 +195,7 @@ namespace Assets.Scripts
             }
         }
 
-        private List<GameObject> DwarvesInSight()
+        public List<GameObject> DwarvesInSight()
         {
             List<GameObject> dwarvesInSight =  new List<GameObject>();
             foreach (GameObject Dwarf in GE.Variables.Dwarves)
@@ -187,7 +212,7 @@ namespace Assets.Scripts
             return dwarvesInSight;
         }
 
-        private List<GameObject> MinesInSight()
+        public List<GameObject> MinesInSight()
         {
             List<GameObject> minesInSight = new List<GameObject>();
             foreach (GameObject Mine in GE.Variables.Mines)

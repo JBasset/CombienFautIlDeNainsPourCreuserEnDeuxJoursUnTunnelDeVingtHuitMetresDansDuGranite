@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,7 +61,7 @@ namespace Assets.Scripts
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
-
+            
             if (Time.time - LastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
             {
                 LastGaneralGaugesUpdate = (int) Mathf.Floor(Time.time);
