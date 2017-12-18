@@ -19,7 +19,8 @@ namespace Assets.Scripts
         private Vector3 initialRotationPosition;
         private Ray ray;
         private RaycastHit hit;
-        private Collider lockedObject;
+        private Collider lockedAgent;
+        private Collider lockedMine;
 
         #region DwarfInfoPanel fields
         private Text dwarfName;
@@ -94,22 +95,34 @@ namespace Assets.Scripts
             {
                 ray = cam.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("Agent"))
+                if (Physics.Raycast(ray, out hit))
                 {
-                    lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
-                }
-                else if (lockedObject && !EventSystem.current.IsPointerOverGameObject())
-                {
-                    lockedObject = null; // if the click is not on an agent and not on an UI element, the camera unlocks
-                    DeactivateSpheres();
-                    DwarfInfoPanel.SetActive(false);
+                    if (hit.collider.CompareTag("Agent"))
+                    {
+                        lockedAgent = hit.collider; // on clicking on an agent, we set it as the camera lock
+                    }
+                    else if (hit.collider.CompareTag("Mine"))
+                    {
+                        lockedMine = hit.collider;
+                    }
+                    else if ((lockedAgent || lockedMine) && !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
+                    {
+                        lockedAgent = null; // if the click is not on an agent and not on an UI element, the camera unlocks
+                        lockedMine = null;
+                        DeactivateSpheres();
+                        DwarfInfoPanel.SetActive(false);
+                    }
                 }
             }
 
-            if (lockedObject)
+            if (lockedAgent)
             {
-                LockCamera(lockedObject);
+                LockCamera(lockedAgent);
                 UpdateDwarfInfoPanel();
+            }
+            else if (lockedMine)
+            {
+                LockCamera(lockedMine);
             }
         }
 
@@ -159,71 +172,81 @@ namespace Assets.Scripts
             );
         }
 
-        public void LockCamera(Collider agent)
+        public void LockCamera(Collider col)
         {
-            lockedObject = agent;
+            Debug.Log("LOOOOOOOCK");
             cam.transform.rotation = lockedCameraRotation;
             cam.transform.position = new Vector3
-                (agent.transform.position.x,
+                (col.transform.position.x,
                 cam.transform.position.y,
-                agent.transform.position.z - 0.7f * (cam.transform.position.y - agent.transform.position.y)); // centers the camera on the target
-            DeactivateSpheres();
+                col.transform.position.z - 0.7f * (cam.transform.position.y - col.transform.position.y)); // centers the camera on the target
 
-            #region sphere color
-            GameObject Sphere = agent.gameObject.transform.FindChild("Sphere").gameObject;
-            Sphere.SetActive(true);
-
-            switch (agent.GetComponent<DwarfMemory>().CurrentActivity)
+            if (col.CompareTag("Agent"))
+            #region Agent
             {
-                case VariableStorage.ActivitiesLabel.Miner:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.yellow;
-                        break;
-                    }
-                case VariableStorage.ActivitiesLabel.Explorer:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.green;
-                        break;
-                    }
-                case VariableStorage.ActivitiesLabel.Supply:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.blue;
-                        break;
-                    }
-                case VariableStorage.ActivitiesLabel.Vigile:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.red;
-                        break;
-                    }
-                case VariableStorage.ActivitiesLabel.Deviant:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.black;
-                        break;
-                    }
-                default:
-                    {
-                        Sphere.GetComponent<Renderer>().material.color = Color.grey;
-                        break;
-                    }
-            }
-            /*
-            Sphere Color :
-            - Miner : Yellow
-            - Explorer : Green
-            - Supply : Blue
-            - Vigile : Red
-            - Deviant : Black
-            */
-            #endregion
+                lockedAgent = col;
+                DeactivateSpheres();
+                GameObject Sphere = col.gameObject.transform.FindChild("Sphere").gameObject;
+                Sphere.SetActive(true);
 
-            DwarfInfoPanel.SetActive(true);
+                switch (col.GetComponent<DwarfMemory>().CurrentActivity)
+                {
+                    case VariableStorage.ActivitiesLabel.Miner:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.yellow;
+                            break;
+                        }
+                    case VariableStorage.ActivitiesLabel.Explorer:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.green;
+                            break;
+                        }
+                    case VariableStorage.ActivitiesLabel.Supply:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.blue;
+                            break;
+                        }
+                    case VariableStorage.ActivitiesLabel.Vigile:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.red;
+                            break;
+                        }
+                    case VariableStorage.ActivitiesLabel.Deviant:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.black;
+                            break;
+                        }
+                    default:
+                        {
+                            Sphere.GetComponent<Renderer>().material.color = Color.grey;
+                            break;
+                        }
+                }
+                /*
+                Sphere Color :
+                - Miner : Yellow
+                - Explorer : Green
+                - Supply : Blue
+                - Vigile : Red
+                - Deviant : Black
+                */
+
+                DwarfInfoPanel.SetActive(true);
+            }
+            #endregion
+            else if (col.CompareTag("Mine"))
+            #region Mine
+            {
+
+            }
+            #endregion
         }
 
         private void UpdateDwarfInfoPanel()
         {
-            DwarfMemory memory = lockedObject.GetComponent<DwarfMemory>();
+            DwarfMemory memory = lockedAgent.GetComponent<DwarfMemory>();
             #region GeneralInfo
-            dwarfName.text = lockedObject.name;
+            dwarfName.text = lockedAgent.name;
             dwarfActivity.text = memory.CurrentActivity.ToString();
 
             //TODO : knownDwarves, knownMines, beerCarried.value

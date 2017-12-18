@@ -166,14 +166,55 @@ namespace Assets.Scripts
 
             else if (thisMine[0].informatonTakenDateTime > newMine.informatonTakenDateTime)
             {
-                thisMine[0].informatonTakenDateTime = newMine.informatonTakenDateTime;
-                thisMine[0].Ore = newMine.Ore;
-                thisMine[0].DwarvesInTheMine = newMine.DwarvesInTheMine;
-                thisMine[0].ThirstyDwarves = (newMine.DwarvesInTheMine < newMine.ThirstyDwarves) ? 0 : newMine.ThirstyDwarves;
+                var index = _knownMines.FindIndex(m => (m.Name == newMine.Name));
+                _knownMines[index].informatonTakenDateTime = newMine.informatonTakenDateTime;
+                _knownMines[index].Ore = newMine.Ore;
+                _knownMines[index].DwarvesInTheMine = newMine.DwarvesInTheMine;
+                _knownMines[index].ThirstyDwarves = (newMine.DwarvesInTheMine < newMine.ThirstyDwarves) ? 0 : newMine.ThirstyDwarves;
             }
 
             // else our information is more recent
 
+        }
+
+        public void UpdateDwarf(DwarfMemory metPerson, DateTime newInformatonTakenDateTime, Vector3 position)
+        {
+            // maybe he is already in the list
+            var sameD = _knownDwarves.Where(d => d.Name == metPerson.name).ToList();
+
+            if (!sameD.Any()) _knownDwarves.Add(new _KnownDwarf(metPerson));
+            // if the mine isnt already known, let's add it
+
+            else if (sameD[0].informatonTakenDateTime > newInformatonTakenDateTime)
+            {
+                var index = _knownDwarves.FindIndex(d => (d.Name == metPerson.name));
+                _knownDwarves[index].informatonTakenDateTime = newInformatonTakenDateTime;
+                _knownDwarves[index].HighThirst = metPerson.ThirstSatisfaction < 50;
+                _knownDwarves[index].Deviant = (metPerson._currentActivity == ActivitiesLabel.Deviant);
+                _knownDwarves[index].DwarfPosition = position;
+            }
+
+            // else our information is more recent
+        }
+
+        public void UpdateDwarf(_KnownDwarf newDwarf)
+        {
+            // maybe he is already in the list
+            var sameD = _knownDwarves.Where(d => d.Name == newDwarf.Name).ToList();
+
+            if (!sameD.Any()) _knownDwarves.Add(newDwarf);
+            // if the mine isnt already known, let's add it
+
+            else if (sameD[0].informatonTakenDateTime > newDwarf.informatonTakenDateTime)
+            {
+                var index = _knownDwarves.FindIndex(d => (d.Name == newDwarf.Name));
+                _knownDwarves[index].informatonTakenDateTime = newDwarf.informatonTakenDateTime;
+                _knownDwarves[index].HighThirst = newDwarf.HighThirst;
+                _knownDwarves[index].Deviant = newDwarf.Deviant;
+                _knownDwarves[index].DwarfPosition = newDwarf.DwarfPosition;
+            }
+
+            // else our information is more recent
         }
 
         #endregion
@@ -448,15 +489,16 @@ namespace Assets.Scripts
         public class _KnownDwarf
         {
             public Vector3 DwarfPosition;
-            public int id; public bool HighThirst; public DateTime LastInteraction;
+            public string Name;
+            public bool HighThirst; public DateTime informatonTakenDateTime;
             public bool Deviant;
 
-            public _KnownDwarf()
-            { // TODO: mettre un nain en paramètre
-              // this.id = nain.id
-              // this.highThirst = dwarf.highThirst
-              // this.deviant = dwarf.currentActivity == deviant
-            this.LastInteraction = DateTime.Now;
+            public _KnownDwarf(DwarfMemory anotherPerson)
+            {
+                this.Name = anotherPerson.name;
+                this.HighThirst = anotherPerson.ThirstSatisfaction < 50;
+                this.Deviant = (anotherPerson._currentActivity == ActivitiesLabel.Deviant);
+                this.informatonTakenDateTime = DateTime.Now;
             }
         }
 

@@ -158,15 +158,19 @@ namespace Assets.Scripts
                     case ActivitiesLabel.Explorer: UpdateActivityAndDestination(); break;
 
                     case ActivitiesLabel.Vigile:
+                        
+                        #region Vigile
                         List<GameObject> deviantsInSight = DwarvesInSight()
                             .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
                             .ToList();
-                        if (deviantsInSight.Any())
+                        if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
+                            
                         {
                             GameObject TargetedDeviant = deviantsInSight[0];
-                            if (Vector3.Distance(this.transform.position, TargetedDeviant.transform.position) < 0.1f)
+                            if (Vector3.Distance(this.transform.position, TargetedDeviant.transform.position) < 2) // if he reached him
                             {
                                 TargetedDeviant.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                                memory.DeviantsStopped++;
                                 TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                                 UpdateActivityAndDestination();
                             }
@@ -176,9 +180,21 @@ namespace Assets.Scripts
                                 MoveTo(TargetedDeviant.transform.position);
                             }
                         }
-                        // TODO : si un vigile atteint un déviant blah blah
-                        // TODO if reach target (vigile) do da thing
+                        else if (memory.KnownDwarves.Any(d => d.Deviant))
+                        {
+                            foreach (DwarfMemory._KnownDwarf Dwarf in memory.KnownDwarves)
+                            {
+                                if (Dwarf.Deviant)
+                                {
+                                    MoveTo(Dwarf.DwarfPosition);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                            UpdateActivityAndDestination();
                         break;
+                    #endregion
 
                     case ActivitiesLabel.Supply:
                         // TODO if reach target (soifard) do da thing
@@ -186,6 +202,8 @@ namespace Assets.Scripts
                         break;
 
                     case ActivitiesLabel.Miner:
+
+                    #region Miner
                         List<GameObject> mine = GE
                             .GetComponent<GameEnvironment>()
                             .GetMines()
@@ -193,11 +211,22 @@ namespace Assets.Scripts
                                     agent.transform.position, m.transform.FindChild("MineEntrance").position) < 0.1f
                         ).ToList();
                         if (mine.Any())
-                        {
                             EnterMine(mine[0]);
-                            // TODO : make sure the dwarf dig ( c'est dans le switch ? )
+                        else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
+                        {
+                            foreach (DwarfMemory._KnownMine Mine in memory.KnownMines)
+                            {
+                                if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
+                                {
+                                    MoveTo(Mine.MinePosition);
+                                    break;
+                                }
+                            }
                         }
+                        else
+                            UpdateActivityAndDestination();
                         break;
+                        #endregion
 
                     case ActivitiesLabel.GoToForge:
                         // TODO if gotoforge ENTERFORGE
