@@ -9,7 +9,8 @@ namespace Assets.Scripts
     public class CameraBehaviour : MonoBehaviour
     {
         public GameObject Dwarves;
-        
+        public GameObject DwarfInfoPanel;
+
         private Camera cam;
         private float minDownScroll;
         private bool rotating;
@@ -49,12 +50,15 @@ namespace Assets.Scripts
                 if (Physics.Raycast(mouseRay, out hit) && hit.collider.CompareTag("Agent"))
                     lockedObject = hit.collider; // on clicking on an agent, we set it as the camera lock
                 else if (lockedObject && !EventSystem.current.IsPointerOverGameObject())
+                {
                     lockedObject = null; // if the click is not on an agent and not on an UI element, the camera unlocks
+                    DeactivateSpheres();
+                    DwarfInfoPanel.SetActive(false);
+                }
             }
+
             if (lockedObject)
                 LockCamera(lockedObject);
-            else
-                DeactivateSpheres();
         }
 
         private void RotateCamera()
@@ -113,6 +117,14 @@ namespace Assets.Scripts
                 agent.transform.position.z - 0.7f * (cam.transform.position.y - agent.transform.position.y)); // centers the camera on the target
             DeactivateSpheres();
             agent.gameObject.transform.FindChild("Sphere").gameObject.SetActive(true);
+
+            DwarfInfoPanel.SetActive(true);
+            UpdateDwarfInfoPanel(agent.gameObject);
+        }
+
+        private void UpdateDwarfInfoPanel(GameObject agent)
+        {
+            DwarfInfoPanel.transform.FindChild("DwarfName").GetComponent<Text>().text = agent.name;
         }
 
         private void DeactivateSpheres()
