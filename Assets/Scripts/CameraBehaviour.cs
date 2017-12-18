@@ -227,6 +227,8 @@ namespace Assets.Scripts
             dwarfActivity.text = memory.CurrentActivity.ToString();
 
             //TODO : knownDwarves, knownMines, beerCarried.value
+            knownDwarves.text = "" + memory.KnownDwarves.Count;
+            knownMines.text = "" + memory.KnownMines.Count;
 
             int maxValueGauge = gameEnvironment.Variables.maxValueGauge;
             thirstSatisfaction.value = (float)memory.ThirstSatisfaction / (float)maxValueGauge;
