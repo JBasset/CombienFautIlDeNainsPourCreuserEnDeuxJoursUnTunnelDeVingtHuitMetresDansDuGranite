@@ -150,10 +150,6 @@ namespace Assets.Scripts
 
         // The dwarf rethinks his activity : he may 1- change 2- keep on doing what he's doing
         public bool RethinkActivity() {
-<<<<<<< HEAD
-
-=======
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
             var rnd = new System.Random();
 
             #region STEP ONE : CHECK TIME
@@ -170,8 +166,6 @@ namespace Assets.Scripts
              * 
              * Fact is : the more he "rethinks", the more the risk that he changes his activity increases
              */
-
-<<<<<<< HEAD
             var chanceToChangeMyActivity = 25 + (s * GameEnvironment.Variables.attenuateTimeImpact);
 
             switch (_currentActivity)
@@ -198,12 +192,6 @@ namespace Assets.Scripts
                     break;
                 default: break;
             }
-=======
-            if (rnd.Next(0, (int)chances) > 50) {
-                Debug.Log("||Reth  " + this.name +
-                    " 5 more minutes please.. ");
-                return false; /* no changes */ }
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
 
             #endregion
 
@@ -274,26 +262,16 @@ namespace Assets.Scripts
 
         public Vector3 GetNewDestination()
         {
-<<<<<<< HEAD
-            var rnd = new System.Random();
-=======
 
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
+            var rnd = new System.Random();
+
             Vector3 destination;
             var destList = new List<_WeightedObject>();
-<<<<<<< HEAD
+
             int w; // a 0~100 weight
 
             #region STEP ONE : EXPLORING MY OPTIONS (depending on my activity)
-
-=======
-
-            var rnd = new System.Random();
-            /*  TODO : check qu'il n'y a pas un problème, genre que les nains ne prennent pas tous la même destination */
-
-            int w; // a 0~100 weight
-
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
+            
             switch (this._currentActivity)
             {
                 case ActivitiesLabel.Deviant:
@@ -313,24 +291,17 @@ namespace Assets.Scripts
                     break;
                     #endregion
                 case ActivitiesLabel.Explorer:
-<<<<<<< HEAD
                     #region Adds a random destination (100) [ not to close for me nor too close from a known mine ]
-=======
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
+
                     for (var i = 0; i < 10; i++)
                     {
                         do
                         {
-<<<<<<< HEAD
+
                             var x = rnd.Next(0, 500);var y = rnd.Next(0, 500);
                             destination = new Vector3(x, 0, y);
-=======
-                            var x = rnd.Next(0, 500);
-                            var y = rnd.Next(0, 500);
-                            destination = new Vector3(x, 0, y);
                             Debug.Log(" destination set to : " + destination);
-
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
+                            
                         } while (
                             (Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.expl_positionTooClose)
                             || KnownMines.Any(
@@ -415,24 +386,18 @@ namespace Assets.Scripts
                     { RethinkActivity(); return GetNewDestination(); /*iteration until a destination is chosen*/ }
             }
 
-<<<<<<< HEAD
+
             #endregion
-            
-=======
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
+     
             if (!destList.Any()) /* change to another activity and reset destination */
             { RethinkActivity(); return GetNewDestination(); }
 
             #region STEP TWO : SELECT AN OPTION
             var destinations = new WeightedList(destList);
-<<<<<<< HEAD
+
             var theDest = (Vector3) destinations.SelectRandomItem();
             #endregion
-=======
-
-            var theDest = (Vector3)destinations.SelectRandomItem();
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
-
+            
             return theDest;
         }
 

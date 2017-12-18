@@ -76,12 +76,7 @@ namespace Assets.Scripts
 
         public void UpdateActivityAndDestination()
         {
-<<<<<<< HEAD
-            Debug.Log("###  entering void UpdateActivityAndDestination()");
             if (memory.RethinkActivity() || !agent.hasPath)
-=======
-            if (memory.RethinkActivity())
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
             {
                 MoveTo(memory.GetNewDestination());
             }

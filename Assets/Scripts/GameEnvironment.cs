@@ -43,16 +43,7 @@ namespace Assets.Scripts
                 LastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
                 foreach (var myDwarf in Variables.Dwarves)
                 {
-<<<<<<< HEAD
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
-                    Debug.Log(
-                        myDwarf.name + 
-                        " Target :" + myDwarf.GetComponent<DwarfBehaviour>().Target +
-                        "\r Pioche :" + myDwarf.GetComponent<DwarfMemory>().Pickaxe +
-                        "\r CurrentActivity :" + myDwarf.GetComponent<DwarfMemory>().CurrentActivity);
-=======
-                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndPosition();
->>>>>>> e678771d65faf15b473eaeb468a8fa95562b26d7
                 }
             }
         }
