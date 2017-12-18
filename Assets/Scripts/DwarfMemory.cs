@@ -177,6 +177,18 @@ namespace Assets.Scripts
 
         }
 
+        public void UpdateMemory(List<_KnownDwarf> newKnownDwarves, List<_KnownMine> newKnownMines)
+        {
+            foreach (var newDwarf in newKnownDwarves)
+            {
+                UpdateDwarf(newDwarf);
+            }
+            foreach (var newMine in newKnownMines)
+            {
+                UpdateMine(newMine);   
+            }
+        }
+
         public void UpdateDwarf(DwarfMemory metPerson, DateTime newInformatonTakenDateTime, Vector3 position)
         {
             // maybe he is already in the list
