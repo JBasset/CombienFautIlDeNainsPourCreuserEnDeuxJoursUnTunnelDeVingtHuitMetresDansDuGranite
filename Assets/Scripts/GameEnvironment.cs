@@ -16,108 +16,101 @@ namespace Assets.Scripts
         public GameObject DwarfPrefab;
         public UIBehaviour UI;
 
-        private Transform _gameEnvironment;
-        private Transform _dwarves;
-        private Transform _mines;
-        private int _spawnsLeft; // number of dwarves to create
+        private Transform gameEnvironment;
+        private Transform dwarves;
+        private Transform mines;
+        private int spawnsLeft; // number of dwarves to create
 
-        private Text _timeSinceStart;
-        private Text _totalGoldMined;
-        private Text _totalBeerDrank;
+        private Text timeSinceStart;
+        private Text totalGoldMined;
+        private Text totalBeerDrank;
 
-        private int _lastGeneralActivityUpdate;
-        private int _lastGaneralGaugesUpdate;
-        private int _lastSecond;
+        private int LastGeneralActivityUpdate;
+        private int LastGaneralGaugesUpdate;
+        private int lastSecond;
 
         void Start()
         {
-            _gameEnvironment = GetComponent<Transform>();
-            _dwarves = _gameEnvironment.FindChild("Dwarves");
-            _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 20;
+            gameEnvironment = GetComponent<Transform>();
+            dwarves = gameEnvironment.FindChild("Dwarves");
+            mines = gameEnvironment.FindChild("World").FindChild("Mines");
+            spawnsLeft = 10;
 
-            var generalStatsPanel = UI.transform.FindChild("GeneralStats");
-            _timeSinceStart = generalStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
-            _totalGoldMined = generalStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
-            _totalBeerDrank = generalStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
+            Transform GeneralStatsPanel = UI.transform.FindChild("GeneralStats");
+            timeSinceStart = GeneralStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
+            totalGoldMined = GeneralStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
+            totalBeerDrank = GeneralStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
 
-            _lastGeneralActivityUpdate = 0;
-            _lastGaneralGaugesUpdate = 0;
+            LastGeneralActivityUpdate = 0;
+            LastGaneralGaugesUpdate = 0;
 
             UpdateNoticeables();
         }
 
         void Update()
         {
-            if (_spawnsLeft > 0 && IsSpawnFree())
+            if (spawnsLeft > 0 && IsSpawnFree())
             {
                 InstantiateDwarf();
-                _spawnsLeft--;
+                spawnsLeft--;
             }
-            if (Time.time - _lastGeneralActivityUpdate >= Variables.activityRethinkChangeRate)
+            if (Time.time - LastGeneralActivityUpdate >= Variables.activityRethinkChangeRate)
             {
-                _lastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
+                LastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
                 foreach (var myDwarf in Variables.Dwarves)
                 {
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
-            
-            if (Time.time - _lastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
+
+            if (Time.time - LastGaneralGaugesUpdate >= Variables.gaugeUpdateRate)
             {
-                _lastGaneralGaugesUpdate = (int) Mathf.Floor(Time.time);
+                LastGaneralGaugesUpdate = (int)Mathf.Floor(Time.time);
                 foreach (var myDwarf in Variables.Dwarves)
                 {
-                    var myMemory = myDwarf.GetComponent<DwarfMemory>();
-                    switch (myMemory.CurrentActivity)
+                    switch (myDwarf.GetComponent<DwarfMemory>().CurrentActivity)
                     {
                         case ActivitiesLabel.Miner:
-                            if (myMemory.OccupiedMine)
+                            if (myDwarf.GetComponent<DwarfMemory>().OccupiedMine)
                             {
-                                myMemory.LowerBy(GaugesLabel.Pickaxe, 1);
-                                if (myMemory.Pickaxe == 0)
+                                myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Pickaxe, 1);
+                                if (myDwarf.GetComponent<DwarfMemory>().Pickaxe == 0)
                                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                             }
                             break;
-                        case ActivitiesLabel.Explorer:
-                            break;
-                        case ActivitiesLabel.Deviant:
-                            break;
-                        case ActivitiesLabel.Vigile:
-                            break;
-                        case ActivitiesLabel.Supply:
-                            break;
-                        case ActivitiesLabel.GoToForge:
-                            break;
                         default: break;
+                        /*case ActivitiesLabel.Deviant: break;
+                        case ActivitiesLabel.Explorer: break;
+                        case ActivitiesLabel.Vigile: break;
+                        case ActivitiesLabel.Supply: break;
+                        case ActivitiesLabel.GoToForge: break;*/
                     }
 
-                    myMemory.LowerBy(GaugesLabel.ThirstSatisfaction, 1);
-                    
+                    myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.ThirstSatisfaction, 1);
+
                     // Work desire depends on Thirst Satisfaction
-                    var ts = myMemory.ThirstSatisfaction;
-                    if (ts >= 80) // +2 WD between 80 and 100 TS
-                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 2);
-                    else if (ts >= 60) // +1 WD between 60 and 80 TS
-                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 1);
-                    else if (ts >= 20 && ts < 40) // -1 WD between 20 and 40 TS
-                        myMemory.LowerBy(GaugesLabel.Workdesire, 1);
-                    else if (ts < 20) // -2 WD between 0 and 20 TS
-                        myMemory.LowerBy(GaugesLabel.Workdesire, 2);
+                    if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 80) // +2 WD between 80 and 100 TS
+                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, 2);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 60) // +1 WD between 60 and 80 TS
+                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, 1);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 20 && myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 40) // -1 WD between 20 and 40 TS
+                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire, 1);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 20) // -2 WD between 0 and 20 TS
+                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire, 2);
                 }
             }
 
-            if (Time.time - _lastSecond >= 1)
+            if (Time.time - lastSecond >= 1)
             {
-                _lastSecond = (int)Mathf.Floor(Time.time);
-                Variables.TimeSinceStart = _lastSecond;
+                lastSecond = (int)Mathf.Floor(Time.time);
+                Variables.TimeSinceStart = lastSecond;
             }
             UpdateGeneralStats();
         }
 
         public void CreateDwarf(int quantity)
         {
-            _spawnsLeft += quantity; // we add a dwarf to the list of dwarves left to create
+            spawnsLeft += quantity; // we add a dwarf to the list of dwarves left to create
         }
 
         private bool IsSpawnFree()
@@ -128,17 +121,19 @@ namespace Assets.Scripts
 
         private void InstantiateDwarf()
         {
-            var newDwarf = Instantiate(DwarfPrefab, Variables.dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
-            if (newDwarf == null) return;
-            newDwarf.transform.SetParent(_dwarves);
+            GameObject newDwarf = Instantiate(DwarfPrefab, Variables.dwarvesSpawn, new Quaternion(0, 0, 0, 0)) as GameObject;
+            newDwarf.transform.SetParent(dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
             newDwarf.GetComponent<DwarfBehaviour>().GE = this;
             newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
             newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
+
             newDwarf.GetComponent<DwarfBehaviour>().Start();
             newDwarf.GetComponent<DwarfMemory>().Start();
+
             UI.SetDwarfButtons();
+
             newDwarf.GetComponent<DwarfBehaviour>().FirstMove();
         }
 
@@ -156,34 +151,34 @@ namespace Assets.Scripts
 
         private void UpdateDwarves()
         {
-            Variables.Dwarves = new List<GameObject>();
-            for (var i = 0; i < _dwarves.childCount; i++)
-                Variables.Dwarves.Add(_dwarves.GetChild(i).gameObject);
+            Variables.Dwarves = new List<GameObject> { };
+            for (var i = 0; i < dwarves.childCount; i++)
+                Variables.Dwarves.Add(dwarves.GetChild(i).gameObject);
         }
 
         private void UpdateMines()
         {
-            Variables.Mines = new List<GameObject>();
-            for (var i = 0; i < _mines.childCount; i++)
-                Variables.Mines.Add(_mines.GetChild(i).gameObject);
+            Variables.Mines = new List<GameObject> { };
+            for (var i = 0; i < mines.childCount; i++)
+                Variables.Mines.Add(mines.GetChild(i).gameObject);
         }
 
         private void UpdateNoticeables()
         {
             UpdateDwarves();
             UpdateMines();
-            Variables.NoticeableObjects = new List<GameObject>();
-            foreach (var dwarf in Variables.Dwarves)
+            Variables.NoticeableObjects = new List<GameObject> { };
+            foreach (GameObject dwarf in Variables.Dwarves)
                 Variables.NoticeableObjects.Add(dwarf);
-            foreach (var mine in Variables.Mines)
+            foreach (GameObject mine in Variables.Mines)
                 Variables.NoticeableObjects.Add(mine);
         }
 
         private void UpdateGeneralStats()
         {
-            _timeSinceStart.text = "" + Variables.TimeSinceStart;
-            _totalGoldMined.text = "" + Variables.TotalGoldMined;
-            _totalBeerDrank.text = "" + Variables.TotalBeerDrank;
+            timeSinceStart.text = "" + Variables.TimeSinceStart;
+            totalGoldMined.text = "" + Variables.TotalGoldMined;
+            totalBeerDrank.text = "" + Variables.TotalBeerDrank;
         }
     }
 }

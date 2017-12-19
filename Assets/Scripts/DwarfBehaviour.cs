@@ -147,8 +147,8 @@ namespace Assets.Scripts
 
             #endregion END ( if agent is an explorer)
 
-            # region if agent arrived destination :
-
+            #region if agent arrived destination :
+            
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
             {
                 memory.SavedDestination = null;
@@ -163,6 +163,7 @@ namespace Assets.Scripts
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
                 animator.SetFloat("Run", 0);
 
+                
                 switch (memory.CurrentActivity)
                 {
                     case ActivitiesLabel.Deviant:
@@ -173,12 +174,12 @@ namespace Assets.Scripts
 
                         #region Explorer
 
-                        var MinesClose = MinesInSight()
+                        var minesClose = MinesInSight()
                             .Where(m => Vector3.Distance(agent.transform.position,
                                             m.transform.FindChild("MineEntrance").position) < 2).ToList();
-                        if (MinesClose.Any())
+                        if (minesClose.Any())
                         {
-                            var observableMine = MinesClose[0];
+                            var observableMine = minesClose[0];
                             var minePosition = observableMine.transform.FindChild("MineEntrance").position;
                             observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
                             var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
@@ -279,7 +280,7 @@ namespace Assets.Scripts
                 }
             }
 
-            #endregion END ( if agent arrived destination)
+            #endregion END ( if agent arrived destination) 
         } // ~~~ END public void Update()
 
         public void UpdateActivityAndDestination()
@@ -338,6 +339,7 @@ namespace Assets.Scripts
         public List<GameObject> DwarvesInSight()
         {
             var dwarvesInSight = new List<GameObject>();
+            
             foreach (var dwarf in GE.Variables.Dwarves)
             {
                 var sd = GE.Variables.H.SightDistance;

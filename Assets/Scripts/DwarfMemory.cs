@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 using ActivitiesLabel = Assets.Scripts.VariableStorage.ActivitiesLabel;
 using GaugesLabel = Assets.Scripts.VariableStorage.GaugesLabel;
@@ -259,6 +260,7 @@ namespace Assets.Scripts
              * 
              * Fact is : the more he "rethinks", the more the risk that he changes his activity increases
              */
+             
             var chanceToChangeMyActivity = 10 + (time * GameEnvironment.Variables.H.attenuateTimeImpact);
 
             if (CurrentActivity != ActivitiesLabel.Deviant)
@@ -321,6 +323,7 @@ namespace Assets.Scripts
                 default: break;
             }
             #endregion
+
 
             if (rnd.Next(1, 101) > chanceToChangeMyActivity) // then we don't change
             { return false; /* no changes */ }
@@ -400,11 +403,6 @@ namespace Assets.Scripts
             var rnd = new System.Random();
             return FixDestination(new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500)));
         }
-
-        public bool DistantEnough(Vector3 element, Vector3 element2, int value)
-        {
-            return Vector3.Distance(element, element2) >= value;
-        }
         
         public Vector3 GetNewDestination() /* 
             Check if the dwarf had already a destination
@@ -420,6 +418,7 @@ namespace Assets.Scripts
             Vector3 destination;
             var destList = new List<_WeightedObject>();
 
+            
             int w; // a 0~100 weight
 
             #region STEP ONE : EXPLORING MY OPTIONS (depending on my activity)
@@ -450,26 +449,24 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Explorer:
 
-                    #region Adds a random destination (100) [ not to close for me nor too close from a known mine ]
-
-                    for (var i = 0; i < 10; i++)
-                    {
-                        do
+                    #region Adds a random destination (10) [ not to close for me nor too close from a known mine ]
+                    
+                    do
                         {
                             destination = GetRandomDestination();
                         } while
                         (
-                            DistantEnough(
-                                _dwarfTransf.position, destination, GameEnvironment.Variables.H.expl_positionTooClose
-                            )
+                            Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.H.expl_positionTooClose
+                            
                             && KnownMines.All(
-                                mine => DistantEnough(mine.MinePosition, destination,
-                                    GameEnvironment.Variables.H.expl_positionTooKnown))
+                                mine => Vector3.Distance(mine.MinePosition, destination) <
+                                    GameEnvironment.Variables.H.expl_positionTooKnown)
                         );
-                        destList.Add(new _WeightedObject(destination, 1));
-                    }
-                    break;
+                    
 
+                    destList.Add(new _WeightedObject(destination, 10));
+                    break;
+                    
                 #endregion
 
                 case ActivitiesLabel.Miner:
@@ -586,18 +583,18 @@ namespace Assets.Scripts
                 default:
                 {
                     RethinkActivity();
-                    return GetNewDestination(); /*iteration until a destination is chosen*/
+                    return GetNewDestination(); //iteration until a destination is chosen
                 }
             }
 
             #endregion
-
-            if (!destList.Any()) /* change to another activity and reset destination */
+            
+            if (!destList.Any()) // change to another activity and reset destination
             {
                 RethinkActivity();
                 return GetNewDestination();
             }
-
+            
             #region STEP TWO : SELECT AN OPTION
             var destinations = new WeightedList(destList);
 
