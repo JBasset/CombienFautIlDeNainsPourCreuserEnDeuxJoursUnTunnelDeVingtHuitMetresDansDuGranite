@@ -73,7 +73,11 @@ namespace Assets.Scripts
         {
             CurrentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             LastActivityChange = UnityEngine.Time.time;
-            
+
+            IncreaseBy(GaugesLabel.ThirstSatisfaction, 100);
+            IncreaseBy(GaugesLabel.Workdesire, 100);
+            IncreaseBy(GaugesLabel.Pickaxe, 100);
+
             OccupiedMine = null;
 
             GoldOreMined = 0;
@@ -316,7 +320,6 @@ namespace Assets.Scripts
                     break;
                 default: break;
             }
-
             #endregion
 
             if (rnd.Next(1, 101) > chanceToChangeMyActivity) // then we don't change
@@ -427,21 +430,18 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Deviant:
 
-                    #region Adds 10 random (far enough) destination (10 each), plus the Beer position (Variables.dev_goToBeer)
+                    #region Adds a random (far enough) destination (10), plus the Beer position (Variables.dev_goToBeer)
 
-                    for (var i = 0; i < 10; i++)
+                    do
                     {
-                        do
-                        {
-                            destination = GetRandomDestination();
-                        } while
-                        (
-                            DistantEnough(
-                                _dwarfTransf.position, destination, GameEnvironment.Variables.H.dev_positionTooClose
-                            )
-                        );
-                        destList.Add(new _WeightedObject(destination, 10));
-                    }
+                        destination = GetRandomDestination();
+                    } while
+                    (
+                        DistantEnough(
+                            _dwarfTransf.position, destination, GameEnvironment.Variables.H.dev_positionTooClose
+                        )
+                    );
+                    destList.Add(new _WeightedObject(destination, 10));
                     destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition,
                         GameEnvironment.Variables.H.dev_goToBeer));
                     break;

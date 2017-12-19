@@ -133,15 +133,13 @@ namespace Assets.Scripts
             newDwarf.transform.SetParent(_dwarves);
             UpdateDwarves();
             newDwarf.name = "Dwarf n°" + Variables.Dwarves.Count;
-            var memory = newDwarf.GetComponent<DwarfMemory>();
-            var behaviour = newDwarf.GetComponent<DwarfBehaviour>();
             newDwarf.GetComponent<DwarfBehaviour>().GE = this;
-            memory.GameEnvironment = this;
-            memory.DwarfMemoryInitialization();
-            behaviour.Start();
-            memory.Start();
+            newDwarf.GetComponent<DwarfMemory>().GameEnvironment = this;
+            newDwarf.GetComponent<DwarfMemory>().DwarfMemoryInitialization();
+            newDwarf.GetComponent<DwarfBehaviour>().Start();
+            newDwarf.GetComponent<DwarfMemory>().Start();
             UI.SetDwarfButtons();
-            behaviour.FirstMove();
+            newDwarf.GetComponent<DwarfBehaviour>().FirstMove();
         }
 
         public List<GameObject> GetDwarves()
