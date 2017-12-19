@@ -350,6 +350,7 @@ namespace Assets.Scripts
             var newActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
             // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             _currentActivity = newActivity;
+            //_currentActivity = ActivitiesLabel.Explorer;
             
             #endregion
             
