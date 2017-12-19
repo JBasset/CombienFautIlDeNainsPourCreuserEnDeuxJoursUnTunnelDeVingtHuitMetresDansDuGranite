@@ -59,9 +59,11 @@ namespace Assets.Scripts
 
         #region Explorer
         // When is a destination considered "too close from me" to be chosen ?
-        public int expl_positionTooClose = 70;
+        public int expl_positionTooClose = 100;
         // When is a destination considered "too close from a mine I know" chosen ?
         public int expl_positionTooKnown = 50;
+        // When do an explorer consider that he has enough information to stop beeing an explorer ?
+        public int expl_iknwoenough = 3;
         #endregion
 
         #region Deviant

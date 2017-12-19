@@ -259,16 +259,23 @@ namespace Assets.Scripts
                 case ActivitiesLabel.Deviant:
                 {
                     // I'm (most likely) not a deviant anymore !
-                    if (ThirstSatisfaction > 75 || WorkDesire > 75) { chanceToChangeMyActivity += (0.5 * this.ThirstSatisfaction); }
+                    if (ThirstSatisfaction > 75 || WorkDesire > 75)
+                        { chanceToChangeMyActivity += (0.5 * this.WorkDesire); }
                     
                     // I may stay a deviant for a while
-                    if (ThirstSatisfaction < 25 || WorkDesire < 25) { chanceToChangeMyActivity -= (0.5 * ( 100 - this.ThirstSatisfaction) ); }
+                    if (ThirstSatisfaction < 25 || WorkDesire < 25)
+                        { chanceToChangeMyActivity -= (0.5 * ( 100 - this.WorkDesire) ); }
                     break;
                     }
                 case ActivitiesLabel.Explorer:
                 {
-                    // NOTE THAT EXPLORATION IS REALLY IMPORTANT : AN EXPLORER'S WATCH WON'T END unless he needs beer
-                    if (!KnownMines.Any()) { chanceToChangeMyActivity -= (0.5 * this.ThirstSatisfaction); }
+                    // Exploration means a lot for an explorer : AN EXPLORER'S WATCH WON'T END (unless he needs beer) (or find something)
+                    if (!KnownMines.Any())
+                        { chanceToChangeMyActivity -= this.WorkDesire; }
+
+                    // Since he knows a few full mines, it's ok to stop
+                    if (KnownMines.Count(m => m.Ore > 70) > GameEnvironment.Variables.expl_iknwoenough)
+                        { chanceToChangeMyActivity += 0.5*this.WorkDesire; }
                     break;
                 }
                 case ActivitiesLabel.Vigile: //TODO : completer
@@ -276,6 +283,10 @@ namespace Assets.Scripts
                 case ActivitiesLabel.Supply:  //TODO : completer
                     break;
                 case ActivitiesLabel.Miner:  //TODO : completer : je suis actuellement un mineur, je compte le rester un moment ! C'est mon objectif dans la vie quand même.
+                    if (OccupiedMine && OccupiedMine.GetComponent<MineBehaviour>().Ore > 50)
+                    {
+                        chanceToChangeMyActivity -= 0.5 * this.WorkDesire;
+                    }
                     break;
                 case ActivitiesLabel.GoToForge: //TODO : completer
                     break;
@@ -357,16 +368,30 @@ namespace Assets.Scripts
             return true;
         }
 
+        public Vector3 GetRandomDestination()
+        {
+            var rnd = new System.Random();
+            return FixDestination(new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500)));
+        }
+
+        public bool DistantEnough(Vector3 element, Vector3 element2, int value)
+        {
+            return Vector3.Distance(element, element2) >= value;
+        }
+
+
         public Vector3 GetNewDestination()
         {
+            var currentPosition = _dwarfTransf.position;
+
+            #region : the dwarf may have encapsuled a destination
             if (savedDestination != null)
             {
                 var d = (Vector3)savedDestination;
                 savedDestination = null;
                 return d;
             }
-
-            var rnd = new System.Random();
+            #endregion
 
             Vector3 destination;
             var destList = new List<_WeightedObject>();
@@ -381,12 +406,19 @@ namespace Assets.Scripts
                     #region Adds 10 random destination (10 each), plus the Beer position (Variables.dev_goToBeer)
                     for (var i = 0; i < 10; i++)
                     {
-                        do{destination = new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500));}
-                        while (
-                            (Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.expl_positionTooClose)
+                        do
+                        {
+                            destination = GetRandomDestination();
+                        }
+                        while 
+                        (
+                            DistantEnough(
+                                currentPosition, destination, GameEnvironment.Variables.expl_positionTooClose
+                            ) 
                             && KnownMines.All(
-                                mine => (Vector3.Distance(mine.MinePosition, destination) < GameEnvironment.Variables.expl_positionTooKnown)
-                            )
+                                mine => (
+                                DistantEnough(mine.MinePosition, destination, GameEnvironment.Variables.expl_positionTooKnown)
+                                ))
                         );
                         destList.Add(new _WeightedObject(destination, 10));
                     }
@@ -400,14 +432,17 @@ namespace Assets.Scripts
                     {
                         do
                         {
-
-                            var x = rnd.Next(0, 500);var y = rnd.Next(0, 500);
-                            destination = new Vector3(x, 0, y);
-                        } while (
-                            (Vector3.Distance(_dwarfTransf.position, destination) < GameEnvironment.Variables.expl_positionTooClose)
-                            || KnownMines.Any(
-                                mine => (Vector3.Distance(mine.MinePosition, destination) < GameEnvironment.Variables.expl_positionTooKnown)
+                            destination = GetNewDestination();
+                        }
+                        while
+                        (
+                            DistantEnough(
+                                currentPosition, destination, GameEnvironment.Variables.expl_positionTooClose
                             )
+                            && KnownMines.All(
+                                mine => (
+                                    DistantEnough(mine.MinePosition, destination, GameEnvironment.Variables.expl_positionTooKnown)
+                                ))
                         );
                         destList.Add(new _WeightedObject(destination, 1));
                     }
@@ -420,7 +455,9 @@ namespace Assets.Scripts
                         w = 80 - (int)(mine.DwarvesInTheMine * GameEnvironment.Variables.min_pplInTheMineImportance);
                         // the more dwarves are ALREADY in the mine, the less he wants to go
 
-                        if (Vector3.Distance(_dwarfTransf.position, mine.MinePosition) < GameEnvironment.Variables.min_closeMinefLimit)
+                        if (
+                            DistantEnough(currentPosition, mine.MinePosition, GameEnvironment.Variables.min_closeMinefLimit)
+                            )
                         { w += 20; } // this mine is close enough
 
                         if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, w));
@@ -432,10 +469,11 @@ namespace Assets.Scripts
                     foreach (var mine in KnownMines.FindAll(m => m.DwarvesInTheMine > 0).ToList()) // we add a mine if not empty
                     {
                         var mPosition = mine.MinePosition;
-                        w = (int)(mine.DwarvesInTheMine); 
+                        w = (int)(mine.DwarvesInTheMine);
                         // the more dwarves in the mine, the more he wants to go
 
-                        if (Vector3.Distance(_dwarfTransf.position, mPosition) < GameEnvironment.Variables.sup_closeMinefLimit)
+                        if (
+                            DistantEnough(currentPosition, mine.MinePosition, GameEnvironment.Variables.sup_closeMinefLimit)
                         { w += 10; } 
                         // this mine is close enough
 
@@ -450,7 +488,9 @@ namespace Assets.Scripts
                         // we add thirsty dwarves (weight depending on how close he is)
                     {
                         var dPosition = dwarf.DwarfPosition;
-                        w = (Vector3.Distance(_dwarfTransf.position, dPosition) < GameEnvironment.Variables.sup_closeDwarfLimit) ? 50 : 10;
+                        w = DistantEnough(currentPosition, dPosition, GameEnvironment.Variables.sup_closeDwarfLimit) 
+                            ? 50 
+                            : 10;
                         destList.Add(new _WeightedObject(dPosition, w));
                     }
                     break;
@@ -460,7 +500,9 @@ namespace Assets.Scripts
                     foreach (var dwarf in KnownDwarves.FindAll(d => (d.Deviant)).ToList())
                     {
                         var dPosition = dwarf.DwarfPosition;
-                        w = (Vector3.Distance(_dwarfTransf.position, dPosition) < GameEnvironment.Variables.sup_closeDwarfLimit) ? 50 : 10;
+                        w = DistantEnough(currentPosition, dPosition, GameEnvironment.Variables.vig_closeDwarfLimit) 
+                            ? 50 
+                            : 10;
                         destList.Add(new _WeightedObject(dPosition, w));
                     }
                     #endregion
@@ -469,11 +511,10 @@ namespace Assets.Scripts
                     foreach (var dwarf in KnownDwarves.FindAll(d => (d.HighThirst)).ToList())
                         {
                             var dPosition = dwarf.DwarfPosition;
-                            w = (Vector3.Distance(_dwarfTransf.position, dPosition) <
-                                 GameEnvironment.Variables.sup_closeDwarfLimit)
-                                ? 50
-                                : 10;
-                            destList.Add(new _WeightedObject(dPosition, w));
+                        w = DistantEnough(currentPosition, dPosition, GameEnvironment.Variables.vig_closeDwarfLimit) 
+                            ? 50 
+                            : 10;
+                        destList.Add(new _WeightedObject(dPosition, w));
                         }
                     break;
                     #endregion
@@ -506,7 +547,7 @@ namespace Assets.Scripts
             return (Vector3)savedDestination;
         }
 
-        private Vector3 FixDestination(Vector3 destination)
+        private Vector3 FixDestination(Vector3 destination) /* make sure that the destination is accessible */
         {
             NavMeshHit hit;
             Debug.Log(NavMesh.SamplePosition(destination, out hit, 2, 1));
