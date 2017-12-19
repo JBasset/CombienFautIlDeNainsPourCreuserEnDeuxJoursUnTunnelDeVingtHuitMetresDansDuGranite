@@ -55,8 +55,6 @@ namespace Assets.Scripts
                         _gameEnvironment.Variables.TotalGoldMined += Ore;
                         OreExtracted += Ore;
                         Ore = 0;
-                        EmptyMine();
-                        break;
                     }
                 }
             }
@@ -70,14 +68,6 @@ namespace Assets.Scripts
         public void RemoveDwarfInside(GameObject dwarf)
         {
             DwarvesInside.Remove(dwarf);
-        }
-
-        private void EmptyMine()
-        {
-            foreach(var Dwarf in DwarvesInside)
-            {
-                Dwarf.GetComponent<DwarfMemory>().GetNewDestination();
-            }
         }
     }
 }
