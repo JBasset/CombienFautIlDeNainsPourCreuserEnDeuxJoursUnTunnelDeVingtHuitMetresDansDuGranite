@@ -166,12 +166,20 @@ namespace Assets.Scripts
                             UpdateActivityAndDestination();
                             break;
                         }
-                        
+
             #endregion END ( if agent is an explorer)
 
+            #region if agent is a miner :
+            if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Miner)
+            {
+                GameObject OM = agent.GetComponent<DwarfMemory>().OccupiedMine;
+                if (OM && OM.GetComponent<MineBehaviour>().Ore == 0)
+                    ExitMine();
+            }
+            #endregion
 
-            # region if agent arrived destination :
-            
+            #region if agent arrived destination :
+
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
             {
                 memory.SavedDestination = null;
@@ -336,7 +344,7 @@ namespace Assets.Scripts
             this.gameObject.SetActive(false);
         }
 
-        private void ExitMine()
+        public void ExitMine()
         {
             memory.OccupiedMine.GetComponent<MineBehaviour>().RemoveDwarfInside(this.gameObject);
             memory.OccupiedMine = null;

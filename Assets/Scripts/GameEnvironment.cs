@@ -46,6 +46,8 @@ namespace Assets.Scripts
             _lastGaneralGaugesUpdate = 0;
 
             UpdateNoticeables();
+
+            Time.timeScale = 5;
         }
 
         void Update()
