@@ -49,6 +49,8 @@ namespace Assets.Scripts
         private Text mineName;
         private Text goldOre;
         private Text dwarvesInside;
+        private Text oreExtracted;
+        private Text timesInteracted; // Correspond to the number of dwarves interactions with the mine since the start : finding, entering, supplying...
         #endregion
 
         void Start()
@@ -89,6 +91,9 @@ namespace Assets.Scripts
             mineName = GeneralInfo.FindChild("MineName").GetComponent<Text>();
             goldOre = GeneralInfo.FindChild("GoldOre").FindChild("Value").GetComponent<Text>();
             dwarvesInside = GeneralInfo.FindChild("DwarvesInside").FindChild("Value").GetComponent<Text>();
+            Stats = MineInfoPanel.transform.FindChild("Stats");
+            oreExtracted = Stats.FindChild("OreExtracted").FindChild("Value").GetComponent<Text>();
+            timesInteracted = Stats.FindChild("TimesInteracted").FindChild("Value").GetComponent<Text>();
             #endregion
     }
 
@@ -303,9 +308,13 @@ namespace Assets.Scripts
         {
             MineBehaviour mine = lockedMine.GetComponent<MineBehaviour>();
 
+            //general info
             mineName.text = lockedMine.name;
             goldOre.text = "" + mine.Ore;
             dwarvesInside.text = "" + mine.DwarvesInside.Count;
+
+            // stats
+            oreExtracted.text = "" + mine.OreExtracted;
         }
 
         private void DeactivateSpheres()

@@ -8,6 +8,9 @@ namespace Assets.Scripts
     {
         public GameObject GE;
 
+        public int OreExtracted;
+        public int TimesInteracted;
+
         private GameEnvironment _gameEnvironment;
         public int Ore;
         private int _lastSecond;
@@ -19,6 +22,8 @@ namespace Assets.Scripts
             Ore = Random.Range(0, _gameEnvironment.Variables.dwarfOreMiningRate * 60); // random value between 0 and the amount of gold ore one dwarf can mine in 1 min.
             _lastSecond = 0;
             DwarvesInside = new List<GameObject>();
+            OreExtracted = 0;
+            TimesInteracted = 0;
         }
 
         void Update()
@@ -41,12 +46,14 @@ namespace Assets.Scripts
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += miningRate;
                         _gameEnvironment.Variables.TotalGoldMined += miningRate;
+                        OreExtracted += miningRate;
                         Ore -= miningRate;
                     }
                     else
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += Ore;
                         _gameEnvironment.Variables.TotalGoldMined += Ore;
+                        OreExtracted += Ore;
                         Ore = 0;
                         EmptyMine();
                         break;

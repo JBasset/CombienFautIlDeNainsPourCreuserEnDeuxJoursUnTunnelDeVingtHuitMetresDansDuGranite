@@ -33,26 +33,6 @@ namespace Assets.Scripts
 
         public void Update()
         {
-            #region  whenever a dwarf is close from a mine, he learns about it
-
-            foreach (var observableMine in GE.Variables.Mines)
-            {
-                var minePosition = observableMine.transform.FindChild("MineEntrance").position;
-                if (Vector3.Distance(agent.transform.position, minePosition) < 0.3f) // maybe change 0.3f ? TODO hahaha
-                {
-                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
-                    var thirstyDwarves =
-                        dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction <
-                                                    GE.Variables.thirstyDwarvesGaugeLimit);
-                    var ore = observableMine.GetComponent<MineBehaviour>().Ore;
-
-                    memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
-                        observableMine.name);
-                }
-            }
-
-            #endregion
-
             // TODO penser à débugger la position des nains
 
             #region  whenever a dwarf is close from another
@@ -180,8 +160,32 @@ namespace Assets.Scripts
                                 break;
 
                             case ActivitiesLabel.Explorer:
+                                #region Explorer
+                                #region  whenever a dwarf is close from a mine, he learns about it
+
+                                foreach (var observableMine in MinesInSight())
+                                {
+                                    var minePosition = observableMine.transform.FindChild("MineEntrance").position;
+                                    if (Vector3.Distance(agent.transform.position, minePosition) < 2)
+                                    {
+                                        observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
+                                        var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
+                                        var thirstyDwarves =
+                                            dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction <
+                                                                        GE.Variables.thirstyDwarvesGaugeLimit);
+                                        var ore = observableMine.GetComponent<MineBehaviour>().Ore;
+
+                                        memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
+                                            observableMine.name);
+                                    }
+                                }
+
+                                #endregion
+                                
                                 UpdateActivityAndDestination();
+
                                 break;
+                                #endregion
 
                             case ActivitiesLabel.Vigile:
 
@@ -233,7 +237,6 @@ namespace Assets.Scripts
                                 break;
 
                             case ActivitiesLabel.Miner:
-
                                 #region Miner
 
                                 List<GameObject> mine = GE
@@ -300,6 +303,7 @@ namespace Assets.Scripts
 
         private void EnterMine(GameObject mine)
         {
+            mine.GetComponent<MineBehaviour>().TimesInteracted++;
             mine.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
             memory.OccupiedMine = mine;
             this.gameObject.SetActive(false);
