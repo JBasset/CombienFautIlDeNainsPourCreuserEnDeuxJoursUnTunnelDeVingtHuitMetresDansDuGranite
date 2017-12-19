@@ -340,6 +340,13 @@ namespace Assets.Scripts
             #region STEP FOUR : TIME TO MAKE A DECISION
 
             var startingActivity = new WeightedList(list);
+
+            if (!startingActivity.List.Any())
+            {
+                _currentActivity = ActivitiesLabel.Deviant;
+                return true;
+            }
+
             var newActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
             // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             _currentActivity = newActivity;
