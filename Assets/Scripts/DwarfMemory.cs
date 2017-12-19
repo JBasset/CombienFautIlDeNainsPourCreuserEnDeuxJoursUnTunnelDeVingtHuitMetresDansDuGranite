@@ -400,7 +400,7 @@ namespace Assets.Scripts
 
         public bool DistantEnough(Vector3 element, Vector3 element2, int value)
         {
-            return Vector3.Distance(element, element2) >= value;
+            return Vector3.Distance(element, element2) < value;
         }
         
         public Vector3 GetNewDestination() /* 
