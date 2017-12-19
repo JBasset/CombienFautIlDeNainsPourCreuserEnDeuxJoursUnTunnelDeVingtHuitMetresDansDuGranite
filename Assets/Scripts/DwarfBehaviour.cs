@@ -40,16 +40,38 @@ namespace Assets.Scripts
             // whatever you're doing : stop
             if (DwarvesInSight().Any())
             {
-                #region  whenever a dwarf is REALLY close from another, he learns from him
-                
+                #region  whenever a dwarf is REALLY close from another, they talk : one learns from another
+
                 foreach (var seenDwarf in DwarvesInSight())
                     if (Vector3.Distance(agent.transform.position, seenDwarf.transform.position) <
                         3f) // maybe change ? TODO hahaha
                     {
                         memory.UpdateMemory(seenDwarf.GetComponent<DwarfMemory>().KnownDwarves,
                             seenDwarf.GetComponent<DwarfMemory>().KnownMines);
-                        memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), DateTime.Now,
+                        memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), Time.time,
                             seenDwarf.transform.position);
+
+                        // when a vigile meets a deviant
+                        if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Vigile &&
+                            seenDwarf.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
+                        {
+                            seenDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                        }
+
+                        // when a supply meets a thirsty
+                        if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Supply &&
+                            seenDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 50
+                            && agent.GetComponent<DwarfMemory>().BeerCarried > 0)
+                        {
+                            var carriedBeer = agent.GetComponent<DwarfMemory>().BeerCarried;
+                            var missingBeer = GE.Variables.maxValueGauge - seenDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction;
+                            var usedBeer = (carriedBeer >= missingBeer)
+                                ? missingBeer
+                                : carriedBeer;
+
+                            seenDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
+                            agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
+                        }
                     }
 
                 #endregion
@@ -155,7 +177,12 @@ namespace Assets.Scripts
                 memory.SavedDestination = null;
 
                 if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
-                    memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
+                {
+                    if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Miner)
+                    {
+                        memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
+                    }
+                    memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);}
 
                 if (Vector3.Distance(agent.transform.position, GE.Variables.forgePosition) < 2)
                     memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
@@ -164,10 +191,11 @@ namespace Assets.Scripts
                 animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
                 animator.SetFloat("Run", 0);
 
-                
+                // I have no path anymore....
                 switch (memory.CurrentActivity)
                 {
                     case ActivitiesLabel.Deviant:
+                        
                         UpdateActivityAndDestination();
                         break;
 
@@ -179,7 +207,7 @@ namespace Assets.Scripts
                                             m.transform.FindChild("MineEntrance").position) < 2).ToList();
                         if (minesClose.Any())
                         {
-                            var observableMine = minesClose[0];
+                            var observableMine = minesClose.First();
                             var minePosition = observableMine.transform.FindChild("MineEntrance").position;
                             observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
                             var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
@@ -189,7 +217,7 @@ namespace Assets.Scripts
                             var ore = observableMine.GetComponent<MineBehaviour>().Ore;
 
                             memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore,
-                                DateTime.Now,
+                                Time.time,
                                 observableMine.name);
                         }
                         UpdateActivityAndDestination();
@@ -207,7 +235,7 @@ namespace Assets.Scripts
                         if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
 
                         {
-                            var targetedDeviant = deviantsInSight[0];
+                            var targetedDeviant = deviantsInSight.First();
                             if (Vector3.Distance(transform.position,
                                     targetedDeviant.transform.position) < 2) // if he reached him
                             {
@@ -257,14 +285,8 @@ namespace Assets.Scripts
                                             m.transform.FindChild("MineEntrance").position) < 3
                             ).ToList();
                         if (mine.Any())
-                            EnterMine(mine[0]);
-                        else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
-                            foreach (var Mine in memory.KnownMines)
-                                if (Mine.Ore > GE.Variables.dwarfOreMiningRate * 10)
-                                {
-                                    MoveTo(Mine.MinePosition);
-                                    break;
-                                }
+                            EnterMine(mine.First());
+                        
                         else
                             UpdateActivityAndDestination();
                         break;

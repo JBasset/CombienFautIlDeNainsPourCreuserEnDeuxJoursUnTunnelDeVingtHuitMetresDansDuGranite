@@ -303,9 +303,7 @@ namespace Assets.Scripts
 
             dwarfName.text = lockedAgent.name;
             dwarfActivity.text = memory.CurrentActivity.ToString();
-
-            //TODO : knownDwarves, knownMines
-            // TODO beerCarried.value
+            
             knownDwarves.text = "" + memory.KnownDwarves.Count;
             knownMines.text = "" + memory.KnownMines.Count;
 
@@ -313,6 +311,7 @@ namespace Assets.Scripts
             thirstSatisfaction.value = memory.ThirstSatisfaction / (float) maxValueGauge;
             workDesire.value = memory.WorkDesire / (float) maxValueGauge;
             pickaxe.value = memory.Pickaxe / (float) maxValueGauge;
+            beerCarried.value = memory.BeerCarried / (float)maxValueGauge;
 
             #endregion
 

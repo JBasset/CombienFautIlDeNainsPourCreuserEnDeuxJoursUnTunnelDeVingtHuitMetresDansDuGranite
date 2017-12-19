@@ -9,8 +9,10 @@ namespace Assets.Scripts
     public class VariableStorage
     {
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }
-        public enum GaugesLabel { /*Specialisation, Tiredness, */ ThirstSatisfaction, Workdesire, Pickaxe }
-        
+        public enum GaugesLabel { /*Specialisation, Tiredness, */ ThirstSatisfaction, Workdesire, Pickaxe, BeerCarried }
+
+        public int OutOfDate = 200; // oblivion
+
         // new dwarves start with those activities :
         public WeightedList startingActivity = new WeightedList(
             new List<_WeightedObject>{
@@ -49,9 +51,11 @@ namespace Assets.Scripts
          * We neglect the economical impact of that property in the simulation's universe. 
          * Even though it's worthless, dwarves love gold. */
 
-        public int dwarfOreMiningRate = 10;
+        public int dwarfOreMiningRate = 2;
 
         public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int activityRethinkLimit = 5; // don't change if it's less than this !
+
         public int gaugeUpdateRate = 2; // in UnityEngine.Time, used in gameEnvironment.Update()
         #endregion
 
@@ -63,8 +67,7 @@ namespace Assets.Scripts
         {
             // distance the dwarves can see
             public int SightDistance = 50;
-
-
+            
             public double attenuateTimeImpact = 1; /* this value (0 <= x <= 1) affects a dwarf's chance to rethink his activity */
             /* proba = 0.25 + (attenuateTimeImpact * nbsec / 100 ) */
 
@@ -78,7 +81,7 @@ namespace Assets.Scripts
             // When is a destination considered "too close from me" to be chosen ?
             public int expl_positionTooClose = 40;
             // When is a destination considered "too close from a mine I know" chosen ?
-            public int expl_positionTooKnown = 40;
+            public int expl_positionTooKnown = 80;
             // When do an explorer consider that he has enough information to stop beeing an explorer ?
             public int expl_iknwoenough = 3;
             #endregion
@@ -90,7 +93,7 @@ namespace Assets.Scripts
             public int dev_goToBeer = 50;
 
             // When is a destination considered "too close from me" to be chosen ?
-            public int dev_positionTooClose = 80;
+            public int dev_positionCloseEnough = 150;
             #endregion
 
             #region Vigile

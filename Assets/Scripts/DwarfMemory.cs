@@ -36,7 +36,10 @@ namespace Assets.Scripts
 
         private int _pickaxe;
         public int Pickaxe { get { return _pickaxe; } set { _pickaxe = StockGauge(value); } }
-        
+
+        private int _beerCarried;
+        public int BeerCarried { get { return _beerCarried; } set { _beerCarried = StockGauge(value); } }
+
         // stats
         public int GoldOreMined;
         public int BeerDrank;
@@ -94,6 +97,7 @@ namespace Assets.Scripts
 
 
         #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
+
         public void IncreaseBy(GaugesLabel theGauge, int byValue)
         {
             // exemple of use : one dwarf gets thirsty, his thirst increaseBy(ThirstSatisfaction,10)
@@ -101,13 +105,16 @@ namespace Assets.Scripts
             switch (theGauge)
             {
                 case GaugesLabel.ThirstSatisfaction:
-                    _thirstSatisfaction += byValue;
+                    ThirstSatisfaction += byValue;
                     break;
                 case GaugesLabel.Workdesire:
-                    _workDesire += byValue;
+                    WorkDesire += byValue;
                     break;
                 case GaugesLabel.Pickaxe:
-                    _pickaxe += byValue;
+                    Pickaxe += byValue;
+                    break;
+                case GaugesLabel.BeerCarried:
+                    BeerCarried += byValue;
                     break;
                 default:
                     return;
@@ -121,22 +128,30 @@ namespace Assets.Scripts
             switch (theGauge)
             {
                 case GaugesLabel.ThirstSatisfaction:
-                    _thirstSatisfaction -= byValue;
+                    ThirstSatisfaction -= byValue;
                     break;
                 case GaugesLabel.Workdesire:
-                    _workDesire -= byValue;
+                {
+                    WorkDesire -= byValue;
                     break;
+                }
                 case GaugesLabel.Pickaxe:
-                    _pickaxe -= byValue;
+                    Pickaxe -= byValue;
+                    break;
+                case GaugesLabel.BeerCarried:
+                    BeerCarried -= byValue;
                     break;
                 default:
                     return;
             }
         }
 
+        #endregion
+
+        #region Update functions
 
         public void UpdateMine(Vector3 thePosition, int newThirstyDwarves, int newDwarvesInTheMine, int ore,
-            DateTime newDateTime, string newName)
+            float newDateTime, string newName)
         {
             // maybe this mine is already in the list
             var thisMine = _knownMines.Where(m => m.Name == newName).ToList();
@@ -149,12 +164,12 @@ namespace Assets.Scripts
             }
             // if the mine isnt already known, let's add it
 
-            else if (thisMine[0].InformatonTakenDateTime > newDateTime)
+            else if (thisMine.First().InformatonTakenDateTime > newDateTime)
             {
-                thisMine[0].InformatonTakenDateTime = newDateTime;
-                thisMine[0].Ore = ore;
-                thisMine[0].DwarvesInTheMine = newDwarvesInTheMine;
-                thisMine[0].ThirstyDwarves = newDwarvesInTheMine < newThirstyDwarves ? 0 : newThirstyDwarves;
+                thisMine.First().InformatonTakenDateTime = newDateTime;
+                thisMine.First().Ore = ore;
+                thisMine.First().DwarvesInTheMine = newDwarvesInTheMine;
+                thisMine.First().ThirstyDwarves = newDwarvesInTheMine < newThirstyDwarves ? 0 : newThirstyDwarves;
             }
 
             // else our information is more recent
@@ -163,7 +178,7 @@ namespace Assets.Scripts
         public void UpdateMine(_KnownMine newMine)
         {
             // maybe this mine is already in the list
-            var thisMine = _knownMines.Where(m => m.Name == newMine.Name).ToList();
+            var thisMine = _knownMines.FindAll(m => m.Name == newMine.Name);
 
             if (!thisMine.Any())
             {
@@ -175,15 +190,10 @@ namespace Assets.Scripts
             }
             // if the mine isnt already known, let's add it
 
-            else if (thisMine[0].InformatonTakenDateTime > newMine.InformatonTakenDateTime)
+            else if (thisMine.First().InformatonTakenDateTime > newMine.InformatonTakenDateTime)
             {
-                var index = _knownMines.FindIndex(m => m.Name == newMine.Name);
-                _knownMines[index].InformatonTakenDateTime = newMine.InformatonTakenDateTime;
-                _knownMines[index].Ore = newMine.Ore;
-                _knownMines[index].DwarvesInTheMine = newMine.DwarvesInTheMine;
-                _knownMines[index].ThirstyDwarves = newMine.DwarvesInTheMine < newMine.ThirstyDwarves
-                    ? 0
-                    : newMine.ThirstyDwarves;
+                _knownMines.RemoveAll(m => m.Name == newMine.Name);
+                _knownMines.Add(newMine);
             }
 
             // else our information is more recent
@@ -201,21 +211,23 @@ namespace Assets.Scripts
             }
         }
 
-        public void UpdateDwarf(DwarfMemory metPerson, DateTime newInformatonTakenDateTime, Vector3 position)
+        public void UpdateDwarf(DwarfMemory metPerson, float newInformatonTakenDateTime, Vector3 position)
         {
-            // maybe he is already in the list
-            var sameD = _knownDwarves.Where(d => d.Name == metPerson.name).ToList();
+            if (metPerson.name == name) return;
+            
+            // maybe this mine is already in the list
+            var sameD = _knownDwarves.FindAll(d => d.Name == metPerson.name);
 
-            if (!sameD.Any()) _knownDwarves.Add(new _KnownDwarf(metPerson));
+            if (!sameD.Any())
+            {
+                _knownDwarves.Add(new _KnownDwarf(metPerson));
+            }
             // if the mine isnt already known, let's add it
 
-            else if (sameD[0].InformatonTakenDateTime > newInformatonTakenDateTime)
+            else if (sameD.First().InformatonTakenDateTime > newInformatonTakenDateTime)
             {
-                var index = _knownDwarves.FindIndex(d => (d.Name == metPerson.name));
-                _knownDwarves[index].InformatonTakenDateTime = newInformatonTakenDateTime;
-                _knownDwarves[index].HighThirst = metPerson.ThirstSatisfaction < 50;
-                _knownDwarves[index].Deviant = (metPerson.CurrentActivity == ActivitiesLabel.Deviant);
-                _knownDwarves[index].DwarfPosition = position;
+                _knownDwarves.RemoveAll(d => d.Name == metPerson.name);
+                _knownDwarves.Add(new _KnownDwarf(metPerson));
             }
 
             // else our information is more recent
@@ -223,19 +235,21 @@ namespace Assets.Scripts
 
         public void UpdateDwarf(_KnownDwarf newDwarf)
         {
-            // maybe he is already in the list
-            var sameD = _knownDwarves.Where(d => d.Name == newDwarf.Name).ToList();
+            if (newDwarf.Name == name) return;
+            
+            // maybe this dwarf is already in the list
+            var sameD = _knownDwarves.FindAll(d => d.Name == newDwarf.Name);
 
-            if (!sameD.Any()) _knownDwarves.Add(newDwarf);
-            // if the mine isnt already known, let's add it
-
-            else if (sameD[0].InformatonTakenDateTime > newDwarf.InformatonTakenDateTime)
+            if (!sameD.Any())
             {
-                var index = _knownDwarves.FindIndex(d => (d.Name == newDwarf.Name));
-                _knownDwarves[index].InformatonTakenDateTime = newDwarf.InformatonTakenDateTime;
-                _knownDwarves[index].HighThirst = newDwarf.HighThirst;
-                _knownDwarves[index].Deviant = newDwarf.Deviant;
-                _knownDwarves[index].DwarfPosition = newDwarf.DwarfPosition;
+                _knownDwarves.Add(newDwarf);
+            }
+            // if the dwarf isnt already known, let's add it
+
+            else if (sameD.First().InformatonTakenDateTime > newDwarf.InformatonTakenDateTime)
+            {
+                _knownDwarves.RemoveAll(d => d.Name == newDwarf.Name);
+                _knownDwarves.Add(newDwarf);
             }
 
             // else our information is more recent
@@ -270,23 +284,39 @@ namespace Assets.Scripts
             {
                 case ActivitiesLabel.Deviant:
                 {
+                    // If I am a Deviant I stay a Deviant for at least activityRethinkLimit
+                    if (time < GameEnvironment.Variables.activityRethinkLimit)
+                    {
+                        chanceToChangeMyActivity = 0;
+                        break;
+                    }
+
                     // I'm (most likely) not a deviant anymore !
-                    if (ThirstSatisfaction > 75 || WorkDesire > 75)
+                    if (ThirstSatisfaction > 75)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
-                    // I may stay a deviant for a while
-                    if (ThirstSatisfaction < 25 || WorkDesire < 25)
+                    // OR I may stay a deviant for a while
+                    if (ThirstSatisfaction < 25)
                         chanceToChangeMyActivity -= 0.5 * (100 - WorkDesire);
                     break;
                 }
                 case ActivitiesLabel.Explorer:
                 {
+                    // If I am an Explorer I stay a Explorer for at least activityRethinkLimit
+                    if (time < GameEnvironment.Variables.activityRethinkLimit)
+                    {
+                        chanceToChangeMyActivity = 0;
+                        break;
+                    }
+
                     // Exploration means a lot for an explorer : AN EXPLORER'S WATCH WON'T END (unless he needs beer) (or find something)
-                    if (!KnownMines.Any())
-                        chanceToChangeMyActivity -= WorkDesire;
+                    if (KnownMines.Count < 3)
+                        chanceToChangeMyActivity -= 1.5 * WorkDesire;
 
                     // Since he knows a few full mines, it's ok to stop
-                    if (KnownMines.Count(m => m.Ore > 70) > GameEnvironment.Variables.H.expl_iknwoenough)
+
+                    if (KnownMines.Count(m => m.Ore > 10 * GameEnvironment.Variables.dwarfOreMiningRate) >
+                        GameEnvironment.Variables.H.expl_iknwoenough)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
                 }
@@ -299,13 +329,28 @@ namespace Assets.Scripts
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
                 case ActivitiesLabel.Miner:
-
+                {
+                    // If I am an Miner I stay a Miner for at least activityRethinkLimit
+                    if (!OccupiedMine && time < GameEnvironment.Variables.activityRethinkLimit)
+                    {
+                        chanceToChangeMyActivity = 0;
+                        break;
+                    }
+                    
                     if (!OccupiedMine && KnownMines.Count(m => m.Ore > 50) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
                     if (!OccupiedMine) break;
 
-                    // i currently am in a mine
+                    // I currently am in a mine
+
+                    // If I am an Miner I stay a Miner for at least activityRethinkLimit
+                    if (OccupiedMine.GetComponent<MineBehaviour>().Ore > 10 &&
+                        time < GameEnvironment.Variables.activityRethinkLimit)
+                    {
+                        chanceToChangeMyActivity = 0;
+                        break;
+                    }
 
                     if (OccupiedMine.GetComponent<MineBehaviour>().Ore > 50)
                         chanceToChangeMyActivity -= 0.5 * WorkDesire;
@@ -314,6 +359,7 @@ namespace Assets.Scripts
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
                     break;
+                }
                 case ActivitiesLabel.GoToForge:
                     if (Pickaxe < 20)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
@@ -373,6 +419,15 @@ namespace Assets.Scripts
                 && KnownDwarves.Any(d => d.Deviant) && this.ThirstSatisfaction >= 10)
             {
                 var w0 = w;
+
+                // if I know a close endangered dwarf, i may consider beeing a vigile
+                if (KnownDwarves.Any(d => (d.Deviant || d.HighThirst) &&
+                                          Vector3.Distance(_dwarfTransf.position, d.DwarfPosition) <
+                                          GameEnvironment.Variables.H.vig_closeDwarfLimit))
+                {
+                    w0 += w;
+                }
+
                 list.Add(new _WeightedObject(ActivitiesLabel.Vigile, w0));
             }
 
@@ -403,12 +458,7 @@ namespace Assets.Scripts
             var rnd = new System.Random();
             return FixDestination(new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500)));
         }
-
-        public bool DistantEnough(Vector3 element, Vector3 element2, int value)
-        {
-            return Vector3.Distance(element, element2) < value;
-        }
-
+        
         public Vector3 GetNewDestination() /* 
             Check if the dwarf had already a destination
              */
@@ -434,17 +484,16 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Deviant:
 
-                    #region Adds a random (far enough) destination (10), plus the Beer position (Variables.dev_goToBeer)
+                    #region Adds a random (CLOSE enough) destination (10), plus the Beer position (Variables.dev_goToBeer)
 
+                    // a deviant will stay close
                     do
                     {
                         destination = GetRandomDestination();
                     } while
                     (
-                        DistantEnough(
-                            _dwarfTransf.position, destination, GameEnvironment.Variables.H.dev_positionTooClose
-                        )
-                    );
+                        Vector3.Distance(_dwarfTransf.position, destination) >= GameEnvironment.Variables.H.dev_positionCloseEnough
+                        );
                     destList.Add(new _WeightedObject(destination, 10));
                     destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition,
                         GameEnvironment.Variables.H.dev_goToBeer));
@@ -478,15 +527,13 @@ namespace Assets.Scripts
 
                     #region Adds every non-empty mines (0-100 depending on distance and dwarf number)
 
-                    foreach (var mine in KnownMines.FindAll(m => m.Ore > 5).ToList())
+                    foreach (var mine in KnownMines.FindAll(m => m.Ore > 10 * GameEnvironment.Variables.dwarfOreMiningRate).ToList())
                     {
                         w = 80 - (int) (mine.DwarvesInTheMine * GameEnvironment.Variables.H.min_pplInTheMineImportance);
                         // the more dwarves are ALREADY in the mine, the less he wants to go
 
-                        if (
-                            DistantEnough(_dwarfTransf.position, mine.MinePosition,
-                                GameEnvironment.Variables.H.min_closeMinefLimit)
-                        )
+                        // I like close mines better
+                        if ( Vector3.Distance(_dwarfTransf.position, mine.MinePosition) < GameEnvironment.Variables.H.min_closeMinefLimit)
                             w += 20;
 
                         if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, w));
@@ -500,7 +547,8 @@ namespace Assets.Scripts
                     #region Adds every occuped mines (dwarf number + 0-20 depending on distance and thirst evaluation)
 
                     // TODO : si j'ai pas de biere je veux absolument aller en chercher
-                    // sinon blah
+                    
+                    // TODO : sinon SINON ELSE SINON blah
 
                     foreach (var mine in KnownMines.FindAll(m => m.DwarvesInTheMine > 0).ToList()
                     ) // we add a mine if not empty
@@ -509,10 +557,9 @@ namespace Assets.Scripts
                         w = mine.DwarvesInTheMine;
                         // the more dwarves in the mine, the more he wants to go
 
-                        if ( // this mine is close enough
-                            DistantEnough(_dwarfTransf.position, mine.MinePosition,
-                                GameEnvironment.Variables.H.sup_closeMinefLimit)
-                        ) w += 10;
+                        // I like close mines better
+                        if (Vector3.Distance(_dwarfTransf.position, mine.MinePosition) < GameEnvironment.Variables.H.sup_closeMinefLimit)
+                            w += 20;
 
                         w += 2 * mine.ThirstyDwarves;
                         // I know they want to drink in this mine
@@ -527,12 +574,12 @@ namespace Assets.Scripts
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.HighThirst).ToList())
                         // we add thirsty dwarves (weight depending on how close he is)
                     {
-                        var dPosition = dwarf.DwarfPosition;
-                        w = DistantEnough(_dwarfTransf.position, dPosition,
-                            GameEnvironment.Variables.H.sup_closeDwarfLimit)
+                        // I like close dwarves better
+                        w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.sup_closeDwarfLimit)
                             ? 50
                             : 10;
-                        destList.Add(new _WeightedObject(dPosition, w));
+
+                        destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
                     break;
 
@@ -544,12 +591,11 @@ namespace Assets.Scripts
 
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.Deviant).ToList())
                     {
-                        var dPosition = dwarf.DwarfPosition;
-                        w = DistantEnough(_dwarfTransf.position, dPosition,
-                            GameEnvironment.Variables.H.vig_closeDwarfLimit)
+                        // I like close dwarves better
+                        w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
                             : 10;
-                        destList.Add(new _WeightedObject(dPosition, w));
+                        destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
 
                     #endregion
@@ -560,12 +606,11 @@ namespace Assets.Scripts
 
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.HighThirst).ToList())
                     {
-                        var dPosition = dwarf.DwarfPosition;
-                        w = DistantEnough(_dwarfTransf.position, dPosition,
-                            GameEnvironment.Variables.H.vig_closeDwarfLimit)
+                        // I like close dwarves better
+                        w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
                             : 10;
-                        destList.Add(new _WeightedObject(dPosition, w));
+                        destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
                     break;
 
@@ -621,7 +666,7 @@ namespace Assets.Scripts
             public Vector3 DwarfPosition;
             public string Name;
             public bool HighThirst;
-            public DateTime InformatonTakenDateTime;
+            public float InformatonTakenDateTime;
             public bool Deviant;
 
             public _KnownDwarf(DwarfMemory anotherPerson)
@@ -629,7 +674,7 @@ namespace Assets.Scripts
                 Name = anotherPerson.name;
                 HighThirst = anotherPerson.ThirstSatisfaction < 50;
                 Deviant = anotherPerson.CurrentActivity == ActivitiesLabel.Deviant;
-                InformatonTakenDateTime = DateTime.Now;
+                InformatonTakenDateTime = Time.time;
             }
         }
 
@@ -637,7 +682,7 @@ namespace Assets.Scripts
         {
             public string Name;
             public Vector3 MinePosition;
-            public DateTime InformatonTakenDateTime;
+            public float InformatonTakenDateTime;
 
             public int Ore;
 
@@ -649,7 +694,7 @@ namespace Assets.Scripts
             // number of dwarves under thirstyDwarvesGaugeLimit
 
             public _KnownMine(Vector3 minePosition, int dwarvesInTheMine, int thirstyDwarves, int ore,
-                DateTime newDateTime, string name)
+                float newDateTime, string name)
             {
                 Ore = ore;
                 Name = name;

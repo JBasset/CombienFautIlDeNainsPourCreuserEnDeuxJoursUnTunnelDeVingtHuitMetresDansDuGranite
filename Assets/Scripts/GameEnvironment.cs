@@ -25,7 +25,7 @@ namespace Assets.Scripts
         private Text _totalGoldMined;
         private Text _totalBeerDrank;
 
-        private int _lastGeneralActivityUpdate;
+        private int _lastGeneralActivityAndMemoryUpdate;
         private int _lastGaneralGaugesUpdate;
         private int _lastSecond;
 
@@ -34,14 +34,15 @@ namespace Assets.Scripts
             _gameEnvironment = GetComponent<Transform>();
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 20;
+            _spawnsLeft = 8; //TODO more
+            Time.timeScale = 5;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
             _timeSinceStart = generalStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
             _totalGoldMined = generalStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
             _totalBeerDrank = generalStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
 
-            _lastGeneralActivityUpdate = 0;
+            _lastGeneralActivityAndMemoryUpdate = 0;
             _lastGaneralGaugesUpdate = 0;
 
             UpdateNoticeables();
@@ -54,11 +55,20 @@ namespace Assets.Scripts
                 InstantiateDwarf();
                 _spawnsLeft--;
             }
-            if (Time.time - _lastGeneralActivityUpdate >= Variables.activityRethinkChangeRate)
+            if (Time.time - _lastGeneralActivityAndMemoryUpdate >= Variables.activityRethinkChangeRate)
             {
-                _lastGeneralActivityUpdate = (int)Mathf.Floor(Time.time);
+                _lastGeneralActivityAndMemoryUpdate = (int)Mathf.Floor(Time.time);
                 foreach (var myDwarf in Variables.Dwarves)
                 {
+                    var now = Time.time;
+
+                    // oblivion part one : work
+                    myDwarf.GetComponent<DwarfMemory>().KnownMines.RemoveAll(work => (now - work.InformatonTakenDateTime) > Variables.OutOfDate);
+
+                    // oblivion part two : friends
+                    myDwarf.GetComponent<DwarfMemory>().KnownDwarves.RemoveAll(friend => (now - friend.InformatonTakenDateTime) > Variables.OutOfDate );
+                    
+                    // let's think about my condition
                     myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
                 }
             }
@@ -102,7 +112,9 @@ namespace Assets.Scripts
                     else if (ts >= 60) // +1 WD between 60 and 80 TS
                         myMemory.IncreaseBy(GaugesLabel.Workdesire, 1);
                     else if (ts >= 20 && ts < 40) // -1 WD between 20 and 40 TS
+                    {
                         myMemory.LowerBy(GaugesLabel.Workdesire, 1);
+                    }
                     else if (ts < 20) // -2 WD between 0 and 20 TS
                         myMemory.LowerBy(GaugesLabel.Workdesire, 2);
                 }

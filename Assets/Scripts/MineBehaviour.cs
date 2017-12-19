@@ -41,7 +41,6 @@ namespace Assets.Scripts
                 var miningRate = _gameEnvironment.Variables.dwarfOreMiningRate;
                 foreach (var Dwarf in DwarvesInside)
                 {
-                    Debug.Log(Dwarf.name + "is in" + this.name);
                     if (Ore >= miningRate)
                     {
                         Dwarf.GetComponent<DwarfMemory>().GoldOreMined += miningRate;
