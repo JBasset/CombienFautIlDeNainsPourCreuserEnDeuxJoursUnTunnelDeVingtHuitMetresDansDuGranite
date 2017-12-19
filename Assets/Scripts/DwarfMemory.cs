@@ -474,6 +474,7 @@ namespace Assets.Scripts
 
                         if (
                             DistantEnough(currentPosition, mine.MinePosition, GameEnvironment.Variables.sup_closeMinefLimit)
+                            )
                         { w += 10; } 
                         // this mine is close enough
 
