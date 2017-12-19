@@ -340,9 +340,17 @@ namespace Assets.Scripts
             #region STEP FOUR : TIME TO MAKE A DECISION
 
             var startingActivity = new WeightedList(list);
+
+            if (!startingActivity.List.Any())
+            {
+                _currentActivity = ActivitiesLabel.Deviant;
+                return true;
+            }
+
             var newActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
             // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             _currentActivity = newActivity;
+            //_currentActivity = ActivitiesLabel.Explorer;
             
             #endregion
             
@@ -496,6 +504,13 @@ namespace Assets.Scripts
             #endregion
             
             return (Vector3)savedDestination;
+        }
+
+        private Vector3 FixDestination(Vector3 destination)
+        {
+            NavMeshHit hit;
+            Debug.Log(NavMesh.SamplePosition(destination, out hit, 2, 1));
+            return hit.position;
         }
 
         public class _KnownDwarf

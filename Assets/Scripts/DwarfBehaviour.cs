@@ -10,7 +10,6 @@ namespace Assets.Scripts
 {
     public class DwarfBehaviour : MonoBehaviour
     {
-        public Transform Target;
         public GameEnvironment GE;
 
         private DwarfMemory memory;
@@ -35,11 +34,32 @@ namespace Assets.Scripts
         {
             // TODO penser à débugger la position des nains
 
+            if (Input.GetButtonDown("Enter"))
+            {
+                Debug.Log(gameObject.name + " : " + MinesInSight().Count);
+            }
+
             #region  whenever a dwarf is close from another
 
             // whatever you're doing : stop
             if (DwarvesInSight().Any())
             {
+                #region  whenever a dwarf is REALLY close from another, he learns from him
+
+                foreach (var seenDwarf in DwarvesInSight())
+                {
+                    if (Vector3.Distance(agent.transform.position, seenDwarf.transform.position) <
+                        3f) // maybe change ? TODO hahaha
+                    {
+                        memory.UpdateMemory(seenDwarf.GetComponent<DwarfMemory>().KnownDwarves,
+                            seenDwarf.GetComponent<DwarfMemory>().KnownMines);
+                        memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), DateTime.Now,
+                            seenDwarf.transform.position);
+                    }
+                }
+
+                #endregion
+
                 switch (memory.CurrentActivity)
                 {
                     case ActivitiesLabel.Explorer:
@@ -53,18 +73,18 @@ namespace Assets.Scripts
                             }
                         }
                         break;
-                    case ActivitiesLabel.Deviant:
+                    case ActivitiesLabel.Deviant: // TODO todo
                         break;
                     case ActivitiesLabel.Vigile:
                         foreach (var myD in DwarvesInSight())
                         {
-                            // si il est déviant
+                            // TODO si il est déviant
                         }
                         break;
                     case ActivitiesLabel.Supply:
                         foreach (var myD in DwarvesInSight())
                         {
-                            // si il a soif
+                            // TODO si il a soif
                         }
                         break;
                     case ActivitiesLabel.Miner:
@@ -85,192 +105,160 @@ namespace Assets.Scripts
 
             #endregion
 
-            if (DwarvesInSight().Any())
+            if (Time.time - LastSecond >= 1)
             {
+                LastSecond = (int)Mathf.Floor(Time.time);
+                if (memory.CurrentActivity == ActivitiesLabel.Miner) memory.TimeAsMiner += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Supply) memory.TimeAsSupply += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Explorer) memory.TimeAsExplorer += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Vigile) memory.TimeAsVigile += 1;
+                else if (memory.CurrentActivity == ActivitiesLabel.Deviant) memory.TimeAsDeviant += 1;
+            }
 
-                #region  whenever a dwarf is REALLY close from another, he learns from him
-
-                foreach (var seenDwarf in DwarvesInSight())
+            if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
+            {
+                // if there is any mine in sight
+                if (MinesInSight().Any())
                 {
-                    if (Vector3.Distance(agent.transform.position, seenDwarf.transform.position) <
-                        3f) // maybe change ? TODO hahaha
+                    foreach (var myMine in MinesInSight())
                     {
-                        memory.UpdateMemory(seenDwarf.GetComponent<DwarfMemory>().KnownDwarves,
-                            seenDwarf.GetComponent<DwarfMemory>().KnownMines);
-                        memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), DateTime.Now,
-                            seenDwarf.transform.position);
+                        if (memory.KnownMines.All(kmine => kmine.Name != myMine.name))
+                        {
+                            MoveTo(myMine.transform.FindChild("MineEntrance").position);
+                            UpdateActivityAndDestination();
+                            break;
+                        }
                     }
                 }
+            }
 
-                #endregion
-
-
-                if (Time.time - LastSecond >= 1)
+            if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
+            {
                 {
-                    LastSecond = (int) Mathf.Floor(Time.time);
-                    if (memory.CurrentActivity == ActivitiesLabel.Miner) memory.TimeAsMiner += 1;
-                    else if (memory.CurrentActivity == ActivitiesLabel.Supply) memory.TimeAsSupply += 1;
-                    else if (memory.CurrentActivity == ActivitiesLabel.Explorer) memory.TimeAsExplorer += 1;
-                    else if (memory.CurrentActivity == ActivitiesLabel.Vigile) memory.TimeAsVigile += 1;
-                    else if (memory.CurrentActivity == ActivitiesLabel.Deviant) memory.TimeAsDeviant += 1;
-                }
-
-                if (Input.GetButtonDown("Enter"))
-                    MoveTo(Target.position);
-
-
-                if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
-                {
-                    // if there is any mine in sight
-                    if (MinesInSight().Any())
+                    if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                     {
-                        foreach (var myMine in MinesInSight())
-                        {
-                            if (memory.KnownMines.All(kmine => kmine.Name != myMine.name))
+                        memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
+                    }
+
+                    if (Vector3.Distance(agent.transform.position, GE.Variables.forgePosition) < 2)
+                    {
+                        memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
+                    }
+
+                    agent.ResetPath();
+                    animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+                    animator.SetFloat("Run", 0);
+
+                    switch (memory.CurrentActivity)
+                    {
+                        case ActivitiesLabel.Deviant:
+                            UpdateActivityAndDestination();
+                            break;
+
+                        case ActivitiesLabel.Explorer:
+                            #region Explorer
+                            List<GameObject> MinesClose = MinesInSight().Where(m => Vector3.Distance(agent.transform.position, m.transform.FindChild("MineEntrance").position) < 2).ToList();
+                            if (MinesClose.Any())
                             {
-                                MoveTo(myMine.transform.FindChild("MineEntrance").position);
-                                UpdateActivityAndDestination();
-                                break;
+                                GameObject observableMine = MinesClose[0];
+                                var minePosition = observableMine.transform.FindChild("MineEntrance").position;
+                                observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
+                                var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
+                                var thirstyDwarves =
+                                        dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction <
+                                                                    GE.Variables.thirstyDwarvesGaugeLimit);
+                                var ore = observableMine.GetComponent<MineBehaviour>().Ore;
+
+                                memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
+                                        observableMine.name);
                             }
-                        }
-                    }
-                }
+                            UpdateActivityAndDestination();
+                            break;
+                        #endregion
 
-                if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
-                {
-                    {
-                        if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
-                        {
-                            memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
-                        }
+                        case ActivitiesLabel.Vigile:
 
-                        if (Vector3.Distance(agent.destination, GE.Variables.forgePosition) < 0.1f)
-                        {
-                            memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
-                        }
+                            #region Vigile
 
-                        agent.ResetPath();
-                        animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
-                        animator.SetFloat("Run", 0);
+                            List<GameObject> deviantsInSight = DwarvesInSight()
+                                .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity ==
+                                            ActivitiesLabel.Deviant)
+                                .ToList();
+                            if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
 
-                        switch (memory.CurrentActivity)
-                        {
-                            case ActivitiesLabel.Deviant:
-                                UpdateActivityAndDestination();
-                                break;
-
-                            case ActivitiesLabel.Explorer:
-                                #region Explorer
-                                #region  whenever a dwarf is close from a mine, he learns about it
-
-                                foreach (var observableMine in MinesInSight())
+                            {
+                                GameObject TargetedDeviant = deviantsInSight[0];
+                                if (Vector3.Distance(this.transform.position,
+                                        TargetedDeviant.transform.position) < 2) // if he reached him
                                 {
-                                    var minePosition = observableMine.transform.FindChild("MineEntrance").position;
-                                    if (Vector3.Distance(agent.transform.position, minePosition) < 2)
-                                    {
-                                        observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
-                                        var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
-                                        var thirstyDwarves =
-                                            dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction <
-                                                                        GE.Variables.thirstyDwarvesGaugeLimit);
-                                        var ore = observableMine.GetComponent<MineBehaviour>().Ore;
-
-                                        memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
-                                            observableMine.name);
-                                    }
-                                }
-
-                                #endregion
-                                
-                                UpdateActivityAndDestination();
-
-                                break;
-                                #endregion
-
-                            case ActivitiesLabel.Vigile:
-
-                                #region Vigile
-
-                                List<GameObject> deviantsInSight = DwarvesInSight()
-                                    .Where(d => d.GetComponent<DwarfMemory>().CurrentActivity ==
-                                                ActivitiesLabel.Deviant)
-                                    .ToList();
-                                if (deviantsInSight.Any()) // if the Vigile sees a deviant dwarf
-
-                                {
-                                    GameObject TargetedDeviant = deviantsInSight[0];
-                                    if (Vector3.Distance(this.transform.position,
-                                            TargetedDeviant.transform.position) < 2) // if he reached him
-                                    {
-                                        TargetedDeviant.GetComponent<DwarfMemory>()
-                                            .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
-                                        memory.DeviantsStopped++;
-                                        TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
-                                        UpdateActivityAndDestination();
-                                    }
-                                    else
-                                    {
-                                        animator.SetFloat("Run", 1);
-                                        MoveTo(TargetedDeviant.transform.position);
-                                    }
-                                }
-                                else if (memory.KnownDwarves.Any(d => d.Deviant))
-                                {
-                                    foreach (DwarfMemory._KnownDwarf Dwarf in memory.KnownDwarves)
-                                    {
-                                        if (Dwarf.Deviant)
-                                        {
-                                            MoveTo(Dwarf.DwarfPosition);
-                                            break;
-                                        }
-                                    }
+                                    TargetedDeviant.GetComponent<DwarfMemory>()
+                                        .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                                    memory.DeviantsStopped++;
+                                    TargetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                                    UpdateActivityAndDestination();
                                 }
                                 else
-                                    UpdateActivityAndDestination();
-                                break;
-
-                            #endregion
-
-                            case ActivitiesLabel.Supply:
-                                // TODO if reach target (soifard) do da thing
-                                // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
-                                break;
-
-                            case ActivitiesLabel.Miner:
-                                #region Miner
-
-                                List<GameObject> mine = GE
-                                    .GetComponent<GameEnvironment>()
-                                    .GetMines()
-                                    .Where(m => Vector3.Distance(
-                                                    agent.transform.position,
-                                                    m.transform.FindChild("MineEntrance").position) < 0.1f
-                                    ).ToList();
-                                if (mine.Any())
-                                    EnterMine(mine[0]);
-                                else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
                                 {
-                                    foreach (DwarfMemory._KnownMine Mine in memory.KnownMines)
+                                    animator.SetFloat("Run", 1);
+                                    MoveTo(TargetedDeviant.transform.position);
+                                }
+                            }
+                            else if (memory.KnownDwarves.Any(d => d.Deviant))
+                            {
+                                foreach (DwarfMemory._KnownDwarf Dwarf in memory.KnownDwarves)
+                                {
+                                    if (Dwarf.Deviant)
                                     {
-                                        if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
-                                        {
-                                            MoveTo(Mine.MinePosition);
-                                            break;
-                                        }
+                                        MoveTo(Dwarf.DwarfPosition);
+                                        break;
                                     }
                                 }
-                                else
-                                    UpdateActivityAndDestination();
-                                break;
+                            }
+                            else
+                                UpdateActivityAndDestination();
+                            break;
 
-                            #endregion
+                        #endregion
 
-                            case ActivitiesLabel.GoToForge:
-                                // TODO if gotoforge ENTERFORGE
-                                break;
+                        case ActivitiesLabel.Supply:
+                            // TODO if reach target (soifard) do da thing
+                            // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
+                            break;
 
-                            default: break;
-                        }
+                        case ActivitiesLabel.Miner:
+                            #region Miner
+
+                            List<GameObject> mine = GE
+                                .GetComponent<GameEnvironment>()
+                                .GetMines()
+                                .Where(m => Vector3.Distance(
+                                                agent.transform.position,
+                                                m.transform.FindChild("MineEntrance").position) < 0.1f
+                                ).ToList();
+                            if (mine.Any())
+                                EnterMine(mine[0]);
+                            else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
+                            {
+                                foreach (DwarfMemory._KnownMine Mine in memory.KnownMines)
+                                {
+                                    if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
+                                    {
+                                        MoveTo(Mine.MinePosition);
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                                UpdateActivityAndDestination();
+                            break;
+
+                        #endregion
+
+                        case ActivitiesLabel.GoToForge:
+                            // TODO if gotoforge ENTERFORGE
+                            break;
+
+                        default: break;
                     }
                 }
             }
@@ -356,8 +344,9 @@ namespace Assets.Scripts
             {
                 if (Vector3.Distance(this.transform.position, Mine.transform.position) <= GE.Variables.SightDistance)
                 {
-                    ray = new Ray(this.transform.position, (Mine.transform.position - this.transform.position));
-                    if (Physics.Raycast(ray, out hit, GE.Variables.SightDistance) && hit.collider.gameObject == Mine)
+                    Vector3 eyesPosition = new Vector3(this.transform.position.x, this.transform.position.y + 2, this.transform.position.z);
+                    ray = new Ray(eyesPosition, (Mine.transform.position - eyesPosition));
+                    if (Physics.Raycast(ray, out hit, GE.Variables.SightDistance) && hit.collider.CompareTag("Mine"))
                     {
                         minesInSight.Add(Mine);
                     }

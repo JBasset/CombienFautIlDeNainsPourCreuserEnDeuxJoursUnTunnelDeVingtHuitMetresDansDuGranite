@@ -11,6 +11,7 @@ namespace Assets.Scripts
 {
     public class GameEnvironment : MonoBehaviour
     {
+        public GameObject Target;
         public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
         public UIBehaviour UI;
@@ -87,16 +88,15 @@ namespace Assets.Scripts
 
                     myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.ThirstSatisfaction, 1);
 
-                    if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction > 50)
-                    {
-                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire,
-                            (int) (0.01 * myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
-                    }
-                    else
-                    {
-                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire,
-                            (int) (0.01 * myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction));
-                    }
+                    // Work desire depends on Thirst Satisfaction
+                    if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 80) // +2 WD between 80 and 100 TS
+                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, 2);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 60) // +1 WD between 60 and 80 TS
+                        myDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, 1);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction >= 20 && myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 40) // -1 WD between 20 and 40 TS
+                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire, 1);
+                    else if (myDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 20) // -2 WD between 0 and 20 TS
+                        myDwarf.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.Workdesire, 2);
                 }
             }
 
