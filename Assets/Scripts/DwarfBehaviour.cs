@@ -172,7 +172,6 @@ namespace Assets.Scripts
                         break;
 
                     case ActivitiesLabel.Explorer:
-
                         #region Explorer
 
                         var minesClose = MinesInSight()
@@ -199,7 +198,6 @@ namespace Assets.Scripts
                     #endregion
 
                     case ActivitiesLabel.Vigile:
-
                         #region Vigile
 
                         var deviantsInSight = DwarvesInSight()
@@ -256,13 +254,13 @@ namespace Assets.Scripts
                             .GetMines()
                             .Where(m => Vector3.Distance(
                                             agent.transform.position,
-                                            m.transform.FindChild("MineEntrance").position) < 0.1f
+                                            m.transform.FindChild("MineEntrance").position) < 3
                             ).ToList();
                         if (mine.Any())
                             EnterMine(mine[0]);
                         else if (memory.KnownMines.Any(m => m.Ore > GE.Variables.dwarfOreMiningRate * 10))
                             foreach (var Mine in memory.KnownMines)
-                                if (Mine.Ore > GE.Variables.dwarfOreMiningRate)
+                                if (Mine.Ore > GE.Variables.dwarfOreMiningRate * 10)
                                 {
                                     MoveTo(Mine.MinePosition);
                                     break;
