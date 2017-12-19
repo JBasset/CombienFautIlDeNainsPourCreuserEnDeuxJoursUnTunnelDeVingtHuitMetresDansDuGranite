@@ -610,7 +610,7 @@ namespace Assets.Scripts
         private static Vector3 FixDestination(Vector3 destination) // make sure that the destination is accessible
         {
             NavMeshHit hit;
-            NavMesh.SamplePosition(destination, out hit, 2, 1);
+            NavMesh.SamplePosition(destination, out hit, 1000, 1);
             return hit.position;
         }
 
