@@ -34,7 +34,7 @@ namespace Assets.Scripts
             gameEnvironment = GetComponent<Transform>();
             dwarves = gameEnvironment.FindChild("Dwarves");
             mines = gameEnvironment.FindChild("World").FindChild("Mines");
-            spawnsLeft = 0;
+            spawnsLeft = 20;
 
             Transform GeneralStatsPanel = UI.transform.FindChild("GeneralStats");
             timeSinceStart = GeneralStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
