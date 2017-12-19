@@ -315,6 +315,7 @@ namespace Assets.Scripts
 
             // stats
             oreExtracted.text = "" + mine.OreExtracted;
+            timesInteracted.text = "" + mine.TimesInteracted;
         }
 
         private void DeactivateSpheres()

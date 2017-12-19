@@ -498,6 +498,13 @@ namespace Assets.Scripts
             return (Vector3)savedDestination;
         }
 
+        private Vector3 FixDestination(Vector3 destination)
+        {
+            NavMeshHit hit;
+            Debug.Log(NavMesh.SamplePosition(destination, out hit, 2, 1));
+            return hit.position;
+        }
+
         public class _KnownDwarf
         {
             public Vector3 DwarfPosition;

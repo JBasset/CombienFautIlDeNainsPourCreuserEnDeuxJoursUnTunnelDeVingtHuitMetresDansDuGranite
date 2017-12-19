@@ -11,6 +11,7 @@ namespace Assets.Scripts
 {
     public class GameEnvironment : MonoBehaviour
     {
+        public GameObject Target;
         public VariableStorage Variables = new VariableStorage();
         public GameObject DwarfPrefab;
         public UIBehaviour UI;

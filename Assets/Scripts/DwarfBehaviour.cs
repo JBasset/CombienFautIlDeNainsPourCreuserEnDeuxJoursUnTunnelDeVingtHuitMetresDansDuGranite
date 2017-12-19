@@ -10,7 +10,6 @@ namespace Assets.Scripts
 {
     public class DwarfBehaviour : MonoBehaviour
     {
-        public Transform Target;
         public GameEnvironment GE;
 
         private DwarfMemory memory;
@@ -115,10 +114,6 @@ namespace Assets.Scripts
                     else if (memory.CurrentActivity == ActivitiesLabel.Deviant) memory.TimeAsDeviant += 1;
                 }
 
-                if (Input.GetButtonDown("Enter"))
-                    MoveTo(Target.position);
-
-
                 if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
                 {
                     // if there is any mine in sight
@@ -139,12 +134,12 @@ namespace Assets.Scripts
                 if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
                 {
                     {
-                        if (Vector3.Distance(agent.destination, GE.Variables.beerPosition) < 0.1f)
+                        if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                         {
                             memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
                         }
 
-                        if (Vector3.Distance(agent.destination, GE.Variables.forgePosition) < 0.1f)
+                        if (Vector3.Distance(agent.transform.position, GE.Variables.forgePosition) < 2)
                         {
                             memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
                         }
@@ -161,29 +156,22 @@ namespace Assets.Scripts
 
                             case ActivitiesLabel.Explorer:
                                 #region Explorer
-                                #region  whenever a dwarf is close from a mine, he learns about it
-
-                                foreach (var observableMine in MinesInSight())
+                                List<GameObject> MinesClose = MinesInSight().Where(m => Vector3.Distance(agent.transform.position, m.transform.FindChild("MineEntrance").position) < 2).ToList();
+                                if (MinesClose.Any())
                                 {
+                                    GameObject observableMine = MinesClose[0];
                                     var minePosition = observableMine.transform.FindChild("MineEntrance").position;
-                                    if (Vector3.Distance(agent.transform.position, minePosition) < 2)
-                                    {
-                                        observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
-                                        var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
-                                        var thirstyDwarves =
+                                    observableMine.GetComponent<MineBehaviour>().TimesInteracted++;
+                                    var dwarvesInTheMine = observableMine.GetComponent<MineBehaviour>().DwarvesInside;
+                                    var thirstyDwarves =
                                             dwarvesInTheMine.Count(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction <
                                                                         GE.Variables.thirstyDwarvesGaugeLimit);
-                                        var ore = observableMine.GetComponent<MineBehaviour>().Ore;
+                                    var ore = observableMine.GetComponent<MineBehaviour>().Ore;
 
-                                        memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
+                                    memory.UpdateMine(minePosition, dwarvesInTheMine.Count, thirstyDwarves, ore, DateTime.Now,
                                             observableMine.name);
-                                    }
-                                }
-
-                                #endregion
-                                
+                                }           
                                 UpdateActivityAndDestination();
-
                                 break;
                                 #endregion
 
