@@ -75,9 +75,11 @@ namespace Assets.Scripts
             CurrentActivity = (ActivitiesLabel)GameEnvironment.Variables.startingActivity.SelectRandomItem();
             LastActivityChange = UnityEngine.Time.time;
 
-            IncreaseBy(GaugesLabel.ThirstSatisfaction, 100);
-            IncreaseBy(GaugesLabel.Workdesire, 100);
+            IncreaseBy(GaugesLabel.ThirstSatisfaction, 52); // TODO 100
+            IncreaseBy(GaugesLabel.Workdesire, 50); // TODO 100
             IncreaseBy(GaugesLabel.Pickaxe, 100);
+
+            Debug.Log("wd = " + _workDesire);
 
             OccupiedMine = null;
 
@@ -104,7 +106,9 @@ namespace Assets.Scripts
                     _thirstSatisfaction += byValue;
                     break;
                 case GaugesLabel.Workdesire:
+                    Debug.Log("wd = " + _workDesire);
                     _workDesire += byValue;
+                    Debug.Log("wd = " + _workDesire);
                     break;
                 case GaugesLabel.Pickaxe:
                     _pickaxe += byValue;
