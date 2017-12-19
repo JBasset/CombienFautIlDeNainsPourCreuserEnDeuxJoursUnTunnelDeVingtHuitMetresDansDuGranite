@@ -34,7 +34,7 @@ namespace Assets.Scripts
             _gameEnvironment = GetComponent<Transform>();
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 1;
+            _spawnsLeft = 20;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
             _timeSinceStart = generalStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
@@ -96,17 +96,15 @@ namespace Assets.Scripts
 
                     // Work desire depends on Thirst Satisfaction
                     var ts = myMemory.ThirstSatisfaction;
-                    
-                    Debug.Log("ts = " + ts );
 
                     if (ts >= 80) // +2 WD between 80 and 100 TS
-                    { myMemory.IncreaseBy(GaugesLabel.Workdesire, 2); Debug.Log("ts = " + ts + "wd inc => ");}
+                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 2);
                     else if (ts >= 60) // +1 WD between 60 and 80 TS
-                    { myMemory.IncreaseBy(GaugesLabel.Workdesire, 1); Debug.Log("ts = " + ts + "wd inc => "); }
+                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 1);
                     else if (ts >= 20 && ts < 40) // -1 WD between 20 and 40 TS
-                    {  myMemory.LowerBy(GaugesLabel.Workdesire, 1); Debug.Log("ts = " + ts + "wd low => "); }
+                        myMemory.LowerBy(GaugesLabel.Workdesire, 1);
                     else if (ts < 20) // -2 WD between 0 and 20 TS
-                    { myMemory.LowerBy(GaugesLabel.Workdesire, 2); Debug.Log("ts = " + ts + "wd low => "); }
+                        myMemory.LowerBy(GaugesLabel.Workdesire, 2);
                 }
             }
 

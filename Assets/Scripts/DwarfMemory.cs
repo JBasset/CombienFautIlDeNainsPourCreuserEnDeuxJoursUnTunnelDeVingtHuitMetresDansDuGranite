@@ -79,8 +79,6 @@ namespace Assets.Scripts
             IncreaseBy(GaugesLabel.Workdesire, 100);
             IncreaseBy(GaugesLabel.Pickaxe, 100);
 
-            Debug.Log("wd = " + _workDesire);
-
             OccupiedMine = null;
 
             GoldOreMined = 0;
