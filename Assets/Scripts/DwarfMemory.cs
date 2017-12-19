@@ -403,7 +403,12 @@ namespace Assets.Scripts
             var rnd = new System.Random();
             return FixDestination(new Vector3(rnd.Next(0, 500), 0, rnd.Next(0, 500)));
         }
-        
+
+        public bool DistantEnough(Vector3 element, Vector3 element2, int value)
+        {
+            return Vector3.Distance(element, element2) < value;
+        }
+
         public Vector3 GetNewDestination() /* 
             Check if the dwarf had already a destination
              */

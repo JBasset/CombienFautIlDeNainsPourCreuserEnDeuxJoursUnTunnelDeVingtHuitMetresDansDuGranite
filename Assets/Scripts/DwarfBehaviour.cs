@@ -41,7 +41,7 @@ namespace Assets.Scripts
             if (DwarvesInSight().Any())
             {
                 #region  whenever a dwarf is REALLY close from another, he learns from him
-
+                
                 foreach (var seenDwarf in DwarvesInSight())
                     if (Vector3.Distance(agent.transform.position, seenDwarf.transform.position) <
                         3f) // maybe change ? TODO hahaha
@@ -55,7 +55,7 @@ namespace Assets.Scripts
                 #endregion
 
                 #region switch : comportement adapté selon l'activité
-
+                
                 foreach (var myD in DwarvesInSight())
                 {
                     switch (memory.CurrentActivity)
@@ -132,9 +132,9 @@ namespace Assets.Scripts
             }
 
             #endregion END and EACH SECONDS ...
-
+            
             #region  if agent is an explorer :
-
+            
             if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
                 if (MinesInSight().Any())
                     foreach (var myMine in MinesInSight())
@@ -144,10 +144,11 @@ namespace Assets.Scripts
                             UpdateActivityAndDestination();
                             break;
                         }
-
+                        
             #endregion END ( if agent is an explorer)
 
-            #region if agent arrived destination :
+
+            # region if agent arrived destination :
             
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
             {
@@ -280,7 +281,9 @@ namespace Assets.Scripts
                 }
             }
 
+
             #endregion END ( if agent arrived destination) 
+
         } // ~~~ END public void Update()
 
         public void UpdateActivityAndDestination()
