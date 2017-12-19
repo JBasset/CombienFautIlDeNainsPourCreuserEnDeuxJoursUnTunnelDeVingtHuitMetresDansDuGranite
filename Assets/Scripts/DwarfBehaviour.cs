@@ -327,7 +327,8 @@ namespace Assets.Scripts
             {
                 if (Dwarf != this.gameObject && Vector3.Distance(this.transform.position, Dwarf.transform.position) <= GE.Variables.SightDistance)
                 {
-                    ray = new Ray(this.transform.position, (Dwarf.transform.position - this.transform.position));
+                    Vector3 eyesPosition = new Vector3(this.transform.position.x, this.transform.position.y + 2, this.transform.position.z);
+                    ray = new Ray(eyesPosition, (Dwarf.transform.position - eyesPosition));
                     if (Physics.Raycast(ray, out hit, GE.Variables.SightDistance) && hit.collider.gameObject == Dwarf)
                     {
                         dwarvesInSight.Add(Dwarf);
