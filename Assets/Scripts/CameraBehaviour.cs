@@ -61,43 +61,47 @@ namespace Assets.Scripts
             lockedCameraRotation = cam.transform.rotation;
 
             #region DwarfInfoPanel fields
-            Transform GeneralInfo = DwarfInfoPanel.transform.FindChild("GeneralInfo");
-            Transform Known = GeneralInfo.FindChild("Known");
-            Transform Gauges = GeneralInfo.FindChild("Gauges");
-            Transform Stats = DwarfInfoPanel.transform.FindChild("Stats");
-            Transform Beer = Stats.FindChild("Beer");
-            Transform Time = Stats.FindChild("Time");
-            dwarfName = GeneralInfo.FindChild("DwarfName").GetComponent<Text>();
-            dwarfActivity = GeneralInfo.FindChild("DwarfActivity").GetComponent<Text>();
-            knownDwarves = Known.FindChild("Dwarves").FindChild("Value").GetComponent<Text>();
-            knownMines = Known.FindChild("Mines").FindChild("Value").GetComponent<Text>();
-            beerCarried = GeneralInfo.FindChild("BeerCarried").FindChild("Slider").GetComponent<Slider>();
-            thirstSatisfaction = Gauges.FindChild("ThirstSatisfaction").FindChild("Slider").GetComponent<Slider>();
-            workDesire = Gauges.FindChild("WorkDesire").FindChild("Slider").GetComponent<Slider>();
-            pickaxe = Gauges.FindChild("Pickaxe").FindChild("Slider").GetComponent<Slider>();
-            oreMined = Stats.FindChild("GoldOreMined").FindChild("Value").GetComponent<Text>();
-            beerDrank = Beer.FindChild("BeerDrank").FindChild("Value").GetComponent<Text>();
-            beerGiven = Beer.FindChild("BeerGiven").FindChild("Value").GetComponent<Text>();
-            deviantsStopped = Stats.FindChild("DeviantsStopped").FindChild("Value").GetComponent<Text>();
-            timeAsMiner = Time.FindChild("Miner").FindChild("Value").GetComponent<Text>();
-            timeAsSupply = Time.FindChild("Supply").FindChild("Value").GetComponent<Text>();
-            timeAsExplorer = Time.FindChild("Explorer").FindChild("Value").GetComponent<Text>();
-            timeAsVigile = Time.FindChild("Vigile").FindChild("Value").GetComponent<Text>();
-            timeAsDeviant = Time.FindChild("Deviant").FindChild("Value").GetComponent<Text>();
+
+            var generalInfo = DwarfInfoPanel.transform.FindChild("GeneralInfo");
+            var known = generalInfo.FindChild("Known");
+            var gauges = generalInfo.FindChild("Gauges");
+            var stats = DwarfInfoPanel.transform.FindChild("Stats");
+            var beer = stats.FindChild("Beer");
+            var time = stats.FindChild("Time");
+            dwarfName = generalInfo.FindChild("DwarfName").GetComponent<Text>();
+            dwarfActivity = generalInfo.FindChild("DwarfActivity").GetComponent<Text>();
+            knownDwarves = known.FindChild("Dwarves").FindChild("Value").GetComponent<Text>();
+            knownMines = known.FindChild("Mines").FindChild("Value").GetComponent<Text>();
+            beerCarried = generalInfo.FindChild("BeerCarried").FindChild("Slider").GetComponent<Slider>();
+            thirstSatisfaction = gauges.FindChild("ThirstSatisfaction").FindChild("Slider").GetComponent<Slider>();
+            workDesire = gauges.FindChild("WorkDesire").FindChild("Slider").GetComponent<Slider>();
+            pickaxe = gauges.FindChild("Pickaxe").FindChild("Slider").GetComponent<Slider>();
+            oreMined = stats.FindChild("GoldOreMined").FindChild("Value").GetComponent<Text>();
+            beerDrank = beer.FindChild("BeerDrank").FindChild("Value").GetComponent<Text>();
+            beerGiven = beer.FindChild("BeerGiven").FindChild("Value").GetComponent<Text>();
+            deviantsStopped = stats.FindChild("DeviantsStopped").FindChild("Value").GetComponent<Text>();
+            timeAsMiner = time.FindChild("Miner").FindChild("Value").GetComponent<Text>();
+            timeAsSupply = time.FindChild("Supply").FindChild("Value").GetComponent<Text>();
+            timeAsExplorer = time.FindChild("Explorer").FindChild("Value").GetComponent<Text>();
+            timeAsVigile = time.FindChild("Vigile").FindChild("Value").GetComponent<Text>();
+            timeAsDeviant = time.FindChild("Deviant").FindChild("Value").GetComponent<Text>();
+
             #endregion
 
             #region MineInfoPanel fields
-            GeneralInfo = MineInfoPanel.transform.FindChild("GeneralInfo");
-            mineName = GeneralInfo.FindChild("MineName").GetComponent<Text>();
-            goldOre = GeneralInfo.FindChild("GoldOre").FindChild("Value").GetComponent<Text>();
-            dwarvesInside = GeneralInfo.FindChild("DwarvesInside").FindChild("Value").GetComponent<Text>();
-            Stats = MineInfoPanel.transform.FindChild("Stats");
-            oreExtracted = Stats.FindChild("OreExtracted").FindChild("Value").GetComponent<Text>();
-            timesInteracted = Stats.FindChild("TimesInteracted").FindChild("Value").GetComponent<Text>();
+
+            generalInfo = MineInfoPanel.transform.FindChild("GeneralInfo");
+            mineName = generalInfo.FindChild("MineName").GetComponent<Text>();
+            goldOre = generalInfo.FindChild("GoldOre").FindChild("Value").GetComponent<Text>();
+            dwarvesInside = generalInfo.FindChild("DwarvesInside").FindChild("Value").GetComponent<Text>();
+            stats = MineInfoPanel.transform.FindChild("Stats");
+            oreExtracted = stats.FindChild("OreExtracted").FindChild("Value").GetComponent<Text>();
+            timesInteracted = stats.FindChild("TimesInteracted").FindChild("Value").GetComponent<Text>();
+
             #endregion
     }
 
-    void Update()
+        public void Update()
         {
             if (Input.GetMouseButtonDown(1))
             {
@@ -105,7 +109,9 @@ namespace Assets.Scripts
                 initialRotationPosition = Input.mousePosition;
             }
             else if (Input.GetMouseButtonUp(1))
+            {
                 rotating = false;
+            }
 
             if (rotating)
                 RotateCamera();
@@ -117,7 +123,6 @@ namespace Assets.Scripts
                 ray = cam.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(ray, out hit))
-                {
                     if (hit.collider.CompareTag("Agent"))
                     {
                         lockedAgent = hit.collider; // on clicking on an agent, we set it as the camera lock
@@ -129,15 +134,16 @@ namespace Assets.Scripts
                         lockedAgent = null;
                         DeactivateSpheres();
                     }
-                    else if ((lockedAgent || lockedMine) && !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
+                    else if ((lockedAgent || lockedMine) &&
+                             !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
                     {
-                        lockedAgent = null; // if the click is not on an agent and not on an UI element, the camera unlocks
+                        lockedAgent =
+                            null; // if the click is not on an agent and not on an UI element, the camera unlocks
                         lockedMine = null;
                         DeactivateSpheres();
                         DwarfInfoPanel.SetActive(false);
                         MineInfoPanel.SetActive(false);
                     }
-                }
             }
 
             if (lockedAgent)
@@ -153,7 +159,7 @@ namespace Assets.Scripts
 
             if (Time.time - lastSecond >= 1)
             {
-                lastSecond = (int)Mathf.Floor(Time.time);
+                lastSecond = (int) Mathf.Floor(Time.time);
                 if (lockedMine)
                     UI.GetComponent<UIBehaviour>().SetDwarfInMineButtons(lockedMine.GetComponent<MineBehaviour>());
             }
@@ -161,30 +167,35 @@ namespace Assets.Scripts
 
         private void RotateCamera()
         {
-            cam.transform.Rotate(0, -(initialRotationPosition.x - Input.mousePosition.x)/100, 0, Space.World);
+            cam.transform.Rotate(0, -(initialRotationPosition.x - Input.mousePosition.x) / 100, 0, Space.World);
         }
 
         private void MoveCamera()
         {
-            if (Physics.Raycast(cam.transform.position, Vector3.down, out hit, 10)) // casts a ray from the camera towards the ground, at a max distance of 10 units and return the caracteristics of the ray in "hit". True if the ray hits
+            if (Physics.Raycast(cam.transform.position, Vector3.down, out hit, 10)
+            ) /* casts a ray from the camera towards the ground, at a max distance of 
+                10 units and return the caracteristics of the ray in "hit". True if the ray hits */
             {
                 if (hit.distance < 10) // if the collided object is too close...
                 {
                     cam.transform.position = new Vector3
-                        (cam.transform.position.x,
-                        cam.transform.position.y + (10 - hit.distance), // ... the camera position is set to 10 unit above it.
+                    (cam.transform.position.x,
+                        cam.transform.position.y +
+                        (10 - hit.distance), // ... the camera position is set to 10 unit above it.
                         cam.transform.position.z);
                 }
                 minDownScroll = cam.transform.position.y;
             }
             else
+            {
                 minDownScroll = 0;
+            }
 
             // moving the camera back and forth
             if (Input.mousePosition.y < 0)
                 cam.transform.Translate(0, -(2f / 3f), -(1f / 3f), Space.Self);
             else if (Input.mousePosition.y > Screen.height)
-                cam.transform.Translate(0, (2f / 3f), (1f / 3f), Space.Self);
+                cam.transform.Translate(0, 2f / 3f, 1f / 3f, Space.Self);
 
             // moving the camera right and left
             if (Input.mousePosition.x < 0)
@@ -209,50 +220,58 @@ namespace Assets.Scripts
         {
             cam.transform.rotation = lockedCameraRotation;
             cam.transform.position = new Vector3
-                (col.transform.position.x,
+            (col.transform.position.x,
                 cam.transform.position.y,
-                col.transform.position.z - 0.7f * (cam.transform.position.y - col.transform.position.y)); // centers the camera on the target
+                col.transform.position.z -
+                0.7f * (cam.transform.position.y - col.transform.position.y)); // centers the camera on the target
 
             if (col.CompareTag("Agent"))
-            #region Agent
+
+                #region Agent
+
             {
                 lockedAgent = col;
                 DeactivateSpheres();
-                GameObject Sphere = col.gameObject.transform.FindChild("Sphere").gameObject;
+                var Sphere = col.gameObject.transform.FindChild("Sphere").gameObject;
                 Sphere.SetActive(true);
 
                 switch (col.GetComponent<DwarfMemory>().CurrentActivity)
                 {
                     case VariableStorage.ActivitiesLabel.Miner:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.yellow;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.yellow;
+                        break;
+                    }
                     case VariableStorage.ActivitiesLabel.Explorer:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.green;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.green;
+                        break;
+                    }
                     case VariableStorage.ActivitiesLabel.Supply:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.blue;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.blue;
+                        break;
+                    }
                     case VariableStorage.ActivitiesLabel.Vigile:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.red;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.red;
+                        break;
+                    }
                     case VariableStorage.ActivitiesLabel.Deviant:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.black;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.black;
+                        break;
+                    }
+                    case VariableStorage.ActivitiesLabel.GoToForge:
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.grey;
+                        break;
+                    }
                     default:
-                        {
-                            Sphere.GetComponent<Renderer>().material.color = Color.grey;
-                            break;
-                        }
+                    {
+                        Sphere.GetComponent<Renderer>().material.color = Color.grey;
+                        break;
+                    }
                 }
                 /*
                 Sphere Color :
@@ -266,7 +285,9 @@ namespace Assets.Scripts
                 DwarfInfoPanel.SetActive(true);
                 MineInfoPanel.SetActive(false);
             }
+
             #endregion
+
             else if (col.CompareTag("Mine"))
             {
                 MineInfoPanel.SetActive(true);
@@ -276,22 +297,27 @@ namespace Assets.Scripts
 
         private void UpdateDwarfInfoPanel()
         {
-            DwarfMemory memory = lockedAgent.GetComponent<DwarfMemory>();
+            var memory = lockedAgent.GetComponent<DwarfMemory>();
+
             #region GeneralInfo
+
             dwarfName.text = lockedAgent.name;
             dwarfActivity.text = memory.CurrentActivity.ToString();
 
-            //TODO : knownDwarves, knownMines, beerCarried.value
+            //TODO : knownDwarves, knownMines
+            // TODO beerCarried.value
             knownDwarves.text = "" + memory.KnownDwarves.Count;
             knownMines.text = "" + memory.KnownMines.Count;
 
-            int maxValueGauge = gameEnvironment.Variables.maxValueGauge;
-            thirstSatisfaction.value = (float)memory.ThirstSatisfaction / (float)maxValueGauge;
-            workDesire.value = (float)memory.WorkDesire / (float)maxValueGauge;
-            pickaxe.value = (float)memory.Pickaxe / (float)maxValueGauge;
+            var maxValueGauge = gameEnvironment.Variables.maxValueGauge;
+            thirstSatisfaction.value = memory.ThirstSatisfaction / (float) maxValueGauge;
+            workDesire.value = memory.WorkDesire / (float) maxValueGauge;
+            pickaxe.value = memory.Pickaxe / (float) maxValueGauge;
+
             #endregion
 
             #region Stats
+
             oreMined.text = "" + memory.GoldOreMined;
             beerDrank.text = "" + memory.BeerDrank;
             beerGiven.text = "" + memory.BeerGiven;
@@ -301,12 +327,13 @@ namespace Assets.Scripts
             timeAsExplorer.text = "" + memory.TimeAsExplorer;
             timeAsVigile.text = "" + memory.TimeAsVigile;
             timeAsDeviant.text = "" + memory.TimeAsDeviant;
+
             #endregion
         }
 
         private void UpdateMineInfoPanel()
         {
-            MineBehaviour mine = lockedMine.GetComponent<MineBehaviour>();
+            var mine = lockedMine.GetComponent<MineBehaviour>();
 
             //general info
             mineName.text = lockedMine.name;

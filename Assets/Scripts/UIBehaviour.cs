@@ -13,19 +13,19 @@ namespace Assets.Scripts
         public GameObject ScrollablePanel;
         public GameObject MineUIScrollablePanel;
 
-        private RectTransform scrollablePanelRectTransform;
-        private RectTransform mineUIScrollablePanelRectTransform;
+        private RectTransform _scrollablePanelRectTransform;
+        private RectTransform _mineUiScrollablePanelRectTransform;
 
         void Start()
         {
-            scrollablePanelRectTransform = ScrollablePanel.GetComponent<RectTransform>();
-            mineUIScrollablePanelRectTransform = MineUIScrollablePanel.GetComponent<RectTransform>();
+            _scrollablePanelRectTransform = ScrollablePanel.GetComponent<RectTransform>();
+            _mineUiScrollablePanelRectTransform = MineUIScrollablePanel.GetComponent<RectTransform>();
         }
 
         public void SetDwarfButtons()
         {
             List<GameObject> Dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
-            scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count-1) * 35);
+            _scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count-1) * 35);
             for (int i = 0; i < Dwarves.Count; i++)
             {
                 Button newButton = Instantiate(DwarfButton);
@@ -50,7 +50,7 @@ namespace Assets.Scripts
             for (int i = 0; i < MineUIScrollablePanel.transform.childCount; i++)
                 Destroy(MineUIScrollablePanel.transform.GetChild(i).gameObject);
 
-            mineUIScrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count - 1) * 35);
+            _mineUiScrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count - 1) * 35);
             for (int i = 0; i < Dwarves.Count; i++)
             {
                 Button newButton = Instantiate(DwarfButton);
@@ -68,9 +68,9 @@ namespace Assets.Scripts
             }
         }
 
-        private void LockCamera (GameObject Dwarf)
+        private void LockCamera (GameObject dwarf)
         {
-            MainCam.GetComponent<CameraBehaviour>().LockCamera(Dwarf.GetComponent<Collider>());
+            MainCam.GetComponent<CameraBehaviour>().LockCamera(dwarf.GetComponent<Collider>());
         }
 
         public void RemoveDwarfButtons()
