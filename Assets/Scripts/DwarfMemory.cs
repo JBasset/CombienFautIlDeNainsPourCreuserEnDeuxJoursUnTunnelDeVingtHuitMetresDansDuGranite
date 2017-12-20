@@ -331,18 +331,22 @@ namespace Assets.Scripts
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     if (BeerCarried > 20)
                         chanceToChangeMyActivity -= 1.5 * WorkDesire;
+                    else if (BeerCarried < 20 && !(GetComponent<NavMeshAgent>().destination == GameEnvironment.Variables.beerPosition))
+                        chanceToChangeMyActivity += 3 * WorkDesire;
+                    if (GetComponent<NavMeshAgent>().destination == GameEnvironment.Variables.beerPosition)
+                    { chanceToChangeMyActivity -= 1.5 * WorkDesire; Debug.Log("reloading..."); }
                     break;
 
                 case ActivitiesLabel.Miner:
                 {   
-                    if (!KnownMines.Any(m => m.Ore >= 10 * GameEnvironment.Variables.dwarfOreMiningRate))
+                    if (!KnownMines.Any(m => m.Ore >= 0) || (OccupiedMine && OccupiedMine.GetComponent<MineBehaviour>().Ore == 0))
                     {
                             chanceToChangeMyActivity = 100;
                             break;
                     }
 
-                    if (!OccupiedMine && KnownMines.Count(m => m.Ore > 50) < 2)
-                        chanceToChangeMyActivity += 0.5 * WorkDesire;
+                    if (!OccupiedMine && KnownMines.Any(m => m.Ore > 50))
+                        chanceToChangeMyActivity -= WorkDesire;
 
                     if (!OccupiedMine) break;
 
@@ -358,9 +362,9 @@ namespace Assets.Scripts
                 }
                 case ActivitiesLabel.GoToForge:
                     if (Pickaxe < 20)
-                        chanceToChangeMyActivity += 0.5 * WorkDesire;
-                    else
                         chanceToChangeMyActivity -= 0.5 * WorkDesire;
+                    else
+                        chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
                 default: break;
             }
@@ -382,21 +386,18 @@ namespace Assets.Scripts
                 && this.Pickaxe <= GameEnvironment.Variables.H.pickaxeLimit)
             {
                 var w0 = (int)((w + 2 * (100 - p)) / 3);
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.GoToForge, w0));
             }
 
             if (CurrentActivity != ActivitiesLabel.Deviant)
             {
                 var w0 = (int)(((100 - w) + t) / 2);
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Deviant, w0));
             }
 
             if (CurrentActivity != ActivitiesLabel.Explorer)
             {
                 var w0 = (KnownMines.Any()) ? (int)((w + (100 - p)) / 2) : (int)((w + 100) / 2);
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Explorer, w0));
             }
 
@@ -404,7 +405,6 @@ namespace Assets.Scripts
                 && KnownMines.Any(m => m.Ore >= 5) && this.Pickaxe >= 10)
             {
                 var w0 = (int)((200 + w + p) / 4); // The simulation being about mining, the chance of dwarves being miners must be higher
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Miner, w0));
             }
 
@@ -422,7 +422,6 @@ namespace Assets.Scripts
                 {
                     w0 = 100;
                 }
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Supply, w0));
             }
             
@@ -438,7 +437,6 @@ namespace Assets.Scripts
                 {
                     w0 += w;
                 }
-                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Vigile, w0));
             }
 
@@ -456,9 +454,7 @@ namespace Assets.Scripts
             }
 
             var newActivity = (ActivitiesLabel)startingActivity.SelectRandomItem();
-            // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             CurrentActivity = newActivity;
-            //_currentActivity = ActivitiesLabel.Explorer;
 
             #endregion
             LastActivityChange = Time.time;
@@ -669,9 +665,10 @@ namespace Assets.Scripts
                 { return GetNewDestination(); }
                 catch(StackOverflowException)
                 {
+                    // TODO : comment and explain this if the problem is not clearly solved (ask Jean)
                     Debug.Log("StackOverFloooooooooooooooow");
                     Debug.Log("On " + gameObject.name);
-                    Debug.Log(CurrentActivity); //TODO debug dis
+                    Debug.Log(CurrentActivity);
                     Debug.Log("KnownMines :" + KnownMines.Count);
                     Debug.Log("KnownMines with enough gold :" + KnownMines.Count(m => m.Ore >= GameEnvironment.Variables.dwarfOreMiningRate * 10));
                     Debug.Log("KnownMines with dwarves inside :" + KnownMines.Count(m => m.DwarvesInTheMine > 0));

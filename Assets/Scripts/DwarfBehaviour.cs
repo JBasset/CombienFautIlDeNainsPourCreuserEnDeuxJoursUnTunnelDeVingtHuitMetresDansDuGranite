@@ -32,8 +32,9 @@ namespace Assets.Scripts
 
         public void Update()
         {
-            if (Input.GetButtonDown("Enter"))
-                Debug.Log(gameObject.name + " : " + MinesInSight().Count);
+            // If the agent's path is not usable, we reset it
+            if (agent.hasPath && agent.pathStatus == NavMeshPathStatus.PathPartial)
+                UpdateActivityAndDestination();
 
             #region whenever a dwarf is close from another
 
@@ -54,8 +55,26 @@ namespace Assets.Scripts
 
                 #endregion
 
+                #region if this dwarf is a Vigile and the really close dwarf a Deviant not willing to go back to work
+                if (memory.CurrentActivity == ActivitiesLabel.Vigile && DwarvesInSight().Any(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant && d.GetComponent<DwarfMemory>().WorkDesire < 80))
+                {
+                    foreach (var deviant in DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant && d.GetComponent<DwarfMemory>().WorkDesire < 80))
+                    {
+                        if (Vector3.Distance(transform.position, deviant.transform.position) < 3) // if he reached him
+                        {
+                            animator.SetFloat("Run", 0);
+                            deviant.GetComponent<DwarfMemory>()
+                                .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
+                            memory.DeviantsStopped++;
+                            deviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
+                            UpdateActivityAndDestination();
+                        }
+                    }
+                }
+                #endregion
+
                 #region switch : comportement adapté selon l'activité
-                
+
                 foreach (var myD in DwarvesInSight())
                 {
                     switch (memory.CurrentActivity)
@@ -66,10 +85,8 @@ namespace Assets.Scripts
                                 MoveTo(myD.transform.position);
                             }
                             break;
-                        case ActivitiesLabel.Deviant: // TODO todo
-                            break;
                         case ActivitiesLabel.Vigile:
-                            if (myD.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
+                            if (myD.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant && Vector3.Distance(myD.transform.position, transform.position) >= 3) //if we're not close to the deviant yet
                             {
                                 MoveTo(myD.transform.position);
                                 animator.SetFloat("Run", 1);
@@ -91,7 +108,7 @@ namespace Assets.Scripts
                         case ActivitiesLabel.GoToForge:
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            break;
                     }
                 }
 
@@ -228,21 +245,8 @@ namespace Assets.Scripts
 
                         {
                             var targetedDeviant = deviantsInSight.First();
-                            if (Vector3.Distance(transform.position,
-                                    targetedDeviant.transform.position) < 2) // if he reached him
-                            {
-                                animator.SetFloat("Run", 0);
-                                targetedDeviant.GetComponent<DwarfMemory>()
-                                    .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
-                                memory.DeviantsStopped++;
-                                targetedDeviant.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
-                                UpdateActivityAndDestination();
-                            }
-                            else
-                            {
-                                animator.SetFloat("Run", 1);
-                                MoveTo(targetedDeviant.transform.position);
-                            }
+                            animator.SetFloat("Run", 1);
+                            MoveTo(targetedDeviant.transform.position);
                         }
                         else if (memory.KnownDwarves.Any(d => d.Deviant))
                         {
@@ -264,7 +268,11 @@ namespace Assets.Scripts
                     case ActivitiesLabel.Supply:
                         #region Supply
                         List<GameObject> ThirstyDwarves = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < 50).ToList();
-                        if (ThirstyDwarves.Any())
+                        if (memory.BeerCarried < 20)
+                        {
+                            MoveTo(GE.Variables.beerPosition);
+                        }
+                        else if (ThirstyDwarves.Any())
                         {
                             GameObject ThirstyDwarf = ThirstyDwarves.First();
                             if (Vector3.Distance(transform.position, ThirstyDwarf.transform.position) < 2) // if he reached him
@@ -293,12 +301,10 @@ namespace Assets.Scripts
                                 MoveTo(ThirstyDwarf.transform.position);
                             }
                         }
-                        // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
                         break;
                     #endregion
 
                     case ActivitiesLabel.Miner:
-
                         #region Miner
 
                         var mine = GE
@@ -316,10 +322,6 @@ namespace Assets.Scripts
                         break;
 
                     #endregion
-
-                    case ActivitiesLabel.GoToForge:
-                        // TODO if gotoforge ENTERFORGE
-                        break;
 
                     default: break;
                 }
@@ -350,6 +352,7 @@ namespace Assets.Scripts
                 ExitMine();
             agent.SetDestination(pos);
             animator.SetFloat("Walk", 1);
+            animator.SetFloat("Run", 0);
         }
 
         private void EnterMine(GameObject mine)

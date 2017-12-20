@@ -21,6 +21,7 @@ namespace Assets.Scripts
         private Transform _mines;
         private int _spawnsLeft; // number of dwarves to create
 
+        private Text _dwarvesMiningNow;
         private Text _timeSinceStart;
         private Text _totalGoldMined;
         private Text _totalBeerDrank;
@@ -34,10 +35,10 @@ namespace Assets.Scripts
             _gameEnvironment = GetComponent<Transform>();
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 40; //TODO more
-            Time.timeScale = 5;
+            _spawnsLeft = 40;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
+            _dwarvesMiningNow = generalStatsPanel.FindChild("DwarvesMining").FindChild("Value").GetComponent<Text>();
             _timeSinceStart = generalStatsPanel.FindChild("TimeSinceStart").FindChild("Value").GetComponent<Text>();
             _totalGoldMined = generalStatsPanel.FindChild("TotalGoldMined").FindChild("Value").GetComponent<Text>();
             _totalBeerDrank = generalStatsPanel.FindChild("TotalBeerDrank").FindChild("Value").GetComponent<Text>();
@@ -79,28 +80,6 @@ namespace Assets.Scripts
                 foreach (var myDwarf in Variables.Dwarves)
                 {
                     var myMemory = myDwarf.GetComponent<DwarfMemory>();
-                    switch (myMemory.CurrentActivity)
-                    {
-                        case ActivitiesLabel.Miner:
-                            if (myMemory.OccupiedMine)
-                            {
-                                myMemory.LowerBy(GaugesLabel.Pickaxe, 1);
-                                if (myMemory.Pickaxe == 0)
-                                    myDwarf.GetComponent<DwarfBehaviour>().UpdateActivityAndDestination();
-                            }
-                            break;
-                        case ActivitiesLabel.Explorer:
-                            break;
-                        case ActivitiesLabel.Deviant:
-                            break;
-                        case ActivitiesLabel.Vigile:
-                            break;
-                        case ActivitiesLabel.Supply:
-                            break;
-                        case ActivitiesLabel.GoToForge:
-                            break;
-                        default: break;
-                    }
 
                     myMemory.LowerBy(GaugesLabel.ThirstSatisfaction, 1);
 
@@ -198,6 +177,12 @@ namespace Assets.Scripts
 
         private void UpdateGeneralStats()
         {
+            int di = 0;
+            foreach (var Mine in Variables.Mines)
+            {
+                di += Mine.GetComponent<MineBehaviour>().DwarvesInside.Count;
+            }
+            _dwarvesMiningNow.text = "" + di;
             _timeSinceStart.text = "" + Variables.TimeSinceStart;
             _totalGoldMined.text = "" + Variables.TotalGoldMined;
             _totalBeerDrank.text = "" + Variables.TotalBeerDrank;

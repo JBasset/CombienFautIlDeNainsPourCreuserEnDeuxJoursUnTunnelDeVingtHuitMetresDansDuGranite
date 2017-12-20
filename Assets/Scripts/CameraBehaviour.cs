@@ -135,7 +135,7 @@ namespace Assets.Scripts
                         DeactivateSpheres();
                     }
                     else if ((lockedAgent || lockedMine) &&
-                             !EventSystem.current.IsPointerOverGameObject()) // TODO add the lockedMine
+                             !EventSystem.current.IsPointerOverGameObject())
                     {
                         lockedAgent =
                             null; // if the click is not on an agent and not on an UI element, the camera unlocks

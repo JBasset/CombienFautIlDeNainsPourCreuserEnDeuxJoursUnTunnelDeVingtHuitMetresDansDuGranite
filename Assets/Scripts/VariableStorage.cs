@@ -46,10 +46,6 @@ namespace Assets.Scripts
         #endregion
 
         #region UPDATE CYCLE ( mining rate / ore spawn rate / rethink rate / gauge update rate etc )
-        public int oreSpawnRate = 1;
-        /* This simulation takes place in a world where gold "appears" continuously in mines. 
-         * We neglect the economical impact of that property in the simulation's universe. 
-         * Even though it's worthless, dwarves love gold. */
 
         public int dwarfOreMiningRate = 5;
 
