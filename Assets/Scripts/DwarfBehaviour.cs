@@ -301,6 +301,10 @@ namespace Assets.Scripts
                                 MoveTo(ThirstyDwarf.transform.position);
                             }
                         }
+                        else
+                        {
+                            UpdateActivityAndDestination();
+                        }
                         break;
                     #endregion
 
