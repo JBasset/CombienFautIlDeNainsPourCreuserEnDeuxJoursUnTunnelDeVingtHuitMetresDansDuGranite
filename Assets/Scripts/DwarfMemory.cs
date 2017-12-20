@@ -265,6 +265,9 @@ namespace Assets.Scripts
 
             var time = (int)((UnityEngine.Time.time - LastActivityChange)); // time since last change (in UnityEngine.Time)
 
+            if (time < GameEnvironment.Variables.activityRethinkLimit)
+                return false;
+
             #endregion
 
             #region STEP TWO : DO I CHANGE MY ACTIVITY ? (probability to change calculation)
@@ -284,13 +287,6 @@ namespace Assets.Scripts
             {
                 case ActivitiesLabel.Deviant:
                 {
-                    // If I am a Deviant I stay a Deviant for at least activityRethinkLimit
-                    if (time < GameEnvironment.Variables.activityRethinkLimit)
-                    {
-                        chanceToChangeMyActivity = 0;
-                        break;
-                    }
-
                     // I'm (most likely) not a deviant anymore !
                     if (ThirstSatisfaction > 75)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
@@ -302,13 +298,6 @@ namespace Assets.Scripts
                 }
                 case ActivitiesLabel.Explorer:
                 {
-                    // If I am an Explorer I stay a Explorer for at least activityRethinkLimit
-                    if (time < GameEnvironment.Variables.activityRethinkLimit)
-                    {
-                        chanceToChangeMyActivity = 0;
-                        break;
-                    }
-
                     // Exploration means a lot for an explorer : AN EXPLORER'S WATCH WON'T END (unless he needs beer) (or find something)
                     if (KnownMines.Count < 3)
                         chanceToChangeMyActivity -= 1.5 * WorkDesire;
@@ -329,28 +318,13 @@ namespace Assets.Scripts
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
                 case ActivitiesLabel.Miner:
-                {
-                    // If I am an Miner I stay a Miner for at least activityRethinkLimit
-                    if (!OccupiedMine && time < GameEnvironment.Variables.activityRethinkLimit)
-                    {
-                        chanceToChangeMyActivity = 0;
-                        break;
-                    }
-                    
+                {   
                     if (!OccupiedMine && KnownMines.Count(m => m.Ore > 50) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
                     if (!OccupiedMine) break;
 
                     // I currently am in a mine
-
-                    // If I am an Miner I stay a Miner for at least activityRethinkLimit
-                    if (OccupiedMine.GetComponent<MineBehaviour>().Ore > 10 &&
-                        time < GameEnvironment.Variables.activityRethinkLimit)
-                    {
-                        chanceToChangeMyActivity = 0;
-                        break;
-                    }
 
                     if (OccupiedMine.GetComponent<MineBehaviour>().Ore > 50)
                         chanceToChangeMyActivity -= 0.5 * WorkDesire;
@@ -440,6 +414,7 @@ namespace Assets.Scripts
             if (!startingActivity.List.Any())
             {
                 CurrentActivity = ActivitiesLabel.Deviant;
+                LastActivityChange = Time.time;
                 return true;
             }
 
@@ -447,9 +422,9 @@ namespace Assets.Scripts
             // Debug.Log("Hey " + this.name +" just changed his activity from " +_currentActivity +" to " +newActivity);
             CurrentActivity = newActivity;
             //_currentActivity = ActivitiesLabel.Explorer;
-            
+
             #endregion
-            
+            LastActivityChange = Time.time;
             return true;
         }
 

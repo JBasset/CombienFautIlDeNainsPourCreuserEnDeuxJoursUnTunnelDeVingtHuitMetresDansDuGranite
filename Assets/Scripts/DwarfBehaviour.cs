@@ -51,13 +51,8 @@ namespace Assets.Scripts
                         memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), Time.time,
                             seenDwarf.transform.position);
 
-                        // when a vigile meets a deviant
-                        if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Vigile &&
-                            seenDwarf.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
-                        {
-                            seenDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
-                        }
-
+                        // TODO
+                        /*
                         // when a supply meets a thirsty
                         if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Supply &&
                             seenDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 50
@@ -71,7 +66,7 @@ namespace Assets.Scripts
 
                             seenDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
                             agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
-                        }
+                        }*/
                     }
 
                 #endregion
@@ -86,30 +81,26 @@ namespace Assets.Scripts
                             if (memory.KnownDwarves.All(kd => kd.Name != myD.name))
                             {
                                 MoveTo(myD.transform.position);
-                                UpdateActivityAndDestination();
                             }
                             break;
                         case ActivitiesLabel.Deviant: // TODO todo
                             break;
                         case ActivitiesLabel.Vigile:
-                            if (myD.GetComponent<DwarfMemory>().WorkDesire < 50)
+                            if (myD.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
                             {
                                 MoveTo(myD.transform.position);
-                                UpdateActivityAndDestination();
                             }
                             break;
                         case ActivitiesLabel.Supply:
                             if (myD.GetComponent<DwarfMemory>().ThirstSatisfaction < 50)
                             {
                                 MoveTo(myD.transform.position);
-                                UpdateActivityAndDestination();
                             }
                             break;
                         case ActivitiesLabel.Miner:
                             if (memory.KnownDwarves.All(kd => kd.Name != myD.name))
                             {
                                 MoveTo(myD.transform.position);
-                                UpdateActivityAndDestination();
                             }
                             break;
                         case ActivitiesLabel.GoToForge:
@@ -119,6 +110,14 @@ namespace Assets.Scripts
                     }
                 }
 
+                #endregion
+
+                #region depending on dwarf in sight
+                // if this dwarf wants to work, AND the dwarf he sees is a deviant OR is thirsty, consider changing activity
+                if (memory.WorkDesire >= 50 && (DwarvesInSight().Any(d => d.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant) || DwarvesInSight().Any(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < 50)))
+                {
+                    UpdateActivityAndDestination();
+                }
                 #endregion
             } // ~~~ END if (DwarvesInSight().Any())
 

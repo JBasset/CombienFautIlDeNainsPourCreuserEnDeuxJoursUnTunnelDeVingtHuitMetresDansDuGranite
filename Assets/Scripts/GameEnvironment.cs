@@ -34,7 +34,7 @@ namespace Assets.Scripts
             _gameEnvironment = GetComponent<Transform>();
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 8; //TODO more
+            _spawnsLeft = 20; //TODO more
             Time.timeScale = 5;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
@@ -46,8 +46,6 @@ namespace Assets.Scripts
             _lastGaneralGaugesUpdate = 0;
 
             UpdateNoticeables();
-
-            Time.timeScale = 5;
         }
 
         void Update()

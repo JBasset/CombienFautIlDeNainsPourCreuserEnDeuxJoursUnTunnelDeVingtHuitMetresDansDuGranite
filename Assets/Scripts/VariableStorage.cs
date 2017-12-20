@@ -51,7 +51,7 @@ namespace Assets.Scripts
          * We neglect the economical impact of that property in the simulation's universe. 
          * Even though it's worthless, dwarves love gold. */
 
-        public int dwarfOreMiningRate = 2;
+        public int dwarfOreMiningRate = 5;
 
         public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
         public int activityRethinkLimit = 5; // don't change if it's less than this !
