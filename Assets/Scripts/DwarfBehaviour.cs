@@ -171,6 +171,7 @@ namespace Assets.Scripts
                 if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                 {
                     memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
+                    memory.BeerDrank += GE.Variables.maxValueGauge - memory.ThirstSatisfaction;
                     memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
                 }
 
@@ -279,6 +280,7 @@ namespace Assets.Scripts
                                     ThirstyDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
                                     agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
                                     agent.GetComponent<DwarfMemory>().BeerGiven += usedBeer;
+                                    ThirstyDwarf.GetComponent<DwarfMemory>().BeerDrank += usedBeer;
                                 }
                             }
                             else
