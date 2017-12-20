@@ -19,7 +19,7 @@ namespace Assets.Scripts
         private Transform _gameEnvironment;
         private Transform _dwarves;
         private Transform _mines;
-        private int _spawnsLeft; // number of dwarves to create
+        public int _spawnsLeft; // number of dwarves to create
 
         private Text _dwarvesMiningNow;
         private Text _timeSinceStart;
@@ -35,7 +35,7 @@ namespace Assets.Scripts
             _gameEnvironment = GetComponent<Transform>();
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
-            _spawnsLeft = 40;
+            _spawnsLeft = 0;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
             _dwarvesMiningNow = generalStatsPanel.FindChild("DwarvesMining").FindChild("Value").GetComponent<Text>();

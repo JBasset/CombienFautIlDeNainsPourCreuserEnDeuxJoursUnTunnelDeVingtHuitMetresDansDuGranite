@@ -11,7 +11,7 @@ namespace Assets.Scripts
         public enum ActivitiesLabel { Explorer, Deviant, Vigile, Supply, Miner, GoToForge }
         public enum GaugesLabel { /*Specialisation, Tiredness, */ ThirstSatisfaction, Workdesire, Pickaxe, BeerCarried }
 
-        public int OutOfDate = 200; // oblivion
+        public int OutOfDate = 180; // oblivion
 
         // new dwarves start with those activities :
         public WeightedList startingActivity = new WeightedList(
