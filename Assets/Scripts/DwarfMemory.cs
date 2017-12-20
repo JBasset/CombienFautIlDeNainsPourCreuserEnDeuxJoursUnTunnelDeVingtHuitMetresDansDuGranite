@@ -384,13 +384,24 @@ namespace Assets.Scripts
                 list.Add(new _WeightedObject(ActivitiesLabel.Miner, w0));
             }
 
-            if (CurrentActivity != ActivitiesLabel.Supply
-                && KnownDwarves.Any(d => d.HighThirst) && this.ThirstSatisfaction >= 10)
+            if (CurrentActivity != ActivitiesLabel.Supply)
             {
-                var w0 = (int)((w + (100 - t)) / 2);
+                var w0 = 0;
+                if (KnownDwarves.Any(d => d.HighThirst) && this.ThirstSatisfaction >= 10)
+                {
+                    w0 = (int)((w + (100 - t)) / 2);
+                }
+
+                if (BeerCarried < 10 &&
+                    Vector3.Distance(_dwarfTransf.position, GameEnvironment.Variables.beerPosition) <
+                    GameEnvironment.Variables.H.sup_closeBeerStorage)
+                {
+                    w0 = 100;
+                }
+                
                 list.Add(new _WeightedObject(ActivitiesLabel.Supply, w0));
             }
-
+            
             if (CurrentActivity != ActivitiesLabel.Vigile
                 && KnownDwarves.Any(d => d.Deviant) && this.ThirstSatisfaction >= 10)
             {
@@ -617,6 +628,7 @@ namespace Assets.Scripts
             
             if (!destList.Any()) // change to another activity and reset destination
             {
+                Debug.Log("pas de dest");
                 RethinkActivity();
                 return GetNewDestination();
             }

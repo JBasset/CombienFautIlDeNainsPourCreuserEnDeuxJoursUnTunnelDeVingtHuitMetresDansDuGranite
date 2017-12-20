@@ -106,6 +106,8 @@ namespace Assets.Scripts
             public int sup_closeMinefLimit = 50;
             // When is a thirsty dwarf considered "close enough to be my target" ?
             public int sup_closeDwarfLimit = 50;
+            // When do I consider that beerStorage is close ?
+            public int sup_closeBeerStorage = 50;
             #endregion
 
             #region Miner

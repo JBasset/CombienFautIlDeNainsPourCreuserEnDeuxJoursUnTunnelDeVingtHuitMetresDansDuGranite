@@ -108,7 +108,7 @@ namespace Assets.Scripts
 
             #endregion END whenever a dwarf is close from another
 
-            #region and EACH SECONDS ...
+            #region and EACH SECONDS we update stats ...
 
             if (Time.time - LastSecond >= 1)
             {
@@ -137,10 +137,10 @@ namespace Assets.Scripts
                 }
             }
 
-            #endregion END and EACH SECONDS ...
-            
+            #endregion END and EACH SECONDS we update stats ...
+
             #region  if agent is an explorer :
-            
+
             if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
                 if (MinesInSight().Any())
                     foreach (var myMine in MinesInSight())
@@ -170,11 +170,9 @@ namespace Assets.Scripts
 
                 if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                 {
-                    if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Miner)
-                    {
-                        memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
-                    }
-                    memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);}
+                    memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
+                    memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
+                }
 
                 if (Vector3.Distance(agent.transform.position, GE.Variables.forgePosition) < 2)
                     memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
