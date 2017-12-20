@@ -316,6 +316,8 @@ namespace Assets.Scripts
                 case ActivitiesLabel.Supply:
                     if (KnownDwarves.Count(d => d.HighThirst) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
+                    if (BeerCarried > 20)
+                        chanceToChangeMyActivity -= 1.5 * WorkDesire;
                     break;
                 case ActivitiesLabel.Miner:
                 {   
@@ -521,10 +523,9 @@ namespace Assets.Scripts
 
                     #region Adds every occuped mines (dwarf number + 0-20 depending on distance and thirst evaluation)
 
-                    // TODO : si j'ai pas de biere je veux absolument aller en chercher
+                    if (BeerCarried <= 20) // a supply who has nothing to supply ain't a good supply
+                        destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition, ( 100- BeerCarried )));
                     
-                    // TODO : sinon SINON ELSE SINON blah
-
                     foreach (var mine in KnownMines.FindAll(m => m.DwarvesInTheMine > 0).ToList()
                     ) // we add a mine if not empty
                     {
@@ -544,7 +545,7 @@ namespace Assets.Scripts
 
                     #endregion
 
-                    #region Adds known thirsty dwarves (50 or 10 depending on distance)
+                    #region Adds known thirsty dwarves (50 or 5 depending on distance)
 
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.HighThirst).ToList())
                         // we add thirsty dwarves (weight depending on how close he is)
@@ -552,7 +553,7 @@ namespace Assets.Scripts
                         // I like close dwarves better
                         w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.sup_closeDwarfLimit)
                             ? 50
-                            : 10;
+                            : 5;
 
                         destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
@@ -562,14 +563,14 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Vigile:
 
-                    #region Adds deviant known dwarves (50 or 10 depending on distance)
+                    #region Adds deviant known dwarves (50 or 5 depending on distance)
 
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.Deviant).ToList())
                     {
                         // I like close dwarves better
                         w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
-                            : 10;
+                            : 5;
                         destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
 
@@ -577,14 +578,14 @@ namespace Assets.Scripts
 
                     if (destList.Any()) break;
 
-                    #region (IF no target) Adds all thirsy dwarves (10 or 50 depending on distance)
+                    #region (IF no target) Adds all thirsy dwarves (5 or 50 depending on distance)
 
                     foreach (var dwarf in KnownDwarves.FindAll(d => d.HighThirst).ToList())
                     {
                         // I like close dwarves better
                         w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
-                            : 10;
+                            : 5;
                         destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
                     break;

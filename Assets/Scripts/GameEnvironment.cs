@@ -107,14 +107,16 @@ namespace Assets.Scripts
                     // Work desire depends on Thirst Satisfaction
                     var ts = myMemory.ThirstSatisfaction;
 
-                    if (ts >= 80) // +2 WD between 80 and 100 TS
+                    if (ts == 100) // WD : 100
+                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 100);
+                    else if (ts >= 90) // +10 WD between 80 and 90 TS
+                        myMemory.IncreaseBy(GaugesLabel.Workdesire, 10);
+                    else if (ts >= 80) // +2 WD between 80 and 100 TS
                         myMemory.IncreaseBy(GaugesLabel.Workdesire, 2);
                     else if (ts >= 60) // +1 WD between 60 and 80 TS
                         myMemory.IncreaseBy(GaugesLabel.Workdesire, 1);
                     else if (ts >= 20 && ts < 40) // -1 WD between 20 and 40 TS
-                    {
                         myMemory.LowerBy(GaugesLabel.Workdesire, 1);
-                    }
                     else if (ts < 20) // -2 WD between 0 and 20 TS
                         myMemory.LowerBy(GaugesLabel.Workdesire, 2);
                 }
