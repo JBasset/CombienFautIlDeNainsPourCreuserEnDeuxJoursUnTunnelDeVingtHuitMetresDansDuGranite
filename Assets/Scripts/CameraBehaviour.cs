@@ -99,7 +99,7 @@ namespace Assets.Scripts
             timesInteracted = stats.FindChild("TimesInteracted").FindChild("Value").GetComponent<Text>();
 
             #endregion
-    }
+        }
 
         public void Update()
         {
@@ -159,7 +159,7 @@ namespace Assets.Scripts
 
             if (Time.time - lastSecond >= 1)
             {
-                lastSecond = (int) Mathf.Floor(Time.time);
+                lastSecond = (int)Mathf.Floor(Time.time);
                 if (lockedMine)
                     UI.GetComponent<UIBehaviour>().SetDwarfInMineButtons(lockedMine.GetComponent<MineBehaviour>());
             }
@@ -303,14 +303,14 @@ namespace Assets.Scripts
 
             dwarfName.text = lockedAgent.name;
             dwarfActivity.text = memory.CurrentActivity.ToString();
-            
+
             knownDwarves.text = "" + memory.KnownDwarves.Count;
             knownMines.text = "" + memory.KnownMines.Count;
 
             var maxValueGauge = gameEnvironment.Variables.maxValueGauge;
-            thirstSatisfaction.value = memory.ThirstSatisfaction / (float) maxValueGauge;
-            workDesire.value = memory.WorkDesire / (float) maxValueGauge;
-            pickaxe.value = memory.Pickaxe / (float) maxValueGauge;
+            thirstSatisfaction.value = memory.ThirstSatisfaction / (float)maxValueGauge;
+            workDesire.value = memory.WorkDesire / (float)maxValueGauge;
+            pickaxe.value = memory.Pickaxe / (float)maxValueGauge;
             beerCarried.value = memory.BeerCarried / (float)maxValueGauge;
 
             #endregion
