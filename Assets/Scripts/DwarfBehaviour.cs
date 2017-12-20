@@ -44,7 +44,7 @@ namespace Assets.Scripts
 
                 foreach (var seenDwarf in DwarvesInSight())
                     if (Vector3.Distance(agent.transform.position, seenDwarf.transform.position) <
-                        3f) // maybe change ? TODO hahaha
+                        5) // maybe change ? TODO hahaha
                     {
                         memory.UpdateMemory(seenDwarf.GetComponent<DwarfMemory>().KnownDwarves,
                             seenDwarf.GetComponent<DwarfMemory>().KnownMines);
@@ -171,6 +171,8 @@ namespace Assets.Scripts
                 if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                 {
                     memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
+                    memory.BeerDrank += GE.Variables.maxValueGauge - memory.ThirstSatisfaction;
+                    GE.Variables.TotalBeerDrank += GE.Variables.maxValueGauge - memory.ThirstSatisfaction;
                     memory.IncreaseBy(GaugesLabel.ThirstSatisfaction, GE.Variables.maxValueGauge);
                 }
 
@@ -280,6 +282,7 @@ namespace Assets.Scripts
 
                                     ThirstyDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
                                     agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
+                                    GE.Variables.TotalBeerDrank += usedBeer;
                                     agent.GetComponent<DwarfMemory>().BeerGiven += usedBeer;
                                 }
                             }
@@ -350,17 +353,36 @@ namespace Assets.Scripts
 
         private void EnterMine(GameObject mine)
         {
-            mine.GetComponent<MineBehaviour>().TimesInteracted++;
-            mine.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
+            MineBehaviour minebehaviour = mine.GetComponent<MineBehaviour>();
+            UpdateMineInfo(minebehaviour);
+            minebehaviour.TimesInteracted++;
+            minebehaviour.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
             memory.OccupiedMine = mine;
             this.gameObject.SetActive(false);
         }
 
         public void ExitMine()
         {
-            memory.OccupiedMine.GetComponent<MineBehaviour>().RemoveDwarfInside(this.gameObject);
+            MineBehaviour mine = memory.OccupiedMine.GetComponent<MineBehaviour>();
+            mine.RemoveDwarfInside(this.gameObject);
+            UpdateMineInfo(mine);
             memory.OccupiedMine = null;
             this.gameObject.SetActive(true);
+        }
+
+        private void UpdateMineInfo(MineBehaviour mine)
+        {
+            Vector3 minePos = mine.transform.FindChild("MineEntrance").position;
+            int td = 0;
+            int dim = mine.DwarvesInside.Count;
+            int ore = mine.Ore;
+            string name = mine.gameObject.name;
+            foreach (GameObject Dwarf in mine.DwarvesInside)
+            {
+                if (Dwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < GE.Variables.H.thirstyDwarvesGaugeLimit)
+                    td++;
+            }
+            memory.UpdateMine(minePos, td, dim, ore, Time.time, name);
         }
 
         void OnTriggerStay(Collider other)
