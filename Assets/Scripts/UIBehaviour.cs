@@ -37,7 +37,13 @@ namespace Assets.Scripts
             try { GE.GetComponent<GameEnvironment>().Variables.OutOfDate = int.Parse(OblivionRate.text); }
             catch { GE.GetComponent<GameEnvironment>().Variables.OutOfDate = 180; }
 
-            try { Time.timeScale = int.Parse(TimeScale.text); }
+            try
+            {
+                if (int.Parse(TimeScale.text) > 0)
+                    Time.timeScale = int.Parse(TimeScale.text);
+                else
+                    Time.timeScale = 1;
+            }
             catch { Time.timeScale = 1; }
             
             GE.GetComponent<GameEnvironment>().StartingTime = (int)Mathf.Floor(Time.time);
