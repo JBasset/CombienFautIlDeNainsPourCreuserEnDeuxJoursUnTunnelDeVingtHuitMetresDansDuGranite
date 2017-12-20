@@ -56,7 +56,7 @@ namespace Assets.Scripts
         public int activityRethinkChangeRate = 10; // in UnityEngine.Time, used in gameEnvironment.Update()
         public int activityRethinkLimit = 5; // don't change if it's less than this !
 
-        public int gaugeUpdateRate = 2; // in UnityEngine.Time, used in gameEnvironment.Update()
+        public int gaugeUpdateRate = 3; // in UnityEngine.Time, used in gameEnvironment.Update()
         #endregion
 
         public Heuristics H = new Heuristics();
