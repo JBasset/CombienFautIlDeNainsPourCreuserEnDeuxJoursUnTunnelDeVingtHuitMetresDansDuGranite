@@ -39,12 +39,12 @@ namespace Assets.Scripts
 
             try { Time.timeScale = int.Parse(TimeScale.text); }
             catch { Time.timeScale = 1; }
+            
+            GE.GetComponent<GameEnvironment>().StartingTime = (int)Mathf.Floor(Time.time);
 
             StartingPanel.gameObject.SetActive(false);
             ActivateDwarfSelectionPanelButton.SetActive(true);
             GeneralStatsPanel.SetActive(true);
-
-            Debug.Log("SL :" + GE.GetComponent<GameEnvironment>()._spawnsLeft + "OR :" + GE.GetComponent<GameEnvironment>().Variables.OutOfDate + "TS :" + Time.timeScale);
         }
 
         public void SetDwarfButtons()

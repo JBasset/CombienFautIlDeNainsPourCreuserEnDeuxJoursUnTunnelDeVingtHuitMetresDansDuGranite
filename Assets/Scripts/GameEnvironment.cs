@@ -16,6 +16,8 @@ namespace Assets.Scripts
         public GameObject DwarfPrefab;
         public UIBehaviour UI;
 
+        public int StartingTime;
+
         private Transform _gameEnvironment;
         private Transform _dwarves;
         private Transform _mines;
@@ -36,6 +38,7 @@ namespace Assets.Scripts
             _dwarves = _gameEnvironment.FindChild("Dwarves");
             _mines = _gameEnvironment.FindChild("World").FindChild("Mines");
             _spawnsLeft = 0;
+            StartingTime = 0;
 
             var generalStatsPanel = UI.transform.FindChild("GeneralStats");
             _dwarvesMiningNow = generalStatsPanel.FindChild("DwarvesMining").FindChild("Value").GetComponent<Text>();
@@ -104,7 +107,7 @@ namespace Assets.Scripts
             if (Time.time - _lastSecond >= 1)
             {
                 _lastSecond = (int)Mathf.Floor(Time.time);
-                Variables.TimeSinceStart = _lastSecond;
+                Variables.TimeSinceStart = _lastSecond - StartingTime;
             }
             UpdateGeneralStats();
         }
