@@ -310,6 +310,11 @@ namespace Assets.Scripts
                     break;
                 }
                 case ActivitiesLabel.Vigile:
+                    if (!KnownDwarves.Any(d => d.Deviant) && !KnownDwarves.Any(d => d.HighThirst))
+                    {
+                        chanceToChangeMyActivity = 100;
+                        break;
+                    }
                     if (KnownDwarves.Count(d => d.Deviant) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
@@ -321,6 +326,12 @@ namespace Assets.Scripts
                     break;
                 case ActivitiesLabel.Miner:
                 {   
+                    if (!KnownMines.Any(m => m.Ore >= 10 * GameEnvironment.Variables.dwarfOreMiningRate))
+                    {
+                            chanceToChangeMyActivity = 100;
+                            break;
+                    }
+
                     if (!OccupiedMine && KnownMines.Count(m => m.Ore > 50) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
@@ -491,7 +502,7 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Explorer:
 
-                    #region Adds a random destination (10) [ not to close for me nor too close from a known mine ]
+                    #region Adds a random destination (10) [ not to close from me nor too close from a known mine ]
                     
                     do
                         {
@@ -582,7 +593,7 @@ namespace Assets.Scripts
                         w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
                             : 5;
-                        destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
+                        if (w > 0) destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
 
                     #endregion
@@ -628,7 +639,6 @@ namespace Assets.Scripts
             
             if (!destList.Any()) // change to another activity and reset destination
             {
-                Debug.Log("pas de dest");
                 RethinkActivity();
                 return GetNewDestination();
             }

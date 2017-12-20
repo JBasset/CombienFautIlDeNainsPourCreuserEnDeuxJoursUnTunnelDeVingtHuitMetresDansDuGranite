@@ -229,6 +229,7 @@ namespace Assets.Scripts
                             if (Vector3.Distance(transform.position,
                                     targetedDeviant.transform.position) < 2) // if he reached him
                             {
+                                animator.SetFloat("Run", 0);
                                 targetedDeviant.GetComponent<DwarfMemory>()
                                     .IncreaseBy(GaugesLabel.Workdesire, GE.Variables.maxValueGauge);
                                 memory.DeviantsStopped++;
@@ -266,6 +267,7 @@ namespace Assets.Scripts
                             GameObject ThirstyDwarf = ThirstyDwarves.First();
                             if (Vector3.Distance(transform.position, ThirstyDwarf.transform.position) < 2) // if he reached him
                             {
+                                animator.SetFloat("Run", 0);
                                 if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Supply &&
                                 ThirstyDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 50
                                 && agent.GetComponent<DwarfMemory>().BeerCarried > 0)
