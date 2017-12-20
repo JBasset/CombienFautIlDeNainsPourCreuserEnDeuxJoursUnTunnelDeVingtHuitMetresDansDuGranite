@@ -36,7 +36,7 @@ namespace Assets.Scripts
             if (agent.hasPath && agent.pathStatus == NavMeshPathStatus.PathPartial)
                 UpdateActivityAndDestination();
 
-            #region whenever a dwarf is close from another
+            #region UPDATE - A - Whenever a dwarf is close from another
 
             // whatever you're doing : stop
             if (DwarvesInSight().Any())
@@ -120,12 +120,12 @@ namespace Assets.Scripts
                 {
                     UpdateActivityAndDestination();
                 }
-                #endregion
+                #endregion / <-- depending on dwarf in sight
             } // ~~~ END if (DwarvesInSight().Any())
 
-            #endregion END whenever a dwarf is close from another
+            #endregion / <-- UPDATE - A - Whenever a dwarf is close from another
 
-            #region and EACH SECONDS we update stats ...
+            #region UPDATE - B - Stats update each second
 
             if (Time.time - LastSecond >= 1)
             {
@@ -154,9 +154,9 @@ namespace Assets.Scripts
                 }
             }
 
-            #endregion END and EACH SECONDS we update stats ...
+            #endregion / <-- UPDATE - B - Stats update each second
 
-            #region  if agent is an explorer :
+            #region UPDATE - C - Explorers move towards Mine Entrance
 
             if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Explorer)
                 if (MinesInSight().Any())
@@ -168,23 +168,24 @@ namespace Assets.Scripts
                             break;
                         }
 
-            #endregion END ( if agent is an explorer)
+            #endregion / <-- UPDATE - C - Explorers move towards Mine Entrance
 
-            #region if agent is a miner :
+            #region UPDATE - D - Miners exit empty mines
             if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Miner)
             {
-                GameObject OM = agent.GetComponent<DwarfMemory>().OccupiedMine;
-                if (OM && OM.GetComponent<MineBehaviour>().Ore == 0)
+                var om = agent.GetComponent<DwarfMemory>().OccupiedMine;
+                if (om && om.GetComponent<MineBehaviour>().Ore == 0)
                     ExitMine();
             }
-            #endregion
+            #endregion / <-- UPDATE - D - Miners exit empty mines
 
-            #region if agent arrived destination :
+            #region UPDATE - E - Agent arrived destination
 
             if (agent.hasPath && Vector3.Distance(agent.destination, agent.transform.position) < 2)
             {
                 memory.SavedDestination = null;
 
+                #region UPDATE - E - 1 - Concerning the village (BeerStorage and Forge)
                 if (Vector3.Distance(agent.transform.position, GE.Variables.beerPosition) < 2)
                 {
                     memory.IncreaseBy(GaugesLabel.BeerCarried, GE.Variables.maxValueGauge);
@@ -195,18 +196,23 @@ namespace Assets.Scripts
 
                 if (Vector3.Distance(agent.transform.position, GE.Variables.forgePosition) < 2)
                     memory.IncreaseBy(GaugesLabel.Pickaxe, GE.Variables.maxValueGauge);
+                #endregion / <-- UPDATE - E - 1 - Concerning the village (BeerStorage and Forge)
 
+                #region UPDATE - E - 2 - When the agent reaches his destination he stops
                 agent.ResetPath();
-                animator.SetFloat("Walk", 0); //when the agent reaches his destination he stops
+                animator.SetFloat("Walk", 0);
                 animator.SetFloat("Run", 0);
+                #endregion / <-- UPDATE - E - 2 - When the agent reaches his destination he stops
 
+                #region UPDATE - E - 3 - switch (memory.CurrentActivity)
                 // I have no path anymore....
                 switch (memory.CurrentActivity)
                 {
                     case ActivitiesLabel.Deviant:
-                        
+                        #region Deviant
                         UpdateActivityAndDestination();
                         break;
+                        #endregion
 
                     case ActivitiesLabel.Explorer:
                         #region Explorer
@@ -329,12 +335,12 @@ namespace Assets.Scripts
 
                     default: break;
                 }
+                #endregion / <-- UPDATE - E - 3 - switch (memory.CurrentActivity)
             }
 
+            #endregion / <-- UPDATE - E - Agent arrived destination
 
-            #endregion END ( if agent arrived destination) 
-
-        } // ~~~ END public void Update()
+        } // <-- public void Update()
 
         public void UpdateActivityAndDestination()
         {
@@ -361,7 +367,7 @@ namespace Assets.Scripts
 
         private void EnterMine(GameObject mine)
         {
-            MineBehaviour minebehaviour = mine.GetComponent<MineBehaviour>();
+            var minebehaviour = mine.GetComponent<MineBehaviour>();
             UpdateMineInfo(minebehaviour);
             minebehaviour.TimesInteracted++;
             minebehaviour.GetComponent<MineBehaviour>().AddDwarfInside(this.gameObject);
@@ -371,7 +377,7 @@ namespace Assets.Scripts
 
         public void ExitMine()
         {
-            MineBehaviour mine = memory.OccupiedMine.GetComponent<MineBehaviour>();
+            var mine = memory.OccupiedMine.GetComponent<MineBehaviour>();
             mine.RemoveDwarfInside(this.gameObject);
             UpdateMineInfo(mine);
             memory.OccupiedMine = null;
@@ -380,17 +386,18 @@ namespace Assets.Scripts
 
         private void UpdateMineInfo(MineBehaviour mine)
         {
-            Vector3 minePos = mine.transform.FindChild("MineEntrance").position;
-            int td = 0;
-            int dim = mine.DwarvesInside.Count;
-            int ore = mine.Ore;
-            string name = mine.gameObject.name;
-            foreach (GameObject Dwarf in mine.DwarvesInside)
-            {
-                if (Dwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < GE.Variables.H.thirstyDwarvesGaugeLimit)
-                    td++;
-            }
-            memory.UpdateMine(minePos, td, dim, ore, Time.time, name);
+            var minePos = mine.transform.FindChild("MineEntrance").position;
+            var dim = mine.DwarvesInside.Count;
+            var ore = mine.Ore;
+            var mineName = mine.gameObject.name;
+
+            // we count thirsty dwarves in the mine
+            var td = mine.DwarvesInside
+                .Count(
+                    dwarf => dwarf.GetComponent<DwarfMemory>().ThirstSatisfaction
+                                < GE.Variables.H.thirstyDwarvesGaugeLimit);
+
+            memory.UpdateMine(minePos, td, dim, ore, Time.time, mineName);
         }
 
         void OnTriggerStay(Collider other)
@@ -431,7 +438,7 @@ namespace Assets.Scripts
                     dwarvesInSight.Add(dwarf);
             }
             return dwarvesInSight;
-        } // ~~~ END DwarvesInSight
+        } // <-- public List<GameObject> DwarvesInSight()
 
         public List<GameObject> MinesInSight()
         {
@@ -451,6 +458,6 @@ namespace Assets.Scripts
                     minesInSight.Add(mine);
             }
             return minesInSight;
-        } // ~~~ END MinesInSight
+        }
     }
 }

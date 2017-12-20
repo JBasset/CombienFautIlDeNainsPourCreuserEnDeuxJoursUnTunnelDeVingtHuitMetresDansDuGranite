@@ -49,47 +49,47 @@ namespace Assets.Scripts
 
         public void SetDwarfButtons()
         {
-            List<GameObject> Dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
-            _scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count-1) * 35);
-            for (int i = 0; i < Dwarves.Count; i++)
+            var dwarves = GE.GetComponent<GameEnvironment>().GetDwarves();
+            _scrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (dwarves.Count - 1) * 35);
+            for (var i = 0; i < dwarves.Count; i++)
             {
-                Button newButton = Instantiate(DwarfButton);
+                var newButton = Instantiate(DwarfButton);
                 newButton.transform.SetParent(ScrollablePanel.transform, false);
                 newButton.transform.localPosition = new Vector3
-                    (
-                        newButton.transform.localPosition.x,
-                        newButton.transform.localPosition.y - (i*35),
-                        newButton.transform.localPosition.z
-                    );
-                newButton.transform.FindChild("Text").GetComponent<Text>().text = Dwarves[i].name;
+                (
+                    newButton.transform.localPosition.x,
+                    newButton.transform.localPosition.y - i * 35,
+                    newButton.transform.localPosition.z
+                );
+                newButton.transform.FindChild("Text").GetComponent<Text>().text = dwarves[i].name;
 
-                GameObject Dwarf = Dwarves[i];
-                newButton.onClick.AddListener(delegate { LockCamera(Dwarf); });
+                var dwarf = dwarves[i];
+                newButton.onClick.AddListener(delegate { LockCamera(dwarf); });
             }
         }
 
         public void SetDwarfInMineButtons(MineBehaviour mine)
         {
-            List<GameObject> Dwarves = mine.DwarvesInside;
+            var dwarves = mine.DwarvesInside;
 
-            for (int i = 0; i < MineUIScrollablePanel.transform.childCount; i++)
+            for (var i = 0; i < MineUIScrollablePanel.transform.childCount; i++)
                 Destroy(MineUIScrollablePanel.transform.GetChild(i).gameObject);
 
-            _mineUiScrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (Dwarves.Count - 1) * 35);
-            for (int i = 0; i < Dwarves.Count; i++)
+            _mineUiScrollablePanelRectTransform.sizeDelta = new Vector2(130, 50 + (dwarves.Count - 1) * 35);
+            for (var i = 0; i < dwarves.Count; i++)
             {
-                Button newButton = Instantiate(DwarfButton);
+                var newButton = Instantiate(DwarfButton);
                 newButton.transform.SetParent(MineUIScrollablePanel.transform, false);
                 newButton.transform.localPosition = new Vector3
-                    (
-                        newButton.transform.localPosition.x,
-                        newButton.transform.localPosition.y - (i * 35),
-                        newButton.transform.localPosition.z
-                    );
-                newButton.transform.FindChild("Text").GetComponent<Text>().text = Dwarves[i].name;
+                (
+                    newButton.transform.localPosition.x,
+                    newButton.transform.localPosition.y - i * 35,
+                    newButton.transform.localPosition.z
+                );
+                newButton.transform.FindChild("Text").GetComponent<Text>().text = dwarves[i].name;
 
-                GameObject Dwarf = Dwarves[i];
-                newButton.onClick.AddListener(delegate { LockCamera(Dwarf); });
+                var dwarf = dwarves[i];
+                newButton.onClick.AddListener(delegate { LockCamera(dwarf); });
             }
         }
 

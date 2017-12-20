@@ -11,16 +11,18 @@ namespace Assets.Scripts
 {
     public class DwarfMemory:MonoBehaviour
     {
-        public GameEnvironment GameEnvironment;
-        
-        public GameObject OccupiedMine;
+        private DwarfBehaviour _dwarfBehaviour;
+        private Transform _dwarfTransf;
 
+        public GameEnvironment GameEnvironment;
+        public GameObject OccupiedMine;
         public Vector3? SavedDestination;
 
         public ActivitiesLabel CurrentActivity { get; private set; }
 
         public float LastActivityChange { get; private set; } // UnityEngine.Time
-        
+
+        #region Gauges
         private int StockGauge(int value)
         {
             var max = GameEnvironment.Variables.maxValueGauge;
@@ -29,16 +31,21 @@ namespace Assets.Scripts
         }
 
         private int _thirstSatisfaction;
-        public int ThirstSatisfaction { get { return _thirstSatisfaction; } set { _thirstSatisfaction = StockGauge(value); } }
+        public int ThirstSatisfaction
+        { get { return _thirstSatisfaction; } set { _thirstSatisfaction = StockGauge(value); } }
 
         private int _workDesire;
-        public int WorkDesire { get { return _workDesire; } set { _workDesire = StockGauge(value); } }
+        public int WorkDesire
+        { get { return _workDesire; } set { _workDesire = StockGauge(value); } }
 
         private int _pickaxe;
-        public int Pickaxe { get { return _pickaxe; } set { _pickaxe = StockGauge(value); } }
+        public int Pickaxe
+        { get { return _pickaxe; } set { _pickaxe = StockGauge(value); } }
 
         private int _beerCarried;
-        public int BeerCarried { get { return _beerCarried; } set { _beerCarried = StockGauge(value); } }
+        public int BeerCarried
+        { get { return _beerCarried; } set { _beerCarried = StockGauge(value); } }
+        #endregion
 
         // stats
         public int GoldOreMined;
@@ -51,21 +58,18 @@ namespace Assets.Scripts
         public int TimeAsVigile;
         public int TimeAsDeviant;
 
-        // int? targetDwarf; // identité de la cible si c'est un vigile
-
-        // Vector3 targetPosition; // position cible ?
-
+        #region Knowledge about Mines and Dwarves
         private List<_KnownDwarf> _knownDwarves = new List<_KnownDwarf>(); // nainConnus
         public List<_KnownDwarf> KnownDwarves { get { return _knownDwarves; } }
 
         private List<_KnownMine> _knownMines = new List<_KnownMine>();
         public List<_KnownMine> KnownMines { get { return _knownMines; } }
+
         /* when a dwarf meets another, or walk through a mine, 
          * he may update his knowledge of the mines 
-         * using updateMine(Vector3 thePosition, bool newHighThirst) */
-         
-        private DwarfBehaviour _dwarfBehaviour;
-        private Transform _dwarfTransf;
+         * using this classe's Update functions*/
+        #endregion
+        
         public void Start()
         {
             _dwarfBehaviour = GetComponent<DwarfBehaviour>();
@@ -94,9 +98,8 @@ namespace Assets.Scripts
             TimeAsVigile = 0;
             TimeAsDeviant = 0;
     }
-
-
-        #region increase and lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
+        
+        #region Gauges's Increase and Lower functions ( param : VariableStorage.GaugesLabel theGauge, int byValue )
 
         public void IncreaseBy(GaugesLabel theGauge, int byValue)
         {
@@ -582,10 +585,6 @@ namespace Assets.Scripts
 
                         destList.Add(new _WeightedObject(mPosition, w));
                     }
-
-                    if (!destList.Any())
-                        destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition,1));
-
                     #endregion
 
                     #region Adds known thirsty dwarves (50 or 5 depending on distance)
@@ -600,9 +599,13 @@ namespace Assets.Scripts
 
                         destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
-                    break;
+                    
+                    #endregion
 
-                #endregion
+                    // Security
+                    if (!destList.Any())
+                        destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition, 1));
+                    break;
 
                 case ActivitiesLabel.Vigile:
 
@@ -665,9 +668,11 @@ namespace Assets.Scripts
                 { return GetNewDestination(); }
                 catch(StackOverflowException)
                 {
-                    // TODO : comment and explain this if the problem is not clearly solved (ask Jean)
-                    Debug.Log("StackOverFloooooooooooooooow");
-                    Debug.Log("On " + gameObject.name);
+                    Debug.Log("--------------------------------");
+                    // TODO : find out how to solve this problem
+                    Debug.Log(" The game freezes due to a problem whe cannot solve :");
+                    Debug.Log(" Stackoverflow in DwarfMemory.GetNewDestination");
+                    Debug.Log("On gameObject : " + gameObject.name);
                     Debug.Log(CurrentActivity);
                     Debug.Log("KnownMines :" + KnownMines.Count);
                     Debug.Log("KnownMines with enough gold :" + KnownMines.Count(m => m.Ore >= GameEnvironment.Variables.dwarfOreMiningRate * 10));

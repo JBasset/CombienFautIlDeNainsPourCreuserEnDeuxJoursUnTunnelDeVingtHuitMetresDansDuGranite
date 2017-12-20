@@ -7,11 +7,13 @@ namespace Assets.Scripts
 {
     public class _WeightedObject // create a weighted object, like : (chat, 3)
     {
-        public object TheObject; public int TheWeight;
+        public object TheObject;
+        public int TheWeight;
 
-        public _WeightedObject(Object obj, int weight)
+        public _WeightedObject(object obj, int weight)
         {
-            this.TheObject = obj; this.TheWeight = weight;
+            TheObject = obj;
+            TheWeight = weight;
         }
     }
 

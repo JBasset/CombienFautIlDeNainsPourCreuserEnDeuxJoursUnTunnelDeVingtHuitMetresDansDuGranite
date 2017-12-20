@@ -125,7 +125,7 @@ namespace Assets.Scripts
                 if (Physics.Raycast(ray, out hit))
                     if (hit.collider.CompareTag("Agent"))
                     {
-                        lockedAgent = hit.collider; // on clicking on an agent, we set it as the camera lock
+                        lockedAgent = hit.collider; // by clicking on an agent, we set it as the camera lock
                         lockedMine = null;
                     }
                     else if (hit.collider.CompareTag("Mine"))
