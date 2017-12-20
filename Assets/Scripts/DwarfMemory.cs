@@ -263,7 +263,7 @@ namespace Assets.Scripts
 
             #region STEP ONE : CHECK TIME
 
-            var time = (int)((UnityEngine.Time.time - LastActivityChange)); // time since last change (in UnityEngine.Time)
+            var time = (int)((UnityEngine.Time.time - LastActivityChange));// time since last change (in UnityEngine.Time)
 
             if (time < GameEnvironment.Variables.activityRethinkLimit)
                 return false;
@@ -278,7 +278,9 @@ namespace Assets.Scripts
              * Fact is : the more he "rethinks", the more the risk that he changes his activity increases
              */
              
-            var chanceToChangeMyActivity = 10 + (time * GameEnvironment.Variables.H.attenuateTimeImpact);
+            double chanceToChangeMyActivity = 10;
+            if (CurrentActivity != ActivitiesLabel.Miner) // A mining dwarves is having too much fun to see the time pass
+                chanceToChangeMyActivity += (time * GameEnvironment.Variables.H.attenuateTimeImpact);
 
             if (CurrentActivity != ActivitiesLabel.Deviant)
             { chanceToChangeMyActivity += (0.5 * (100 - this.ThirstSatisfaction)); }
@@ -299,7 +301,7 @@ namespace Assets.Scripts
                 case ActivitiesLabel.Explorer:
                 {
                     // Exploration means a lot for an explorer : AN EXPLORER'S WATCH WON'T END (unless he needs beer) (or find something)
-                    if (KnownMines.Count < 3)
+                    if (KnownMines.Count(m => m.Ore > 10 * GameEnvironment.Variables.dwarfOreMiningRate) < GameEnvironment.Variables.H.expl_iknwoenough)
                         chanceToChangeMyActivity -= 1.5 * WorkDesire;
 
                     // Since he knows a few full mines, it's ok to stop
@@ -310,17 +312,35 @@ namespace Assets.Scripts
                     break;
                 }
                 case ActivitiesLabel.Vigile:
+                    if (!KnownDwarves.Any(d => d.Deviant) && !KnownDwarves.Any(d => d.HighThirst))
+                    {
+                        chanceToChangeMyActivity = 100;
+                        break;
+                    }
                     if (KnownDwarves.Count(d => d.Deviant) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     break;
+
                 case ActivitiesLabel.Supply:
+                    if (!KnownMines.Any(m => m.DwarvesInTheMine > 0) && !KnownDwarves.Any(d => d.HighThirst))
+                    {
+                        chanceToChangeMyActivity = 100;
+                        break;
+                    }
                     if (KnownDwarves.Count(d => d.HighThirst) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
                     if (BeerCarried > 20)
                         chanceToChangeMyActivity -= 1.5 * WorkDesire;
                     break;
+
                 case ActivitiesLabel.Miner:
                 {   
+                    if (!KnownMines.Any(m => m.Ore >= 10 * GameEnvironment.Variables.dwarfOreMiningRate))
+                    {
+                            chanceToChangeMyActivity = 100;
+                            break;
+                    }
+
                     if (!OccupiedMine && KnownMines.Count(m => m.Ore > 50) < 2)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
 
@@ -329,7 +349,7 @@ namespace Assets.Scripts
                     // I currently am in a mine
 
                     if (OccupiedMine.GetComponent<MineBehaviour>().Ore > 50)
-                        chanceToChangeMyActivity -= 0.5 * WorkDesire;
+                        chanceToChangeMyActivity -= 2 * WorkDesire;
 
                     if (OccupiedMine.GetComponent<MineBehaviour>().Ore < 10)
                         chanceToChangeMyActivity += 0.5 * WorkDesire;
@@ -362,25 +382,29 @@ namespace Assets.Scripts
                 && this.Pickaxe <= GameEnvironment.Variables.H.pickaxeLimit)
             {
                 var w0 = (int)((w + 2 * (100 - p)) / 3);
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.GoToForge, w0));
             }
 
             if (CurrentActivity != ActivitiesLabel.Deviant)
             {
                 var w0 = (int)(((100 - w) + t) / 2);
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Deviant, w0));
             }
 
             if (CurrentActivity != ActivitiesLabel.Explorer)
             {
                 var w0 = (KnownMines.Any()) ? (int)((w + (100 - p)) / 2) : (int)((w + 100) / 2);
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Explorer, w0));
             }
 
             if (CurrentActivity != ActivitiesLabel.Miner
                 && KnownMines.Any(m => m.Ore >= 5) && this.Pickaxe >= 10)
             {
-                var w0 = (int)((w + p) / 2);
+                var w0 = (int)((200 + w + p) / 4); // The simulation being about mining, the chance of dwarves being miners must be higher
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Miner, w0));
             }
 
@@ -398,7 +422,7 @@ namespace Assets.Scripts
                 {
                     w0 = 100;
                 }
-                
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Supply, w0));
             }
             
@@ -414,7 +438,7 @@ namespace Assets.Scripts
                 {
                     w0 += w;
                 }
-
+                Debug.Log(w0);
                 list.Add(new _WeightedObject(ActivitiesLabel.Vigile, w0));
             }
 
@@ -491,7 +515,7 @@ namespace Assets.Scripts
 
                 case ActivitiesLabel.Explorer:
 
-                    #region Adds a random destination (10) [ not to close for me nor too close from a known mine ]
+                    #region Adds a random destination (10) [ not to close from me nor too close from a known mine ]
                     
                     do
                         {
@@ -526,6 +550,15 @@ namespace Assets.Scripts
 
                         if (w > 0) destList.Add(new _WeightedObject(mine.MinePosition, w));
                     }
+
+                    if (destList.Any())
+                        break;
+
+                    if (KnownMines.Any())
+                        destList.Add(new _WeightedObject(KnownMines.First().MinePosition, 1));
+                    else
+                        RethinkActivity();
+
                     break;
 
                 #endregion
@@ -553,6 +586,9 @@ namespace Assets.Scripts
 
                         destList.Add(new _WeightedObject(mPosition, w));
                     }
+
+                    if (!destList.Any())
+                        destList.Add(new _WeightedObject(GameEnvironment.Variables.beerPosition,1));
 
                     #endregion
 
@@ -582,7 +618,7 @@ namespace Assets.Scripts
                         w = (Vector3.Distance(_dwarfTransf.position, dwarf.DwarfPosition) < GameEnvironment.Variables.H.vig_closeDwarfLimit)
                             ? 50
                             : 5;
-                        destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
+                        if (w > 0) destList.Add(new _WeightedObject(dwarf.DwarfPosition, w));
                     }
 
                     #endregion
@@ -628,9 +664,23 @@ namespace Assets.Scripts
             
             if (!destList.Any()) // change to another activity and reset destination
             {
-                Debug.Log("pas de dest");
                 RethinkActivity();
-                return GetNewDestination();
+                try
+                { return GetNewDestination(); }
+                catch(StackOverflowException)
+                {
+                    Debug.Log("StackOverFloooooooooooooooow");
+                    Debug.Log("On " + gameObject.name);
+                    Debug.Log(CurrentActivity); //TODO debug dis
+                    Debug.Log("KnownMines :" + KnownMines.Count);
+                    Debug.Log("KnownMines with enough gold :" + KnownMines.Count(m => m.Ore >= GameEnvironment.Variables.dwarfOreMiningRate * 10));
+                    Debug.Log("KnownMines with dwarves inside :" + KnownMines.Count(m => m.DwarvesInTheMine > 0));
+                    Debug.Log("KnownDwarves :" + KnownDwarves.Count);
+                    Debug.Log("KnownDwarves thirsty :" + KnownDwarves.Count(d => d.HighThirst));
+                    Debug.Log("KnownDwarves deviant + :" + KnownDwarves.Count(d => d.Deviant));
+                    Debug.Log("--------------------------------");
+                    return new Vector3(0, 0, 0);
+                }
             }
             
             #region STEP TWO : SELECT AN OPTION

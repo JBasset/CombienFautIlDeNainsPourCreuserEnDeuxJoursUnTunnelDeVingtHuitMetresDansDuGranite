@@ -83,7 +83,7 @@ namespace Assets.Scripts
             // When is a destination considered "too close from a mine I know" chosen ?
             public int expl_positionTooKnown = 80;
             // When do an explorer consider that he has enough information to stop beeing an explorer ?
-            public int expl_iknwoenough = 3;
+            public int expl_iknwoenough = 1;
             #endregion
 
             #region Deviant
