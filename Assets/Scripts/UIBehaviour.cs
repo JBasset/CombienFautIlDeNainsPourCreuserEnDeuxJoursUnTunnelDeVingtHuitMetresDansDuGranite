@@ -12,6 +12,9 @@ namespace Assets.Scripts
         public Camera MainCam;
         public GameObject ScrollablePanel;
         public GameObject MineUIScrollablePanel;
+        public Transform StartingPanel;
+        public GameObject ActivateDwarfSelectionPanelButton;
+        public GameObject GeneralStatsPanel;
 
         private RectTransform _scrollablePanelRectTransform;
         private RectTransform _mineUiScrollablePanelRectTransform;
@@ -20,6 +23,28 @@ namespace Assets.Scripts
         {
             _scrollablePanelRectTransform = ScrollablePanel.GetComponent<RectTransform>();
             _mineUiScrollablePanelRectTransform = MineUIScrollablePanel.GetComponent<RectTransform>();
+        }
+
+        public void StartSimulation()
+        {
+            InputField NbDwarves = StartingPanel.FindChild("NbDwarves").FindChild("Value").GetComponent<InputField>();
+            InputField OblivionRate = StartingPanel.FindChild("OblivionRate").FindChild("Value").GetComponent<InputField>();
+            InputField TimeScale = StartingPanel.FindChild("TimeScale").FindChild("Value").GetComponent<InputField>();
+
+            try { GE.GetComponent<GameEnvironment>()._spawnsLeft = int.Parse(NbDwarves.text); }
+            catch { GE.GetComponent<GameEnvironment>()._spawnsLeft = 40; }
+
+            try { GE.GetComponent<GameEnvironment>().Variables.OutOfDate = int.Parse(OblivionRate.text); }
+            catch { GE.GetComponent<GameEnvironment>().Variables.OutOfDate = 180; }
+
+            try { Time.timeScale = int.Parse(TimeScale.text); }
+            catch { Time.timeScale = 1; }
+            
+            GE.GetComponent<GameEnvironment>().StartingTime = (int)Mathf.Floor(Time.time);
+
+            StartingPanel.gameObject.SetActive(false);
+            ActivateDwarfSelectionPanelButton.SetActive(true);
+            GeneralStatsPanel.SetActive(true);
         }
 
         public void SetDwarfButtons()
