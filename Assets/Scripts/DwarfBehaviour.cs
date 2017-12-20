@@ -50,23 +50,6 @@ namespace Assets.Scripts
                             seenDwarf.GetComponent<DwarfMemory>().KnownMines);
                         memory.UpdateDwarf(seenDwarf.GetComponent<DwarfMemory>(), Time.time,
                             seenDwarf.transform.position);
-
-                        // TODO
-                        /*
-                        // when a supply meets a thirsty
-                        if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Supply &&
-                            seenDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 50
-                            && agent.GetComponent<DwarfMemory>().BeerCarried > 0)
-                        {
-                            var carriedBeer = agent.GetComponent<DwarfMemory>().BeerCarried;
-                            var missingBeer = GE.Variables.maxValueGauge - seenDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction;
-                            var usedBeer = (carriedBeer >= missingBeer)
-                                ? missingBeer
-                                : carriedBeer;
-
-                            seenDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
-                            agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
-                        }*/
                     }
 
                 #endregion
@@ -89,12 +72,14 @@ namespace Assets.Scripts
                             if (myD.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Deviant)
                             {
                                 MoveTo(myD.transform.position);
+                                animator.SetFloat("Run", 1);
                             }
                             break;
                         case ActivitiesLabel.Supply:
                             if (myD.GetComponent<DwarfMemory>().ThirstSatisfaction < 50)
                             {
                                 MoveTo(myD.transform.position);
+                                animator.SetFloat("Run", 1);
                             }
                             break;
                         case ActivitiesLabel.Miner:
@@ -276,9 +261,37 @@ namespace Assets.Scripts
                     #endregion
 
                     case ActivitiesLabel.Supply:
-                        // TODO if reach target (soifard) do da thing
+                        #region Supply
+                        List<GameObject> ThirstyDwarves = DwarvesInSight().Where(d => d.GetComponent<DwarfMemory>().ThirstSatisfaction < 50).ToList();
+                        if (ThirstyDwarves.Any())
+                        {
+                            GameObject ThirstyDwarf = ThirstyDwarves.First();
+                            if (Vector3.Distance(transform.position, ThirstyDwarf.transform.position) < 2) // if he reached him
+                            {
+                                if (agent.GetComponent<DwarfMemory>().CurrentActivity == ActivitiesLabel.Supply &&
+                                ThirstyDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction < 50
+                                && agent.GetComponent<DwarfMemory>().BeerCarried > 0)
+                                {
+                                    var carriedBeer = agent.GetComponent<DwarfMemory>().BeerCarried;
+                                    var missingBeer = GE.Variables.maxValueGauge - ThirstyDwarf.GetComponent<DwarfMemory>().ThirstSatisfaction;
+                                    var usedBeer = (carriedBeer >= missingBeer)
+                                        ? missingBeer
+                                        : carriedBeer;
+
+                                    ThirstyDwarf.GetComponent<DwarfMemory>().IncreaseBy(GaugesLabel.ThirstSatisfaction, usedBeer);
+                                    agent.GetComponent<DwarfMemory>().LowerBy(GaugesLabel.BeerCarried, usedBeer);
+                                    agent.GetComponent<DwarfMemory>().BeerGiven += usedBeer;
+                                }
+                            }
+                            else
+                            {
+                                animator.SetFloat("Run", 1);
+                                MoveTo(ThirstyDwarf.transform.position);
+                            }
+                        }
                         // TODO j'allais juste dans une mine : normalement j'ai repéré des soifards ==> UpdateActivityAndDestination();
                         break;
+                    #endregion
 
                     case ActivitiesLabel.Miner:
 
